@@ -1,0 +1,70 @@
+# SDA project-config reference
+# This file documents all fields in project-config.json and their possible values.
+# Edit project-config.json directly — this file is for reference only.
+
+scripts:
+  # Full path to the task-state script. Set automatically by setup.
+  # PowerShell: .sda/scripts/dev/task-state.ps1
+  # Bash:       .sda/scripts/dev/task-state.sh
+  taskState: .sda/scripts/dev/task-state.ps1
+
+  # Full path to the QA secrets loader script (legacy — superseded by qaSessionInit).
+  # Still used as a fallback when qaSessionInit is absent. Set automatically by setup.
+  # PowerShell: .sda/scripts/qa/load-qa-secrets.ps1
+  # Bash:       .sda/scripts/qa/load-qa-secrets.sh
+  loadQaSecrets: .sda/scripts/qa/load-qa-secrets.ps1
+
+  # Full path to the QA secrets lister script. Called by sda-qa-task to
+  # discover existing credential key names. Set automatically by setup.
+  # PowerShell: .sda/scripts/qa/list-qa-secrets.ps1
+  # Bash:       .sda/scripts/qa/list-qa-secrets.sh
+  listQaSecrets: .sda/scripts/qa/list-qa-secrets.ps1
+
+  # Full path to the QA session init script. Dot-sourced by sda-qa at Phase 2;
+  # sets UTF-8 encoding and loads credentials; outputs combined summary + var_name | is_empty table.
+  # Set automatically by setup.
+  # PowerShell: .sda/scripts/qa/qa-session-init.ps1
+  # Bash:       .sda/scripts/qa/qa-session-init.sh
+  qaSessionInit: .sda/scripts/qa/qa-session-init.ps1
+
+  # Full path to the HTTP helper script. Called by sda-qa for every CLI/HTTP
+  # request; outputs STATUS + BODY; supports -StatusOnly / --status-only.
+  # Set automatically by setup.
+  # PowerShell: .sda/scripts/qa/invoke-http.ps1
+  # Bash:       .sda/scripts/qa/invoke-http.sh
+  invokeHttp: .sda/scripts/qa/invoke-http.ps1
+
+# user — sda-system, sda-feature, and sda-dev-task pressure-test YOUR proposed approach and never design for you
+# ai   — they may propose the design approach themselves (legacy behaviour)
+designOwnership: user
+
+# Name of the skill that carries coding standards. sda-dev, sda-coder,
+# sda-refactor, and sda-test-writer load it before writing code. Defaults to
+# standards-compliance if omitted.
+standardsSkill: standards-compliance
+
+paths:
+  # Root folder for sda-system design output.
+  # Defaults to .sda/design if omitted.
+  # Use any relative path accessible from the project root, e.g. docs/architecture
+  design: .sda/design
+
+  # Root folder for specification files (OpenAPI, JSON Schema, etc.).
+  # Defaults to .sda/specs if omitted.
+  # sda-scribe writes specs here; sda-dev-task and sda-dev-task-verifier read them.
+  specs: .sda/specs
+
+  # Root folder for standalone QA specs (qa-task.md, authored by sda-qa-task)
+  # and their reports (qa-report.md, written by sda-qa) when run without a
+  # task context. Defaults to .sda/issues if omitted.
+  # Task-scoped QA artifacts live inside the task folder, not here.
+  issues: .sda/issues
+
+  # Folder holding gitignored QA credentials (qa.secrets.env). Defaults to
+  # .sda/secrets if omitted. Never commit real credential values.
+  secrets: .sda/secrets
+
+tests:
+  coverage:
+    # true | false
+    enabled: true
