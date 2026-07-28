@@ -165,7 +165,7 @@ sda-dev ─delegates─▸ sda-qa                      runtime acceptance QA (ta
 | Communication rules (silent-by-default, forbidden phrases) | `sda-dev`, `sda-test-writer`, `sda-coder` | Orchestrator and subagents share identical communication constraints |
 | Standards compliance rules | `sda-dev`, `sda-test-writer`, `sda-coder` | All code-producing agents enforce standards |
 | Unexpected-failure / troubleshooting handling | `sda-dev` | Troubleshooting is a workflow decision — subagents stop and report; the orchestrator diagnoses and recovers |
-| Development guidance / coding standards skill references | `sda-dev` | References `development-guidance` for process and coding standards for output |
+| Coding standards skill references | `sda-dev` | References coding standards for output |
 | Quality check gates (Phase 5) | `sda-dev` | Runs the quality gates |
 | Init output format (`project-tools.md`) | `sda-toolscan`, `sda-dev`, **sda-setup skill** | The orchestrator, the toolscan agent, and the setup skill depend on project-tools output |
 | `models` in `project-config.json` | `sda-setup` skill (asks user, normalizes, resolves, applies to agent frontmatter) | sda-setup resolves family names to versioned models and writes `model:` into `sda-toolscan`, `sda-dev-task`, `sda-qa-task`, `sda-scribe`, `sda-dev-task-verifier`, `sda-code-explore`, `sda-dev`, `sda-qa`, `sda-test-writer`, `sda-coder` |

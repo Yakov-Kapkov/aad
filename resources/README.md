@@ -56,8 +56,6 @@ resources/
 ```
 What are you doing?
 │
-├─ Starting a new feature or fixing a bug?
-│  └─ Use the development-guidance skill (TDD cycle, quality gates)
 │
 ├─ Writing production code?
 │  ├─ Need types, constants, imports? → coding-standards.md (for your language)
@@ -179,15 +177,12 @@ PostgreSQL has no `testing-standards.md` — database testing is covered by the 
 ## For AI Assistants (Copilot)
 
 **Context loading strategy**:
-- **New feature**: Use the `development-guidance` skill (TDD process, quality gates)
 - **Production code**: Load `coding-standards.md` + `code-style.md` for the target language
 - **Test code**: Load `testing-standards.md` for the target language
 
 **All rules marked MANDATORY are non-negotiable.**
 
 ## For Human Developers
-
-**Onboarding**: Use the `development-guidance` skill for TDD process, then explore language-specific files as needed.
 
 **Quick reference**: Bookmark this README and use the decision tree above.
 
