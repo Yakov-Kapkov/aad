@@ -171,8 +171,8 @@ The terminal starts at the repository root. Run every command from
 `Working directory`:
 - `Working directory` is `./` (repo root) → run the command directly.
   Never prepend `cd ./`.
-- `Working directory` is a subfolder → change into it first, then run the
-  command.
+- `Working directory` is a subfolder → chain: `cd <subfolder>; <command>; cd..`. This returns
+  the terminal to the repo root after the command completes.
 
 ---
 
@@ -348,7 +348,9 @@ cd {Working directory}
 
 ## DO NOT
 
-- Write or modify test code.
+- Write or modify test code — under any circumstances, including when the
+  orchestrator's fix direction tells you to. Test failures are reported
+  through the failure gate, never resolved by changing tests.
 - Update state or any tracking files.
 - Add features beyond what the Changes blocks specify.
 - Run any command other than the provided test, format-code, type-check, and validate-data commands.

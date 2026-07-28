@@ -235,8 +235,8 @@ The terminal starts at the repository root. Run every command from
 `Working directory`:
 - `Working directory` is `./` (repo root) → run the command directly.
   Never prepend `cd ./`.
-- `Working directory` is a subfolder → change into it first, then run the
-  command.
+- `Working directory` is a subfolder → chain: `cd <subfolder>; <command>; cd..`. This returns
+  the terminal to the repo root after the command completes.
 
 ---
 

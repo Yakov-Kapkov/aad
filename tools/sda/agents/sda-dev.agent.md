@@ -80,7 +80,9 @@ part of commands returned by `{read-project-tools}`.
 The terminal starts at the repository root. When a command has a
 `Working directory`:
 - `./` (repo root) → run the command directly. Never prepend `cd ./`.
-- a subfolder → change into it first, then run the command.
+- a subfolder → chain: `cd <subfolder>; <command>; cd..`. This returns
+  the terminal to the repo root after the command completes, so
+  `.sda/` scripts that follow resolve correctly.
 
 ### Failure handling & escalation
 
@@ -102,7 +104,7 @@ For each retry (max 3 total delegations — original + 2 retries):
 1. From the failure output, identify what must change and why (interpret the observed result — no execution-path tracing).
 2. Re-delegate with all original command/path inputs unchanged, appending for each prior attempt:
    - `Prior failure {N}:` trimmed failure output.
-   - `Fix direction {N}:` concrete statement of what must change (e.g., "function X must return Y when called with Z"). Omit only if the failure output yields no actionable diagnosis.
+   - `Fix direction {N}:` concrete statement of what must change (e.g., "function X must return Y when called with Z"). Omit only if the failure output yields no actionable diagnosis. Fix directions must stay within the subagent's delegated scope — never instruct `sda-coder` to modify test code.
 3. Do NOT write or modify code yourself — fixes are the subagent's scope.
 
 After 3 delegations still failing → surface the last failure verbatim and end the response.
