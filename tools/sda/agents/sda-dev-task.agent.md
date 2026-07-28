@@ -219,6 +219,18 @@ the languages it contains. A boundary that needs its own
 test runner (TS frontend vs Python backend) is already a separate unit
 by the boundary rule.
 
+### Source-change and test consistency — mandatory
+
+When a `tests required` unit modifies source behaviour in ways that cause
+pre-existing tests to fail, those tests must be addressed within the same
+unit — never deferred to a later `tests only` unit.
+
+- List the affected tests explicitly in the unit's scope.
+- Include their removal or update in the unit's Changes alongside the
+  source changes.
+- A GREEN gate that fails because the task deferred test fixes to a later
+  unit is a task-design defect.
+
 ### Per-unit language — mandatory
 **Languages are declared per file.** Annotate every Source and Test path
 in the unit header with the programming language(s) it contains:
