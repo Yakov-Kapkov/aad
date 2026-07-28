@@ -79,7 +79,7 @@ if [ "$ACTION" = "uninstall" ]; then
     done
 
     # Skills
-    for skill in sda-setup standards-compliance troubleshooting; do
+    for skill in sda-setup standards-compliance troubleshooting software-design-best-practices; do
         dir="$TARGET_BASE/skills/$skill"
         if [ -d "$dir" ]; then
             rm -rf "$dir"
@@ -166,5 +166,9 @@ echo -e "${YELLOW}== Installing standards-compliance skill ==${NC}"
 echo
 echo -e "${YELLOW}== Installing troubleshooting skill ==${NC}"
 "$SCRIPT_DIR/install-skill.sh" -t "$TARGET_BASE" -n "troubleshooting"
+
+echo
+echo -e "${YELLOW}== Installing software-design-best-practices skill ==${NC}"
+"$SCRIPT_DIR/install-skill.sh" -t "$TARGET_BASE" -n "software-design-best-practices"
 
 echo
