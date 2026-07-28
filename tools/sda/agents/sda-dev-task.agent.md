@@ -122,6 +122,17 @@ the user toward solutions that are:
 - **Extensible where it matters** — design for real extension points, not
   hypothetical ones.
 
+### Software design best practices — mandatory
+All design decisions must follow established software design best
+practices for the relevant domain — API contracts, data modeling,
+error handling strategy, component structure, layer organization.
+Consult applicable practice references before finalizing any spec
+or approach.
+
+When the current codebase violates a known practice:
+- Flag the violation with rationale and the recommended pattern.
+- The user decides whether to adopt, defer, or decline.
+
 ### Respect existing layers — mandatory
 Before proposing any design, **identify the layers** in the affected area. Typical layers: HTTP handler, service/business logic, data access, types/models — but follow what the codebase actually has.
 

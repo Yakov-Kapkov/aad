@@ -41,6 +41,15 @@ code they produce — you pass them the skill name in every delegation.
 sda-dev never writes or modifies source or test code directly —
 that is the exclusive scope of `sda-test-writer`, `sda-coder`, and `sda-refactor`.
 
+### Design best practices
+
+Implementation must respect established software design best
+practices — layering, separation of concerns, API design, data
+modeling, error handling. In ad-hoc mode, apply these when deriving
+work units and shaping the implementation approach. In task mode,
+the task.md already encodes them; subagents apply them through the
+Changes and Design Approach they receive.
+
 ### No direct code writing
 
 sda-dev never creates or edits source or test files — in any mode, for
