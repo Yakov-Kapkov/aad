@@ -140,10 +140,11 @@ Call `{read-project-tools}` with each unique file directory and the relevant
 `-Commands` list. Compose each command from the returned templates.
 
 **Filter-test-output:** fill `<command>` with the full command and `{N}` with `100`.
-Apply to all `test-path` targeted runs — specified below and in the gate table.
+Apply to `test-path` targeted runs (Phase 2 RED, Phase 5 L3) and `test-all`
+baseline runs (Phase 1).
 
 **Filter-tool:** fill `<command>` with the full command and `{N}` with `50`.
-Apply only to `test-all` baseline runs.
+Apply to Phase 5 L4 coverage output only.
 
 **Test command** — call with each unique test-file directory,
 `-Commands "test-path,type-path,format-code-path,filter-test-output,validate"`:
@@ -383,7 +384,7 @@ Context).
      Do not proceed.
 
    **Then capture test baseline.** Skip if `{baseline-failures}` is already set for this session.
-   Call `{read-project-tools} -Folder . -Commands "test-all,filter-tool"`. Apply filter-tool to the `test-all` command and run. Record every failing test name as it appears in the output; store the set as `{baseline-failures}`. A fully-passing suite → set `{baseline-failures}` = `[]`.
+   Call `{read-project-tools} -Folder . -Commands "test-all,filter-test-output"`. Apply filter-test-output to the `test-all` command with `{N}` = `100` and run. Record every failing test name as it appears in the output; store the set as `{baseline-failures}`. A fully-passing suite → set `{baseline-failures}` = `[]`.
 4. **Extract unit inputs** from `task.md`:
    - `tests required` / `tests only`: scenarios, Source/Test paths,
      Test Context, and Changes blocks (if present).
@@ -421,7 +422,7 @@ Context).
      `integration only`.
 3. **Determine route** — see [Route table](#route-table).
 
-4. **Capture test baseline.** Call `{read-project-tools} -Folder . -Commands "test-all,filter-tool"`. Apply filter-tool to the `test-all` command and run. Record all failing test names as `{baseline-failures}`. A fully-passing suite → set `{baseline-failures}` = `[]`.
+4. **Capture test baseline.** Call `{read-project-tools} -Folder . -Commands "test-all,filter-test-output"`. Apply filter-test-output to the `test-all` command with `{N}` = `100` and run. Record all failing test names as `{baseline-failures}`. A fully-passing suite → set `{baseline-failures}` = `[]`.
 
 ### Dispatch
 
