@@ -77,12 +77,9 @@ part of commands returned by `{read-project-tools}`.
 
 ### Terminal working directory
 
-The terminal starts at the repository root. When a command has a
-`Working directory`:
+When a command has a `Working directory`:
 - `./` (repo root) → run the command directly. Never prepend `cd ./`.
-- a subfolder → chain: `cd <subfolder>; <command>; cd..`. This returns
-  the terminal to the repo root after the command completes, so
-  `.sda/` scripts that follow resolve correctly.
+- a subfolder → chain: `cd {repo-root}/<subfolder>; <command>; cd {repo-root}`.
 
 ### Failure handling & escalation
 
@@ -503,6 +500,7 @@ wait.
    Shell: {shell}
    Standards skill: {standardsSkill}
    Working directory: {Working directory}
+   Repo root: {repo-root}
 
    Scenarios:
    {numbered scenarios}
@@ -587,6 +585,7 @@ or changes from other units. Delegate and wait.
    Shell: {shell}
    Standards skill: {standardsSkill}
    Working directory: {Working directory}
+   Repo root: {repo-root}
 
    Changes:                    ← include only if work unit has Changes
    {changes blocks}            ← integration only: current unit's changes ONLY
@@ -654,6 +653,7 @@ Validate-data commands: {from read-project-tools script — omit if absent}
 Shell: {shell}
 Standards skill: {standardsSkill}
 Working directory: {Working directory}
+Repo root: {repo-root}
 ```
 
 When `sda-refactor` returns — route by result:
@@ -706,6 +706,7 @@ Validate-data commands: {from read-project-tools script — omit if absent}
 Shell: {shell}
 Standards skill: {standardsSkill}
 Working directory: {Working directory}
+Repo root: {repo-root}
 ```
 
 When `sda-refactor` returns — route by result:

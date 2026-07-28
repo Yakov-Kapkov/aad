@@ -29,6 +29,8 @@ You do not write tests or manage state files.
 - Validate-data commands (optional).
 - Shell.
 - Standards skill.
+- Working directory.
+- Repo root — absolute path to the repository root.
 - Changes blocks (when provided — signatures, algorithms, implementation snippets).
 - Prior failure N (optional, repeatable) — trimmed output of attempt N.
 - Fix direction N (optional, repeatable) — orchestrator's diagnosis for attempt N. Use as primary guidance for a different implementation path; override only if the source files clearly point to a different cause.
@@ -44,6 +46,8 @@ You do not write tests or manage state files.
 - Validate-data commands (optional).
 - Shell.
 - Standards skill.
+- Working directory.
+- Repo root — absolute path to the repository root.
 - Changes blocks (when provided) or Design Approach.
 - Prior failure N (optional, repeatable) — trimmed output of attempt N.
 - Fix direction N (optional, repeatable) — orchestrator's diagnosis for attempt N. Use as primary guidance for a different implementation path; override only if the source files clearly point to a different cause.
@@ -167,12 +171,10 @@ If the command produces no output or fails to execute — apply [Hard stop on ex
 
 ### Terminal working directory
 
-The terminal starts at the repository root. Run every command from
-`Working directory`:
+Run every command from `Working directory` using `Repo root` from the input:
 - `Working directory` is `./` (repo root) → run the command directly.
   Never prepend `cd ./`.
-- `Working directory` is a subfolder → chain: `cd <subfolder>; <command>; cd..`. This returns
-  the terminal to the repo root after the command completes.
+- `Working directory` is a subfolder → chain: `cd {repo-root}/<subfolder>; <command>; cd {repo-root}`.
 
 ---
 

@@ -70,6 +70,7 @@ The `Scope` field selects which sweeps run:
 - **Shell** — the terminal shell (powershell/bash/zsh).
 - **Standards skill** — the coding-standards skill to load.
 - **Working directory** — where commands run.
+- **Repo root** — absolute path to the repository root.
 - **Prior failure N** (optional, repeatable) — trimmed output of attempt N.
 - **Fix direction N** (optional, repeatable) — orchestrator's diagnosis for attempt N. Use as primary guidance; override only if the source files clearly point to a different cause.
 
@@ -231,12 +232,10 @@ If the command produces no output or fails to execute — apply [Hard stop on ex
 
 ### Terminal working directory
 
-The terminal starts at the repository root. Run every command from
-`Working directory`:
+Run every command from `Working directory` using `Repo root` from the input:
 - `Working directory` is `./` (repo root) → run the command directly.
   Never prepend `cd ./`.
-- `Working directory` is a subfolder → chain: `cd <subfolder>; <command>; cd..`. This returns
-  the terminal to the repo root after the command completes.
+- `Working directory` is a subfolder → chain: `cd {repo-root}/<subfolder>; <command>; cd {repo-root}`.
 
 ---
 
