@@ -554,7 +554,11 @@ in the request), include this as one clarifying question: list
 
 ### Phase 2 — Research
 Explore the codebase to build context for design decisions.
-Apply [Codebase exploration](#codebase-exploration) strategy.
+
+**Delegate broad exploration.** Batch > 3 files into `sda-code-explore`
+calls with specific research questions — preserves your context window
+for the design conversation. Use direct reads only for ≤ 3 known paths
+or targeted follow-ups after a subagent report.
 
 If research reveals contradictions with the user's request or
 hidden pitfalls, ask informed clarifying questions before proceeding.
