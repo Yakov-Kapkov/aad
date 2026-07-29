@@ -232,10 +232,11 @@ If the command produces no output or fails to execute — apply [Hard stop on ex
 
 ### Terminal working directory
 
-Run every command from `Working directory` using `Repo root` from the input:
-- `Working directory` is `./` (repo root) → run the command directly.
-  Never prepend `cd ./`.
-- `Working directory` is a subfolder → chain: `cd {repo-root}/<subfolder>; <command>; cd {repo-root}`.
+Commands run from `Working directory` (provided in input):
+- `./` → run directly. Never `cd ./`.
+- subfolder → `cd {repo-root}/<subfolder>; <command>; cd {repo-root}`.
+  Strip the subfolder prefix from all path arguments.
+  Example: `Working directory: ./api`, file `api/features/dtos.ts` → `features/dtos.ts`.
 
 ---
 

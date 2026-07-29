@@ -87,8 +87,10 @@ part of commands returned by `{read-project-tools}`.
 ### Terminal working directory
 
 When a command has a `Working directory`:
-- `./` (repo root) → run the command directly. Never prepend `cd ./`.
-- a subfolder → chain: `cd {repo-root}/<subfolder>; <command>; cd {repo-root}`.
+- `./` → run directly. Never `cd ./`.
+- subfolder → `cd {repo-root}/<subfolder>; <command>; cd {repo-root}`.
+  Strip the subfolder prefix from all path arguments.
+  Example: `Working directory: ./api`, file `api/features/dtos.ts` → `features/dtos.ts`.
 
 ### Failure handling & escalation
 
