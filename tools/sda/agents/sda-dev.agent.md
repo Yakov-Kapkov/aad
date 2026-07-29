@@ -86,11 +86,13 @@ part of commands returned by `{read-project-tools}`.
 
 ### Terminal working directory
 
-When a command has a `Working directory`:
-- `./` → run directly. Never `cd ./`.
-- subfolder → `cd {repo-root}/<subfolder>; <command>; cd {repo-root}`.
-  Strip the subfolder prefix from all path arguments.
-  Example: `Working directory: ./api`, file `api/features/dtos.ts` → `features/dtos.ts`.
+Always use absolute paths for `cd` — never relative.
+- `Working directory` = `./` → `{absolute-working-dir}` = `{repo-root}`.
+- `Working directory` = `<subfolder>` → `{absolute-working-dir}` = `{repo-root}/<subfolder>` (strip leading `./`).
+- Command form: `cd {absolute-working-dir}; <command>`.
+  No trailing `cd {repo-root}` — unnecessary with absolute paths.
+- Strip the subfolder prefix from all path arguments.
+  Example: `Working directory: ./api`, repo root `/home/user/project` → `cd /home/user/project/api; <command>`, file `api/features/dtos.ts` → `features/dtos.ts`.
 
 ### Failure handling & escalation
 
