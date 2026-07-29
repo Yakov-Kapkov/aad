@@ -202,11 +202,17 @@ are tautologies — they pass the moment the symbol is typed. Pure declarations
 test a constant only through the behaviour that consumes it (e.g. "request
 missing a required field is rejected" — not "`REQUIRED_FIELDS` contains `name`").
 
+When a scenario verifies a response/entity shape (which fields are
+present/absent), it must also assert the returned **values** match the
+source data from `Given:`. A shape-only check passes even when every
+field is the wrong value.
+
 | ✅ Do (behaviour) | 🚫 Don't (structure) |
 |---|---|
 | `GET /api/items returns 200 with items` | `ItemsController has a getItems method` |
 | `Removing a method still serves the endpoint` | `findAll is not a property of the instance` |
 | `Error returns 500` | `ErrorHandler class exists` |
+| `Then: body[0] fields match createMockDoc() values; nameEn, descriptionEn absent` | `Then: body[0] has id, name; no descriptionEn` |
 
 ### Unit sizing — mandatory
 Cap each unit at **6 scenarios**. When a behaviour needs more, split it
