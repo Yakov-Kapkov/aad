@@ -747,11 +747,12 @@ Run gates sequentially in order: L1 → L2 → L3 → L4 → G1 → G2 → G3 �
 
 For each gate:
 1. Run command → check pass condition → pass or fail.
-2. Any failure in a changed file → fix; record fixed files alongside the task's changed files (for Phase 6 Files Changed and verification commands); **restart Phase 5 from L1**.
-3. G3 failure in a file not changed by this task — classify each failing test against `{baseline-failures}`:
-   - Name present in `{baseline-failures}` → pre-existing; collect as `{file} \`{symbol}\`: {violation}` for Phase 6.
-   - Name absent from `{baseline-failures}` → regression introduced by this task → fix (see [Regression fix](#regression-fix)); record fixed files alongside the task's changed files (for Phase 6 Files Changed and verification commands); **restart Phase 5 from L1**.
-4. Do not analyse root causes or reason about regressions.
+2. Any failure in a file changed by this task → fix; record fixed files alongside the task's changed files (for Phase 6 Files Changed and verification commands); **restart Phase 5 from L1**.
+3. Any failure in a file not changed by this task → pre-existing. Collect as `{file}: {detail}` for Phase 6 pre-existing issues. Continue to next gate (do not restart). Exception — G3 test failures in unchanged files: classify each against `{baseline-failures}`:
+   - Name present in `{baseline-failures}` → pre-existing; collect for Phase 6.
+   - Name absent → regression introduced by this task → fix (see [Regression fix](#regression-fix)); record fixed files; **restart Phase 5 from L1**.
+4. Gate marked N/A only when `{read-project-tools}` does not return the command label. For G1 — if `type-all` absent from `-Folder .`, call `{read-project-tools}` for each source file folder with `type-path`, concatenate all project source file paths, run `type-path` bare. If still absent, mark G1 ❌ (unable to verify).
+5. Do not analyse root causes or reason about regressions.
 
 ### Gates
 
