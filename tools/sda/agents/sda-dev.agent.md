@@ -394,7 +394,7 @@ Context).
      Do not proceed.
 
    **Then capture test baseline.** Skip if `{baseline-failures}` is already set for this session.
-   Call `{read-project-tools} -Folder . -Commands "test-all,filter-test-output"`. Apply filter-test-output to the `test-all` command with `{N}` = `100` and run. Record every failing test name as it appears in the output; store the set as `{baseline-failures}`. A fully-passing suite → set `{baseline-failures}` = `[]`.
+   Identify affected areas: for each unique parent directory of every Source and Test path in `task.md`, call `{read-project-tools} -Folder {dir} -Commands "test-all,filter-test-output"`. Group returned commands by `working-dir`. For each unique `working-dir`, apply filter-test-output with `{N}` = `100` to its `test-all` command and run. Merge all failing test names into `{baseline-failures}`. A fully-passing result across all areas → set `{baseline-failures}` = `[]`.
 4. **Extract unit inputs** from `task.md`:
    - `tests required` / `tests only`: scenarios, Source/Test paths,
      Test Context, and Changes blocks (if present).
@@ -432,7 +432,7 @@ Context).
      `integration only`.
 3. **Determine route** — see [Route table](#route-table).
 
-4. **Capture test baseline.** Call `{read-project-tools} -Folder . -Commands "test-all,filter-test-output"`. Apply filter-test-output to the `test-all` command with `{N}` = `100` and run. Record all failing test names as `{baseline-failures}`. A fully-passing suite → set `{baseline-failures}` = `[]`.
+4. **Capture test baseline.** Identify affected areas: for each unique parent directory of the Source and Test paths derived in step 2, call `{read-project-tools} -Folder {dir} -Commands "test-all,filter-test-output"`. Group returned commands by `working-dir`. For each unique `working-dir`, apply filter-test-output with `{N}` = `100` to its `test-all` command and run. Merge all failing test names into `{baseline-failures}`. A fully-passing result across all areas → set `{baseline-failures}` = `[]`.
 
 ### Dispatch
 
