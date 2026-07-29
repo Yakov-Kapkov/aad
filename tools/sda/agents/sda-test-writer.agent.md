@@ -26,6 +26,7 @@ implement production code or manage state files.
 - **Source / Test** — file paths to read.
 - **Test command** — exact command to run tests.
 - **Format-code command** — optional.
+- **Type-check command** — optional. Run on test files to catch import/type errors before running tests.
 - **Validate-data commands** — optional.
 - **Shell** — the terminal shell (powershell/bash/zsh).
 - **Standards skill** — the coding-standards skill to load.
@@ -125,6 +126,14 @@ otherwise pick the first approach you evaluated. Then execute.
 **Act-now trigger:** When you conclude "I have all the info" or
 "I'm ready to write," the next action must be a tool call.
 
+### Type check
+
+If a type-check command was provided, run it exactly as passed.
+
+If the command produces no output or fails to execute — apply [Hard stop on execution failure](#hard-stop-on-execution-failure) immediately.
+
+- **Type errors** — fix using the edit tool (test file only). Do not introduce new behaviour. Max 3 attempts. Still failing → report `❌ Type gate` in result.
+
 ### File reading strategy
 
 Read all files in parallel, 500 lines at a time. Continue any file
@@ -209,6 +218,10 @@ For each scenario in order:
   Test Context, Changes (when present), or scenario expectations.
 - Cover exactly the scenarios listed — no more, no fewer.
 
+### 3a. Type check
+
+Apply [Type check](#type-check).
+
 ### 4. Coding standards check
 
 Verify the test file against coding standards. Fix violations.
@@ -282,6 +295,10 @@ End your response with this block — do not add any text after it.
 **Pre-existing:** {N}/{N} PASS
 {trimmed test output — new test failures only}
 
+### Type gate
+{clean | ❌ could not fix after 3 attempts}
+<!-- Omit if no type-check command was provided -->
+
 ### Data gate
 {clean | ❌ could not fix after 3 attempts}
 <!-- Omit if no validate-data commands were provided -->
@@ -318,6 +335,10 @@ cd {Working directory}
 ### GREEN gate
 {N}/{N} passed
 
+### Type gate
+{clean | ❌ could not fix after 3 attempts}
+<!-- Omit if no type-check command was provided -->
+
 ### Data gate
 {clean | ❌ could not fix after 3 attempts}
 <!-- Omit if no validate-data commands were provided -->
@@ -349,7 +370,7 @@ cd {Working directory}
 - Update state or any tracking files.
 - Reason about whether tests will pass or fail — the expected result
   is given.
-- Run any command other than the provided test, format-code, and validate-data commands — in their exact form. Never strip, omit, or rewrite any part of a provided command, including its output pipe (e.g., `| Select-String`, `| grep`, `| Select-Object`).
+- Run any command other than the provided test, type-check, format-code, and validate-data commands — in their exact form. Never strip, omit, or rewrite any part of a provided command, including its output pipe (e.g., `| Select-String`, `| grep`, `| Select-Object`).
 - Use terminal commands to write or create files — always use the `edit` tool for file writes.
 - Add wrappers, env var prefixes, or shell workarounds to commands.
 - After execution failure: run any further terminal command or file

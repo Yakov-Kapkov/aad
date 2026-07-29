@@ -165,8 +165,9 @@ Apply to Phase 5 L4 coverage output only.
 - **Integration-only:** substitute `{path}` with `Related tests` paths. Omit
   entirely when no related tests are listed — never target source files.
 
-**Type-check command:** fill `{path}` in `type-path` with all source file paths
-(space-separated) — individual files, not folders. No filter. Omit if absent.
+**Type-check command:** fill `{path}` in `type-path` with all Source file paths
+(and Test file paths, when delegating to `sda-test-writer`) — individual files,
+not folders. No filter. Omit if absent.
 
 **Format-code command:** fill every `{path}` in `format-code-path` with all
 Source (and Test, when delegating to `sda-test-writer`) file paths, space-separated.
@@ -507,6 +508,7 @@ wait.
    Test: {test file path(s)}
    Test command: {test-path with {path} filled and filter-test-output applied — fully composed command}
    Format-code command: {from read-project-tools script — omit if absent}
+   Type-check command: {from read-project-tools script — omit if absent}
    Validate-data commands: {from read-project-tools script — omit if absent}
    Shell: {shell}
    Standards skill: {standardsSkill}
