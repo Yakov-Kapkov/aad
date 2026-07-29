@@ -44,6 +44,6 @@ Review this code against design best practices.
 | Area | Concerns |
 |---|---|
 | Web API | Input validation, DTO mapping, global error handling |
-| Database | Column selection, entity exposure |
+| Database | Query design, entity exposure |
 | UI | Shell controls, data source efficiency, loading states |
 | Layers | Layer separation, shared resources |
