@@ -890,6 +890,8 @@ Proceed to Phase 6.
    - **Issues Encountered** — every rough edge observed during the run:
      subagent `⚠️ UNRESOLVED` / gate retries, workarounds, deviations from
      `task.md`, assumptions made. Omit only if there were genuinely none.
+     All file references must use root-based paths (from repo root) —
+     never bare filenames or ambiguous names.
 
    You pass facts; `sda-scribe` formats and writes `dev-report.md`. Do not
    write the file yourself.
