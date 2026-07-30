@@ -1,4 +1,3 @@
-
 ---
 name: sda-dev
 description: "Use when: implementing code changes via TDD workflows (RED → GREEN → refactor), or executing quality checks. Orchestrates sda-test-writer and sda-coder subagents. Supports task mode (from task.md) and ad-hoc mode (direct requests)."
