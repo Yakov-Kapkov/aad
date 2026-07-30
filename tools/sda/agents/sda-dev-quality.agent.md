@@ -75,10 +75,18 @@ Always use absolute paths for `cd` — never relative.
 
 Only run commands returned by `{read-project-tools}`.
 
+**One gate, one invocation.** Each gate (L1–L4, G1–G5) is a separate
+terminal call. Never chain multiple gate commands with `;` or `&&`
+in a single invocation.
+
 **Bare CLI only.** Run commands exactly as documented — no wrappers,
 no env var prefixes, no shell workarounds, no fabricated one-liners
 or scripts. Never add flags, arguments, or path-exclusion options
 that are not present in the documented command.
+
+**Cap noisy output.** Any command that may produce more than ~100 lines
+must use `filter-tool` (`{N}` = `50`–`100`). Skip the filter only for
+commands that are inherently concise (type-checking).
 
 ### No file output for command results
 
@@ -156,6 +164,10 @@ Coverage enabled:  true|false
 
 For each area with changed files:
 
+**Stream results.** After each gate completes, emit a one-line result
+immediately (e.g., `L1 Types: ✅`). Accumulate all results for the
+final report in Phase 6.
+
 1. **Fetch commands** — call `{read-project-tools} -Folder {workdir}` with:
    `-Commands "type-path,lint-path,test-path,test-path-coverage,format-code-path,filter-test-output,filter-tool"`
    Omit `lint-path` / `type-path` / `test-path-coverage` / `format-code-path` / `filter-tool` / `filter-test-output` when absent.
@@ -167,7 +179,7 @@ For each area with changed files:
 
 3. **L2 — Lint:**
    - N/A if no `lint-path`.
-   - Fill `{path}` with area's changed Source + Test file paths. Run **bare** — no filter pipe.
+   - Fill `{path}` with area's changed Source + Test file paths. Apply filter-tool (`{N}` = `50`).
    - Pass condition: zero errors.
 
 4. **L3 — Tests:**
@@ -180,14 +192,16 @@ For each area with changed files:
    - Fill `{path}` with area's changed Test file paths. Apply filter-tool (`{N}` = `50`).
    - Pass condition: exits 0.
 
-Record all gate results per area.
-
 ### Phase 5 — Run global gates per area
 
 For each target area:
 
+**Stream results.** After each gate completes, emit a one-line result
+immediately (e.g., `G1 Types: ✅`). Accumulate all results for the
+final report in Phase 6.
+
 1. **Fetch commands** — call `{read-project-tools} -Folder {workdir}` with:
-   `-Commands "type-all,lint-all,test-all,build-all,precommit-all,filter-test-output"`
+   `-Commands "type-all,lint-all,test-all,build-all,precommit-all,filter-test-output,filter-tool"`
    Also fetch `precommit-all` from `-Folder .` (project-global).
 
 2. **G1 — Types:**
@@ -197,7 +211,7 @@ For each target area:
 
 3. **G2 — Lint:**
    - N/A if no `lint-all`.
-   - Run **bare** — no filter pipe.
+   - Apply filter-tool (`{N}` = `50`).
    - Pass condition: zero errors/warnings.
    - Commands may auto-fix files. Re-run once before reporting failure.
 
@@ -210,19 +224,19 @@ For each target area:
 
 5. **G4 — Pre-merge:**
    - N/A if no `precommit-all`. Use `-Folder .` for this command.
-   - Run **bare** — no filter pipe.
+   - Apply filter-tool (`{N}` = `100`).
    - Pass condition: zero errors.
 
 6. **G5 — Build:**
    - N/A if no `build-all`.
-   - Run **bare** — no filter pipe.
+   - Apply filter-tool (`{N}` = `50`).
    - Pass condition: exits 0.
 
-Record all gate results per area.
+### Phase 6 — Produce final report
 
-### Phase 6 — Produce report
-
-Output the structured report below. Always include the `### Flags` section when there are actionable items — no exceptions, no questions.
+Output the aggregated structured report below — all gate results collected
+from Phases 4–5. Always include the `### Flags` section when there are
+actionable items — no exceptions, no questions.
 
 ---
 
@@ -309,11 +323,14 @@ The agent reports facts only; the caller decides what to do.)
 
 ## Communication style — mandatory
 
-**Default state is silence.** Emit text only in the output format above.
+**Default state is silence** except for one-line gate results and the final
+report. Emit text only as specified in Phases 4–6.
 
 - No narration of intent.
 - No first-person casual.
 - No filler ("let me", "now", "okay").
+- During gate execution (Phases 4–5): emit a one-line result per gate as it
+  completes (e.g., `L1 Types: ✅`, `G2 Lint: ❌ 12 warnings`).
 - In-progress actions: italic fragment only during extended silence:
   - ✅ _Discovering areas..._
   - ✅ _Running gates for Backend..._
