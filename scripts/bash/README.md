@@ -42,7 +42,7 @@ chmod +x *.sh
     -m "sda-coder=Claude Haiku 4.5" \
     -m "sda-test-writer=Claude Haiku 4.5" \
     -m "sda-dev=Claude Sonnet 4.6" \
-    -m "sda-toolscan=Claude Haiku 4.5"
+    -m "sda-toolscan=Claude Sonnet 4.6"
 
 # Override model for commit agent
 ./install-dev-suite.sh -m "commit=Claude Haiku 4.5"

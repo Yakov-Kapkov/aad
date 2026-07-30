@@ -41,7 +41,7 @@ cd <repo-root>/scripts/powershell
     'sda-coder=Claude Haiku 4.5', 
     'sda-test-writer=Claude Haiku 4.5', 
     'sda-dev=Claude Sonnet 4.6', 
-    'sda-toolscan=Claude Haiku 4.5'
+    'sda-toolscan=Claude Sonnet 4.6'
 )
 
 # Override model for commit agent

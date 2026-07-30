@@ -3,7 +3,7 @@ name: sda-toolscan
 description: "Scans the project toolchain and writes project-tools.md. Use when: sda-setup delegates toolchain scanning, or the user asks to rescan the toolchain."
 argument-hint: Run this to scan the project toolchain and generate project-tools.md.
 tools: ["read", "search", "edit", "execute"]
-model: Claude Haiku 4.5
+model: Claude Sonnet 4.6
 ---
 
 # Toolchain Scanner Agent
