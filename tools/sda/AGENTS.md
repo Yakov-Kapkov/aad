@@ -173,7 +173,7 @@ sda-dev ─delegates─▸ sda-qa                      runtime acceptance QA (ta
 | `sda-dev` Flags processing (Phase 5) | `sda-coder`, `sda-test-writer` | Orchestrator routes quality flags to the correct subagent for fixes |
 | `task.md` Area field + Area Index in `project-tools.md` | `sda-dev-task` (derives area per unit), `sda-scribe` (writes), `sda-dev` (reads per-unit areas), `sda-dev-quality` (discovers areas) | Area connects task design → implementation → quality gates |
 | Init output format (`project-tools.md`) | `sda-toolscan`, `sda-dev`, **sda-setup skill** | The orchestrator, the toolscan agent, and the setup skill depend on project-tools output |
-| `models` in `project-config.json` | `sda-setup` skill (asks user, normalizes, resolves, applies to agent frontmatter) | sda-setup resolves family names to versioned models and writes `model:` into `sda-toolscan`, `sda-dev-task`, `sda-qa-task`, `sda-scribe`, `sda-dev-task-verifier`, `sda-code-explore`, `sda-dev`, `sda-qa`, `sda-test-writer`, `sda-coder` |
+| `models` in `project-config.json` | `sda-setup` skill (asks user, normalizes, resolves, applies to agent frontmatter) | sda-setup resolves family names to versioned models and writes `model:` into `sda-toolscan`, `sda-dev-task`, `sda-qa-task`, `sda-scribe`, `sda-dev-task-verifier`, `sda-code-explore`, `sda-dev`, `sda-dev-quality`, `sda-qa`, `sda-test-writer`, `sda-coder`, `sda-refactor` |
 | `unit-file-size` script (parameters or output format) | `sda-dev-task` (Phase 6 Step 1), `sda-dev` (Phase 1 step 3), `sda-dev-task-verifier` (Check 1) | All three agents invoke the script; interface changes break invocations |
 | `README.md` | Keep consistent with all agent descriptions and workflow phases | User-facing docs must match agent behavior |
 

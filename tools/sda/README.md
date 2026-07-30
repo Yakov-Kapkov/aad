@@ -314,7 +314,8 @@ The `models` section in `project-config.json` controls which AI model each agent
   "sda-qa": "Claude Sonnet",
   "sda-test-writer": "Claude Sonnet",
   "sda-coder": "Claude Sonnet",
-  "sda-refactor": "Claude Sonnet"
+  "sda-refactor": "Claude Sonnet",
+  "sda-dev-quality": "Claude Haiku"
 }
 ```
 
@@ -330,6 +331,7 @@ The `models` section in `project-config.json` controls which AI model each agent
 | `sda-test-writer` | Writes tests (RED phase) | `Claude Sonnet` |
 | `sda-coder` | Implements production code (GREEN phase) | `Claude Sonnet` |
 | `sda-refactor` | Runs the REFACTOR pass (behaviour-preserving) | `Claude Sonnet` |
+| `sda-dev-quality` | Runs per-area quality gates | `Claude Haiku` |
 
 **Resolution:** `sda-setup` resolves family names to the latest available versioned model (e.g., `"Claude Sonnet"` → `"Claude Sonnet 4.6 (copilot)"`) and writes the result into each agent's `model:` frontmatter. Re-run sda-setup (or say "update sda") to pick up new model versions.
 
