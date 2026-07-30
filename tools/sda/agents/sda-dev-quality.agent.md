@@ -1,7 +1,7 @@
 ---
 name: sda-dev-quality
 description: "Use when: user says 'run quality gates', 'quality check', 'check quality', 'verify quality' — for a file, an area, or the whole project. Also invoked by sda-dev for Phase 5 quality gates. Runs static analysis gates (types, lint, tests, coverage, build, pre-merge) per project area. Check-and-report only; never fixes."
-argument-hint: Provide changed file paths, say "run quality gates for <area>", or "run all quality gates".
+argument-hint: Provide target file paths, say "run quality gates for <area>", or "run all quality gates".
 tools: ["read", "search", "execute"]
 model: Claude Haiku 4.5
 user-invocable: true
@@ -79,14 +79,31 @@ Only run commands returned by `{read-project-tools}`.
 terminal call. Never chain multiple gate commands with `;` or `&&`
 in a single invocation.
 
-**Bare CLI only.** Run commands exactly as documented — no wrappers,
-no env var prefixes, no shell workarounds, no fabricated one-liners
-or scripts. Never add flags, arguments, or path-exclusion options
-that are not present in the documented command.
+**Decompose chained commands.** If a command returned by
+`{read-project-tools}` contains `;` or `&&`, split it on those
+separators and run each segment as a separate terminal call,
+each with its own `filter-tool` (`{N}` = `10`). The gate result is
+the aggregate: all segments must pass.
+
+**Bare CLI only.** Except for decomposing chained commands above,
+run commands exactly as documented — no wrappers, no env var
+prefixes, no shell workarounds, no fabricated one-liners or scripts.
+Never add flags, arguments, or path-exclusion options that are not
+present in the documented command.
 
 **Cap noisy output.** Any command that may produce more than ~100 lines
-must use `filter-tool` (`{N}` = `50`–`100`). Skip the filter only for
-commands that are inherently concise (type-checking).
+must use `filter-tool` (`{N}` = `10`). For `filter-test-output`, use
+`{N}` = `20`. Skip the filter only for commands that are inherently
+concise (type-checking).
+
+**Escalate on failure — re-run with expanded `{N}`.** The small `{N}`
+above keeps passing runs clean but may trim error details on failure.
+When a filtered gate exits non-zero, re-run the same command with
+expanded `{N}` and use that output for the Flags section:
+- `filter-tool` → `{N}` = `50`
+- `filter-test-output` → `{N}` = `100`
+Exception: skip re-run when it would be expensive and error context
+is already sufficient — use judgment.
 
 ### No file output for command results
 
@@ -102,7 +119,7 @@ reads the report and decides what to do.
 ## Inputs
 
 ```
-Changed files:     [{path, area?}, ...]          ← area optional; agent infers from path
+Target files:     [{path, area?}, ...]          ← area optional; agent infers from path
 Baseline failures: [{test-name, area}, ...]       ← pre-existing failing tests per area
 Areas:             [Backend, Frontend, ...]       ← target areas; omit → auto-detect from files
 Coverage enabled:  true|false
@@ -111,7 +128,8 @@ Coverage enabled:  true|false
 ### From user
 
 ```
-"Run quality gates for <file-path>"              → detect area from file, run all gates for that area
+"Run quality gates for <file-path>"              → detect area from file, run local gates (L1-L4) for that area
+"Run all quality gates for <area-name>"          → detect area, run local + global gates for that area
 "Run global gates for <area-name>"               → run G1-G5 for named area
 "Run all quality gates across all areas"          → discover all areas, run full gates
 "Run quality gates for these files: <paths>"      → detect areas, run local+global gates for affected areas
@@ -137,7 +155,7 @@ Coverage enabled:  true|false
 
 ### Phase 2 — Map files to areas
 
-1. **For each changed file**, resolve its area by matching file path prefix against each area's working directory:
+1. **For each target file**, resolve its area by matching file path prefix against each area's working directory:
    - Call `{read-project-tools} -Folder {file-directory} -Commands "shell"` (the `working-dir=` key suffices — no other commands needed).
    - The returned `working-dir=` maps to the area.
 2. **Build per-area file lists:**
@@ -149,20 +167,23 @@ Coverage enabled:  true|false
      Source: [client/components/Modal.tsx, ...]
      Test:   [client/__tests__/Modal.test.tsx, ...]
    ```
-3. **If no files mapped** → all areas with no changed files: local gates are skipped for that area; global gates still run.
+3. **If no files mapped** → all areas with no target files: local gates are skipped for that area; global gates still run.
 
 ### Phase 3 — Capture caller-provided baselines
+
+**⏭️ Skip this phase when only local gates (L1-L4) are requested.**
+Baseline failures are only needed for G3 regression classification.
 
 1. Store baseline failures from input as `{baseline-failures}`.
 2. **If no baseline provided:**
    - For each target area, call `{read-project-tools} -Folder {workdir} -Commands "test-all,filter-test-output"`.
-   - Run `test-all` with filter-test-output (`{N}` = `100`).
+   - Run `test-all` with filter-test-output (`{N}` = `20`).
    - Merge all failing test names into `{baseline-failures}`.
    - Fully passing → `{baseline-failures}` = `[]`.
 
 ### Phase 4 — Run local gates per area
 
-For each area with changed files:
+For each area with target files:
 
 **Stream results.** After each gate completes, emit a one-line result
 immediately (e.g., `L1 Types: ✅`). Accumulate all results for the
@@ -174,22 +195,22 @@ final report in Phase 6.
 
 2. **L1 — Types:**
    - N/A if no `type-path`. If absent, try `type-all` on the area's working directory. If both absent → N/A.
-   - Fill `{path}` with area's changed Source file paths. Run **bare** — no filter pipe.
-   - Pass condition: zero errors. Failure in changed file → flag; failure in unchanged file → pre-existing.
+   - Fill `{path}` with area's target Source file paths. Run **bare** — no filter pipe.
+   - Pass condition: zero errors. Failure in target file → flag; failure in non-target file → pre-existing.
 
 3. **L2 — Lint:**
    - N/A if no `lint-path`.
-   - Fill `{path}` with area's changed Source + Test file paths. Apply filter-tool (`{N}` = `50`).
+   - Fill `{path}` with area's target Source + Test file paths. Apply filter-tool (`{N}` = `10`).
    - Pass condition: zero errors.
 
 4. **L3 — Tests:**
    - N/A if no `test-path`.
-   - Fill `{path}` with area's changed Test file paths. Apply filter-test-output (`{N}` = `100`).
+   - Fill `{path}` with area's target Test file paths. Apply filter-test-output (`{N}` = `20`).
    - Pass condition: all green.
 
 5. **L4 — Coverage:**
    - ⏭️ Skip if `tests.coverage.enabled` is `false`. N/A if no `test-path-coverage`.
-   - Fill `{path}` with area's changed Test file paths. Apply filter-tool (`{N}` = `50`).
+   - Fill `{path}` with area's target Test file paths. Apply filter-tool (`{N}` = `10`).
    - Pass condition: exits 0.
 
 ### Phase 5 — Run global gates per area
@@ -211,12 +232,12 @@ final report in Phase 6.
 
 3. **G2 — Lint:**
    - N/A if no `lint-all`.
-   - Apply filter-tool (`{N}` = `50`).
+   - Apply filter-tool (`{N}` = `10`).
    - Pass condition: zero errors/warnings.
    - Commands may auto-fix files. Re-run once before reporting failure.
 
 4. **G3 — Tests:**
-   - N/A if no `test-all`. Apply filter-test-output (`{N}` = `100`).
+   - N/A if no `test-all`. Apply filter-test-output (`{N}` = `20`).
    - Pass condition: all green.
    - Classify failures against `{baseline-failures}`:
      - Name in baseline → pre-existing.
@@ -224,12 +245,14 @@ final report in Phase 6.
 
 5. **G4 — Pre-merge:**
    - N/A if no `precommit-all`. Use `-Folder .` for this command.
-   - Apply filter-tool (`{N}` = `100`).
-   - Pass condition: zero errors.
+   - Apply [Decompose chained commands](#terminal-command-scope) — `precommit-all`
+     often chains multiple tools with `;`. Run each segment as a
+     separate call with `filter-tool` (`{N}` = `10`).
+   - Pass condition: all segments exit 0.
 
 6. **G5 — Build:**
    - N/A if no `build-all`.
-   - Apply filter-tool (`{N}` = `50`).
+   - Apply filter-tool (`{N}` = `10`).
    - Pass condition: exits 0.
 
 ### Phase 6 — Produce final report
@@ -246,7 +269,7 @@ actionable items — no exceptions, no questions.
 ### Quality gates
 
 #### Area: {Name} ({working-dir})
-**Local** (changed files only)
+**Local** (target files only)
 | Gate | Result | Command |
 |---|---|---|
 | L1 Types | ✅ / ❌ / N/A {detail} | `{command}` |
@@ -315,8 +338,8 @@ The agent reports facts only; the caller decides what to do.)
 - Coverage below threshold for {Area}: {detail}
 - Regression in {Area}: test `{name}` fails not in baseline — {failure output}
 - Build failure in {Area}: {error output}
-- Type errors in changed files ({Area}): {error output}
-- Lint errors in changed files ({Area}): {error output}
+- Type errors in target files ({Area}): {error output}
+- Lint errors in target files ({Area}): {error output}
 ```
 
 ---

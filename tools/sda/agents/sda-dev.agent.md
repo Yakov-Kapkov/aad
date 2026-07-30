@@ -756,7 +756,7 @@ gates directly. Do NOT read source or test files. Delegate and wait.
 ### Allowed actions in this phase
 
 - `agent` — delegate to `sda-dev-quality`, `sda-coder`, `sda-test-writer`
-- `execute` — run commands only for area discovery (if changed files lack area info)
+- `execute` — run commands only for area discovery (if target files lack area info)
 
 ### Control flow
 
@@ -765,7 +765,7 @@ gates directly. Do NOT read source or test files. Delegate and wait.
 2. **Invoke `sda-dev-quality` by name.** Pass:
 
    ```
-   Changed files:
+   Target files:
    - {path}
    ...
 
@@ -790,7 +790,7 @@ For each flag from `sda-dev-quality`'s `### Flags` section:
 | Coverage below threshold | **Ask user.** Present the coverage detail from the flag and: _Coverage below threshold in {Area} — what next?_\n  - `add-tests` — delegate to `sda-test-writer`, then re-delegate to `sda-dev-quality`\n  - `skip` — accept gap, proceed to next flag or Phase 6 |
 | Regression (test failure not in baseline) | If flagged test was written by this task → delegate to `sda-coder`. If flagged test is pre-existing → delegate to `sda-coder` with [regression fix inputs](#regression-fix). If unclear → delegate to `sda-coder` first. |
 | Build failure | Delegate to `sda-coder` with failure output from flag detail |
-| Type / Lint errors in changed files | Delegate to `sda-coder` with error output from flag detail |
+| Type / Lint errors in target files | Delegate to `sda-coder` with error output from flag detail |
 
 Max 3 quality-gate cycles total (original + 2 re-runs). After 3 cycles with unresolved flags → surface the last report verbatim and end the response.
 
