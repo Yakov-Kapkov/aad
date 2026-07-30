@@ -170,11 +170,19 @@ for lbl in ('precommit-all', 'precommit-staged'):
         if v:
             out.append(f"{lbl}={v}")
 
-# Global: areas (Area Index listing — all area names and working directories)
+# Global: areas (Area Index listing — all area names, working directories, and per-area global capabilities)
 if 'areas' in commands:
+    cap_labels = ('type-all','test-all','lint-all','build-all','precommit-all')
     for area in areas:
         wd = './' if area['workdir'] == '' else area['workdir'] + '/'
         out.append(f"area.{area['name']}={wd}")
+        caps = []
+        for lbl in cap_labels:
+            v = get_command(area['lines'], lbl)
+            if v:
+                caps.append(lbl)
+        if caps:
+            out.append(f"area.{area['name']}.capabilities={','.join(caps)}")
 
 print('\n'.join(out))
 PYEOF

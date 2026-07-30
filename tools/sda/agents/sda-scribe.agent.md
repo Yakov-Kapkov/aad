@@ -56,7 +56,7 @@ You receive:
 4. **Design Approach** — units with Problem/Context → Solution → Details.
 5. **Acceptance Criteria** — fully written checkbox list.
 6. **Implementation Plan** — fully written content per unit:
-   - Unit header (name, type, language, Source, Test paths).
+   - Unit header (name, type, area, language, Source, Test paths).
    - Test Context (Patterns, Object construction, Mock boundaries).
    - Scenarios in Given/When/Then with Expected (RED) predictions.
    - Changes blocks (where provided).

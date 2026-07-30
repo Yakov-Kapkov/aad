@@ -29,6 +29,7 @@ tools/sda/
 │   ├── sda-test-writer.agent.md       ← subagent: writes tests (RED phase)
 │   ├── sda-coder.agent.md             ← subagent: writes production code (GREEN phase)
 │   ├── sda-refactor.agent.md          ← subagent: refactoring pass (REFACTOR phase)
+│   ├── sda-dev-quality.agent.md       ← subagent: per-area quality gates (Phase 5); check-and-report only
 │   ├── sda-qa.agent.md                 ← runtime acceptance QA (read-only on source; writes qa-report.md)
 │   └── sda-diagram-writer.agent.md   ← subagent: renders ASCII diagrams from DIAGRAM blocks
 ├── prompts/
@@ -95,7 +96,7 @@ The TDD implementation phase is **orchestrated**: `sda-dev` reads `task.md`, the
 
 | Agent(s) | How it works |
 |---|---|
-| `sda-dev` → `sda-test-writer` + `sda-coder` + `sda-refactor` | Orchestrator delegates RED to `sda-test-writer`, GREEN to `sda-coder`, and the REFACTOR pass to `sda-refactor`; it owns workflow decisions (slice processing, verification, quality checks, state tracking) |
+| `sda-dev` → `sda-test-writer` + `sda-coder` + `sda-refactor` + `sda-dev-quality` | Orchestrator delegates RED to `sda-test-writer`, GREEN to `sda-coder`, REFACTOR to `sda-refactor`, and QUALITY to `sda-dev-quality`; it owns workflow decisions (slice processing, verification, state tracking) |
 
 ### Agent relationships
 
@@ -121,6 +122,7 @@ sda-dev ─delegates─▸ sda-coder                   GREEN phase
 sda-dev ─delegates─▸ sda-refactor                REFACTOR phase
 sda-dev ─delegates─▸ sda-code-explore            ad-hoc provider: codebase exploration
 sda-dev ─delegates─▸ sda-scribe                  dev-report.md (Mode 3, at completion)
+sda-dev ─delegates─▸ sda-dev-quality             per-area quality gates (Phase 5)
 sda-dev ─delegates─▸ sda-qa                      runtime acceptance QA (task provider)
 ```
 
@@ -166,7 +168,10 @@ sda-dev ─delegates─▸ sda-qa                      runtime acceptance QA (ta
 | Standards compliance rules | `sda-dev`, `sda-test-writer`, `sda-coder` | All code-producing agents enforce standards |
 | Unexpected-failure / troubleshooting handling | `sda-dev` | Troubleshooting is a workflow decision — subagents stop and report; the orchestrator diagnoses and recovers |
 | Coding standards skill references | `sda-dev` | References coding standards for output |
-| Quality check gates (Phase 5) | `sda-dev` | Runs the quality gates |
+| Quality check gates (Phase 5) | `sda-dev-quality` | Phase 5 is a thin delegation; quality agent owns per-area gate execution, reporting, and flagging |
+| `sda-dev-quality` report format | `sda-dev` (Phase 5 result relay, Phase 6 verification commands) | Orchestrator relays the quality report verbatim; uses its verification commands in Phase 6 |
+| `sda-dev` Flags processing (Phase 5) | `sda-coder`, `sda-test-writer` | Orchestrator routes quality flags to the correct subagent for fixes |
+| `task.md` Area field + Area Index in `project-tools.md` | `sda-dev-task` (derives area per unit), `sda-scribe` (writes), `sda-dev` (reads per-unit areas), `sda-dev-quality` (discovers areas) | Area connects task design → implementation → quality gates |
 | Init output format (`project-tools.md`) | `sda-toolscan`, `sda-dev`, **sda-setup skill** | The orchestrator, the toolscan agent, and the setup skill depend on project-tools output |
 | `models` in `project-config.json` | `sda-setup` skill (asks user, normalizes, resolves, applies to agent frontmatter) | sda-setup resolves family names to versioned models and writes `model:` into `sda-toolscan`, `sda-dev-task`, `sda-qa-task`, `sda-scribe`, `sda-dev-task-verifier`, `sda-code-explore`, `sda-dev`, `sda-qa`, `sda-test-writer`, `sda-coder` |
 | `unit-file-size` script (parameters or output format) | `sda-dev-task` (Phase 6 Step 1), `sda-dev` (Phase 1 step 3), `sda-dev-task-verifier` (Check 1) | All three agents invoke the script; interface changes break invocations |

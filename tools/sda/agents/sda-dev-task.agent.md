@@ -263,6 +263,21 @@ in the unit header with the programming language(s) it contains:
 - Assign languages during Design (Phase 3); emit the per-file annotations
   (and the union) in Phase 6.
 
+### Per-unit area — mandatory
+
+**Every unit declares the project area it belongs to** via the `**Area:**`
+header field (e.g. `Backend`, `Frontend`, `Worker`). The area is derived
+from the unit's Source/Test file paths resolved through `{read-project-tools}`.
+
+- Call `{read-project-tools} -Folder . -Commands "areas"` to get all areas
+  and their working directories.
+- For each file path in the unit, call `{read-project-tools} -Folder {file-directory}`
+  (the returned `working-dir=` key maps to the area via prefix matching).
+- If all files map to the same area → `**Area:**` = that area.
+- If files span multiple areas → `**Area:**` = comma-separated list
+  (e.g. `Backend, Frontend`).
+- Assign areas during Design (Phase 3); emit in Phase 6.
+
 ### End-to-end deliverability
 Every task must produce a **self-consistent, reachable result** — not
 dead code. Before finalizing the implementation plan, verify:
@@ -757,9 +772,10 @@ After reads, for each unit with more than one file, run `{unit-file-size} -Mode 
 
 **Step 2 — Build Implementation Plan.** Using research findings and
 the approved Design Approach, produce for each unit:
-- Unit header (name, type, Source/Test paths each annotated with the
+- Unit header (name, type, area, Source/Test paths each annotated with the
   language(s) it contains, and the derived **Language** union). Per
-  [Per-unit language](#per-unit-language--mandatory).
+  [Per-unit language](#per-unit-language--mandatory) and
+  [Per-unit area](#per-unit-area--mandatory).
 - Test Context (Patterns, Object construction, Mock boundaries).
 - Scenarios, Changes, and step structure per `task-schema.md` (see **Steps**, **Scenarios**, **Symbol layout** rules).
   Each must assert **behaviour**, never structure — per

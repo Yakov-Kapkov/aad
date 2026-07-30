@@ -46,7 +46,7 @@ Installs the **sda-setup** skill, SDA agents, and the [**Standards Compliance**]
 
 | Mode | Description | Agents installed |
 |---|---|---|
-| `short` (default) | Core development pipeline — sufficient for most projects | `sda-toolscan`, `sda-tool-installer`, `sda-dev-task`, `sda-qa-task`, `sda-scribe`, `sda-dev-task-verifier`, `sda-code-explore`, `sda-web-explore`, `sda-dev`, `sda-coder`, `sda-refactor`, `sda-test-writer`, `sda-qa` |
+| `short` (default) | Core development pipeline — sufficient for most projects | `sda-toolscan`, `sda-tool-installer`, `sda-dev-task`, `sda-qa-task`, `sda-scribe`, `sda-dev-task-verifier`, `sda-code-explore`, `sda-web-explore`, `sda-dev`, `sda-coder`, `sda-refactor`, `sda-test-writer`, `sda-dev-quality`, `sda-qa` |
 | `full` | Adds `sda-feature` and `sda-system` for feature and architecture design | All SDA agents |
 
 > **Note:** Make sure your IDE is configured to load agents, skills, and prompts from the install location.
@@ -186,6 +186,7 @@ finds — it reports, and leaves routing (sda-dev-task vs ad-hoc sda-dev) to you
 | `sda-test-writer` | Writes tests for TDD slices (RED) and tests-only slices. Mechanical worker: makes domain decisions within the assigned unit; stops and reports anything outside scope. | project config | read, edit, search, execute |
 | `sda-coder` | Implements production code (GREEN) and integration slices. Mechanical worker: makes domain decisions within the assigned unit; stops and reports anything outside scope. | project config | read, edit, search, execute |
 | `sda-refactor` | Runs the REFACTOR pass without changing behaviour: per-unit (refactors the code each unit added or modified) plus a final cross-unit duplication pass; reverts any change that breaks a test. | project config | read, edit, search, execute |
+| `sda-dev-quality` | Runs per-area quality gates (types, lint, tests, coverage, build, pre-merge). Check-and-report only — never fixes. Invoked by sda-dev (Phase 5) or standalone. | Claude Haiku 4.5 | read, search, execute |
 | `sda-tool-installer` | Installs required development tools — reads tool-catalog.md, runs install commands, handles git-hooks init, reports pass/fail per tool. Invoked by sda-setup skill (Step 7). | Claude Haiku 4.5 | read, execute |
 
 **Model configuration:** Implementation agents use models from `project-config.json`. Default: Claude Sonnet. Run sda-setup (or say "update sda") to resolve family names and apply to agent files. See [Model configuration](#model-configuration).
@@ -252,8 +253,8 @@ PHASE 5 — GREEN
 PHASE 6 — REFACTOR + QUALITY CHECKS
   Refactors the code each slice added or modified as it completes (per-unit); after all slices,
   a thin cross-unit pass removes duplication spanning slices.
-  Runs mandatory quality gates: tests, coverage, pre-merge, type-check, lint, full test suite.
-  Presents results and exact commands to the user.
+  Delegates quality gates to sda-dev-quality — gates run per project area (Backend, Frontend, etc.).
+  Presents per-area results and exact commands to the user.
 
 PHASE 7 — DEV REPORT + ACCEPTANCE QA  (task mode, sda-dev)
   Delegates dev-report.md (what was built + issues encountered) to sda-scribe.

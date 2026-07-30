@@ -70,6 +70,7 @@ Status prefixes:
 
 ### Unit 1 — {unit name}
 **Type:** tests required
+**Area:** {area name}
 **Language:** {langs — union of the per-file annotations}
 **Source:** 
 - `{path-1}` ({langs})
@@ -157,6 +158,7 @@ Algorithm:
 
 ### Unit 2 — {unit name}
 **Type:** tests only
+**Area:** {area name}
 **Language:** {langs — union of the per-file annotations}
 **Source:** `{source-file-path}` ({langs})
 **Test:** `{test-file-path}` ({langs})
@@ -178,6 +180,7 @@ File: `{source-file-path}`
 
 ### Unit 3 — {unit name}
 **Type:** integration only
+**Area:** {area name}
 **Language:** {langs — union of the per-file annotations}
 **Source:** `{file-path}` ({langs})
 **Related tests:** `{existing-test-path-or-folder}` ({langs})   <!-- optional — existing tests that cover the changed code paths, run as a regression check. Omit the line entirely when none exist. -->
@@ -246,6 +249,7 @@ Algorithm:
 ### Units
 - Named after the **behaviour** they deliver (`Token refresh`, `Error responses`), not architectural tiers.
 - Annotated: **tests required**, **tests only**, or **integration only**.
+- **Area:** the project area the unit belongs to (e.g. `Backend`, `Frontend`, `Worker`), derived from the unit's file paths matched against the Area Index in `project-tools.md`. Multi-area units list comma-separated areas (e.g. `Backend, Frontend`). The Area field is mandatory — always present on every unit.
 - **Per-file language.** Annotate every Source/Test path with the programming language(s) it contains: `` `src/repo.py` (python, postgres) ``.
 - **Language:** header line = deduplicated **union** of the per-file annotations (e.g. `python, postgres`).
   - Fence tags on Changes / Test Context blocks must match the language of the code they contain.

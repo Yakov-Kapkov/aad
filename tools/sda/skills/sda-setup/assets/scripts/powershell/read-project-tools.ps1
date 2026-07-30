@@ -156,11 +156,21 @@ foreach ($lbl in @('precommit-all','precommit-staged')) {
     }
 }
 
-# Global: areas (Area Index listing — all area names and working directories)
+# Global: areas (Area Index listing — all area names, working directories, and per-area global capabilities)
 if ('areas' -in $requestedCmds) {
+    $capLabels = @('type-all','test-all','lint-all','build-all','precommit-all')
     foreach ($area in $areas) {
         $wd = if ($area.WorkDir -eq '') { './' } else { "$($area.WorkDir)/" }
         $out.Add("area.$($area.Name)=$wd")
+        $areaArr = $area.Lines.ToArray()
+        $caps = [System.Collections.Generic.List[string]]::new()
+        foreach ($lbl in $capLabels) {
+            $v = Get-CommandByLabel $areaArr $lbl
+            if ($v) { $caps.Add($lbl) }
+        }
+        if ($caps.Count -gt 0) {
+            $out.Add("area.$($area.Name).capabilities=$($caps -join ',')")
+        }
     }
 }
 

@@ -4,7 +4,7 @@ name: sda-dev
 description: "Use when: implementing code changes via TDD workflows (RED → GREEN → refactor), or executing quality checks. Orchestrates sda-test-writer and sda-coder subagents. Supports task mode (from task.md) and ad-hoc mode (direct requests)."
 argument-hint: Provide a task name, say "implement the current task", attach a task.md file, or describe what you want implemented.
 tools: ["read", "edit", "execute", "agent", "vscode/askQuestions", "AskUserQuestion", "ask_user"]
-agents: ["sda-code-explore", "sda-test-writer", "sda-coder", "sda-refactor", "sda-scribe"]
+agents: ["sda-code-explore", "sda-test-writer", "sda-coder", "sda-refactor", "sda-scribe", "sda-dev-quality"]
 model: Claude Sonnet 4.6
 hooks:
   SessionStart:
@@ -25,6 +25,7 @@ own bootstrapping, state tracking, unit routing, refactoring, and quality checks
 - `sda-coder` — writes implementation (GREEN phase) and integration units
 - `sda-refactor` — per-unit refactor (Phase 4·U) and cross-unit dedup (Phase 4·X)
 - `sda-scribe` — writes dev-report.md (Phase 6)
+- `sda-dev-quality` — runs per-area quality gates (Phase 5)
 
 ## HARD CONSTRAINTS — read before anything else
 
@@ -405,7 +406,8 @@ Context).
      Source paths, Related tests (the `**Related tests:**` line, when
      present), and Changes blocks (if present). No scenarios.
    In all cases, extract per-file language annotations (the
-   `**Language:**` line is their union).
+   `**Language:**` line is their union) and the per-unit area
+   (the `**Area:**` line).
 5. **Determine route** — see [Route table](#route-table).
 
 ### Ad-hoc input provider
@@ -431,6 +433,9 @@ Context).
    - **Source / Test files** — paths for production and test code.
    - **Per-file language** — annotate each Source/Test path with the
      language(s) it contains, inferred from the file type (no task.md in ad-hoc provider).
+   - **Area** — resolve via `{read-project-tools} -Folder {file-directory}` for each file;
+     the `working-dir=` key maps to the area. If all files map to the same
+     area → that area. If files span multiple areas → comma-separated list.
    - **Work type** — `tests required` (default), `tests only`, or
      `integration only`.
 3. **Determine route** — see [Route table](#route-table).
@@ -456,6 +461,7 @@ or:
 
 ## 🎯 Unit {N}: {name}    ← task provider: include {N}; ad-hoc: omit {N}
 **Type:** {type}
+**Area:** {area}
 **Language:** {languages}
 **Route:** {e.g. RED → GREEN → REFACTOR}
 {if type == integration only:}
@@ -741,134 +747,73 @@ Proceed to Phase 5.
 
 ## PHASE 5 — Quality Checks
 
-<title>🔍 **QUALITY** — _Running quality gates..._</title>
+<title>🔍 **QUALITY** — _Delegating quality gates..._</title>
+
+**STATE ANCHOR — re-read this every time you enter Phase 5:** You
+are delegating quality checks to `sda-dev-quality`. Your only job is
+to pass inputs, process flags, and route fixes. Do NOT run quality
+gates directly. Do NOT read source or test files. Delegate and wait.
+
+### Allowed actions in this phase
+
+- `agent` — delegate to `sda-dev-quality`, `sda-coder`, `sda-test-writer`
+- `execute` — run commands only for area discovery (if changed files lack area info)
 
 ### Control flow
 
-Run gates sequentially in order: L1 → L2 → L3 → L4 → G1 → G2 → G3 → G4 → G5, all silently. No per-gate output — output the Result table once at the end.
+1. **Gather inputs.** Collect all source + test files from all units processed this session (from RED/GREEN phase results). If a file's area is unknown, resolve it via `{read-project-tools} -Folder {file-directory}` (the `working-dir=` key maps to the area).
 
-For each gate:
-1. Run command → check pass condition → pass or fail.
-2. Any failure in a file changed by this task → fix; record fixed files alongside the task's changed files (for Phase 6 Files Changed and verification commands); **restart Phase 5 from L1**.
-3. Any failure in a file not changed by this task → pre-existing. Collect as `{file}: {detail}` for Phase 6 pre-existing issues. Continue to next gate (do not restart). Exception — G3 test failures in unchanged files: classify each against `{baseline-failures}`:
-   - Name present in `{baseline-failures}` → pre-existing; collect for Phase 6.
-   - Name absent → regression introduced by this task → fix (see [Regression fix](#regression-fix)); record fixed files; **restart Phase 5 from L1**.
-4. Gate marked N/A only when `{read-project-tools}` does not return the command label. For G1 — if `type-all` absent from `-Folder .`, call `{read-project-tools}` for each source file folder with `type-path`, concatenate all project source file paths, run `type-path` bare. If still absent, mark G1 ❌ (unable to verify).
-5. Do not analyse root causes or reason about regressions.
+2. **Invoke `sda-dev-quality` by name.** Pass:
 
-### Gates
+   ```
+   Changed files:
+   - {path}
+   ...
 
-Commands fetched via `{read-project-tools}`. **One call per unique folder** — for local gates use the source/test file folder; for global gates (G1–G4) use `-Folder .`. Reuse the result for all files in that folder.
+   Baseline failures:
+   {if any:} - {test-name}
+   {else:} (none — all tests pass)
 
-**Layer 1 — Local (changed files only)**
+   Coverage enabled: {true|false}
+   ```
 
-| # | Gate | Label | Pass condition | Command format |
-|---|---|---|---|---|
-| L1 | Types | `type-path` | Zero errors in changed files. N/A if not returned by script. | bare |
-| L2 | Lint | `lint-path` | Zero errors in changed files. N/A if not returned by script. | bare |
-| L3 | Tests | `test-path` | All green (changed test files only) | + filter-test-output |
-| L4 | Coverage | `test-path-coverage` | Exits 0. **Only skip when** `tests.coverage.enabled` is `false`. | + filter-tool |
+3. **When `sda-dev-quality` returns** — route by result:
+   - Any failure (`⚠️ UNRESOLVED`, `🛑 HARD STOP`) → apply [Failure handling & escalation](#failure-handling--escalation). Do NOT output the result block.
+   - Clean report with no flags → output the report verbatim as Phase 5 result. Proceed to Phase 6.
+   - Clean report with flags → process each flag (see below), then re-delegate to `sda-dev-quality`.
 
-**Layer 2 — Global (entire project)**
+### Flags processing
 
-| # | Gate | Label | Pass condition | Command format |
-|---|---|---|---|---|
-| G1 | Types | `type-all` | Zero type errors | bare |
-| G2 | Lint | `lint-all` | Zero errors/warnings. N/A if not returned by script. | bare |
-| G3 | Tests | `test-all` | All green. N/A if not returned by script. | bare |
-| G4 | Pre-merge | `precommit-all` | Zero errors. N/A if not returned by script. | bare |
-| G5 | Build | `build-all` | Exits 0 for all affected areas. N/A if not returned by script. | bare |
+For each flag from `sda-dev-quality`'s `### Flags` section:
 
-### Coverage details
+| Flag | Route |
+|---|---|
+| Coverage below threshold | **Ask user.** Present the coverage detail from the flag and: _Coverage below threshold in {Area} — what next?_\n  - `add-tests` — delegate to `sda-test-writer`, then re-delegate to `sda-dev-quality`\n  - `skip` — accept gap, proceed to next flag or Phase 6 |
+| Regression (test failure not in baseline) | If flagged test was written by this task → delegate to `sda-coder`. If flagged test is pre-existing → delegate to `sda-coder` with [regression fix inputs](#regression-fix). If unclear → delegate to `sda-coder` first. |
+| Build failure | Delegate to `sda-coder` with failure output from flag detail |
+| Type / Lint errors in changed files | Delegate to `sda-coder` with error output from flag detail |
 
-- Use the `test-path-coverage` value from the `{read-project-tools}` script call (same call as L3, with `test-path-coverage` added to `-Commands`).
-- Substitute the path placeholder with actual test file paths.
-- Substitute the coverage-target placeholder with one target per
-  new/modified source file, using the format shown in the command.
-- Do not add, remove, or modify any other arguments.
-- Filter output to new/modified files only — apply filter-tool.
-- Command fails (non-zero exit) → report output. **🛑 HARD STOP.**
-  Ask (title: _"Coverage"_):
-  > _Coverage check failed — what next?_
-  > - `add-tests` — write tests for uncovered lines, re-run gate L4
-  > - `skip` — accept gap, continue to next gate
-  > - `fail` — stop and report
-  **Resume `add-tests`:** delegate to `sda-test-writer`. Do NOT write tests directly.
-- Cannot measure → debug, report exact error.
-
-### Local type-check and lint details
-
-- **L1 (Types):** Call `{read-project-tools}` with the source file folder, use `type-path` value. Substitute all changed source file paths, space-separated. N/A if script does not return `type-path`.
-- **L2 (Lint):** Call `{read-project-tools}` with the source file folder, use `lint-path` value. Substitute all changed source + test file paths, space-separated. N/A if script does not return `lint-path`.
-- Both: bare — no output filter pipe.
-
-### Pre-merge details
-
-- **Primary:** Use `precommit-all` from `{read-project-tools}` (call with `-Folder .`).
-- **Fallback:** If no Pre-Commit Checks section exists, run commands
-  from the **CI/CD Pipeline** section in documented order.
-- N/A only when neither section provides runnable commands.
-- Run the command **bare** — no output filter pipe. Pre-merge, types,
-  and lint commands are not test commands; do not append
-  `Select-Object`, `tail`, or any filter.
-- Commands may auto-fix files (formatting, whitespace). Re-run once
-  automatically before reporting failure.
-
-### Build details
-
-- **Scope:** affected areas only. For each unique source-file folder already used for L1/L2 local gates, call `{read-project-tools}` with that folder and `-Commands build-all`.
-- **N/A** for any area whose script does not return `build-all`. Gate is N/A when all areas are N/A.
-- Run each returned command **bare** — no output filter pipe.
-- Exit non-zero → fix the build error before proceeding to Phase 6.
-
-### Full test suite details
-
-- Use the `test-all` value from `{read-project-tools}` (call with `-Folder .`) — bare, no flags, no filter pipe.
-- Runs the entire project test suite to detect new failures in code not directly modified by this task.
-- Classify failures against `{baseline-failures}` per step 3 of Control flow.
-- N/A only when the script does not return a `test-all` value.
+Max 3 quality-gate cycles total (original + 2 re-runs). After 3 cycles with unresolved flags → surface the last report verbatim and end the response.
 
 ### Regression fix
 
-Triggered when G3 reveals tests absent from `{baseline-failures}` that now fail.
+Triggered when `sda-dev-quality` flags a regression (test failure not in baseline).
 
-1. Identify the newly failing test file(s) from the G3 output.
-2. Construct the test command using `test-path` with the failing test file path(s) (+ filter-test-output).
-3. Invoke `sda-coder` by name. Use the **GREEN (make tests pass)** input format from
-   [Phase 3](#phase-3--green-delegate-implementation) with these overrides:
+1. Use the flagged test file path(s) and failure detail from the quality agent's report.
+2. Construct the test command using `test-path` with flagged test file paths (+ filter-test-output).
+3. Invoke `sda-coder` by name. Use the **GREEN (make tests pass)** input format from [Phase 3](#phase-3--green-delegate-implementation) with:
    - `Language`: infer from file extensions
    - `Source`: this task's changed source files
-   - `Test`: newly failing test files
-   - `Test command`: `test-path` with failing test file paths + filter-test-output
+   - `Test`: flagged test files
+   - `Test command`: `test-path` with flagged test files + filter-test-output
    - Omit `Validate-data commands` and `Changes`
    - Add: `Regression context: These tests passed before this task started. The source files listed above were modified by this task and likely caused the failures. Fix the source to restore the failing tests without reverting the task's intended changes.`
 4. Apply [Failure handling & escalation](#failure-handling--escalation) if `sda-coder` returns a failure.
-5. After a clean `sda-coder` result, record all files modified by `sda-coder` alongside the task's changed files (for Phase 6 Files Changed and verification commands); restart Phase 5 from L1.
+5. Record modified files alongside the task's changed files.
 
 <result>
-### Quality checks
-
-**Local (changed files)**
-| Gate | Result | Command |
-|---|---|---|
-| L1 Types | ✅/❌/N/A {detail} | `{command}` |
-| L2 Lint | ✅/❌/N/A {detail} | `{command}` |
-| L3 Tests | ✅/❌ {detail} | `{command}` |
-| L4 Coverage | ✅/❌/⏭️ {detail} | `{command}` |
-
-**Global (full project)**
-| Gate | Result | Command |
-|---|---|---|
-| G1 Types | ✅/❌ {detail} | `{command}` |
-| G2 Lint | ✅/❌/N/A {detail} | `{command}` |
-| G3 Tests | ✅/❌/N/A {detail} | `{command}` |
-| G4 Pre-merge | ✅/❌/N/A {detail} | `{command}` |
-| G5 Build | ✅/❌/N/A {detail} | `{command}` |
-
-{coverage breakdown: - file.py — {N}% ✅/❌ — only when gate L4 has findings}
+{output sda-dev-quality's report verbatim — Quality gates tables, Verification commands, and any pre-existing issues noted under Flags}
 </result>
-
-Proceed to Phase 6.
 
 ## PHASE 6 — Finalize
 
@@ -882,10 +827,9 @@ Proceed to Phase 6.
 2. **Self-check (both providers):** Confirm that per-unit refactoring
    (Phase 4·U) ran for every unit, and that cross-unit dedup
    (Phase 4·X) ran when `{multi-unit}` is true. Report pass/fail.
-3. **Collect verification commands** — emit one `#### {Layer}` block per
-   layer (Local then Global), each containing the Phase 5 commands in gate
-   order. Precede each command with a `# {label}` line (`types`, `lint`,
-   `tests`, `coverage`, `pre-merge`, `build`). Omit N/A or skipped gates.
+3. **Collect verification commands** — from `sda-dev-quality`'s report.
+   The quality agent's output (`### Verification commands`) contains
+   per-area commands in gate order. Reference those — do not re-derive.
 4. **Dev report (when `{dev-report}`).** Delegate to `sda-scribe` by name
    (Mode 3 — Dev Report), passing the task folder path and:
    - **Summary** — what the task was, what was done.
@@ -918,15 +862,7 @@ Proceed to Phase 6.
 ✅/❌/⚠️ per gate
 
 ### Verification commands
-#### {Layer}
-```
-# {label1}
-{command1}
-# {label2}
-{command2}
-...
-```
-_(One block per layer — Local then Global. Omit N/A or skipped gates.)_
+{from sda-dev-quality's report — per-area, Local then Global}
 
 Dev report: {dev-report.md link}
 
