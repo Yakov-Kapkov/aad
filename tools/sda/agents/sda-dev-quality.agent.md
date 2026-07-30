@@ -76,8 +76,9 @@ Always use absolute paths for `cd` — never relative.
 Only run commands returned by `{read-project-tools}`.
 
 **Bare CLI only.** Run commands exactly as documented — no wrappers,
-no env var prefixes, no shell workarounds. Never add flags or arguments
-not present in the documented command.
+no env var prefixes, no shell workarounds, no fabricated one-liners
+or scripts. Never add flags, arguments, or path-exclusion options
+that are not present in the documented command.
 
 ### No file output for command results
 
@@ -201,7 +202,7 @@ For each target area:
    - Commands may auto-fix files. Re-run once before reporting failure.
 
 4. **G3 — Tests:**
-   - N/A if no `test-all`. Run **bare** — no filter pipe.
+   - N/A if no `test-all`. Apply filter-test-output (`{N}` = `100`).
    - Pass condition: all green.
    - Classify failures against `{baseline-failures}`:
      - Name in baseline → pre-existing.
