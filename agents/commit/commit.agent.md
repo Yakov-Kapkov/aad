@@ -115,16 +115,29 @@ wins. Default: git. None found → print error, stop.
 diff. Base change detection (which files and lines changed) on this
 output only. SESSION_CONTEXT (if set) informs the *why* — not the *what*.
 
+**Action 2.5 — Read project documentation.** Before classifying changes,
+read the project's architecture and component documentation to learn
+how the codebase is organized into named features, components, services,
+or modules. Read both human-facing docs (e.g. `README.md`, `CONTRIBUTING.md`)
+and AI-facing docs (e.g. `AGENTS.md`, `CLAUDE.md`). Start at the repo
+root, then for each directory containing changed files, walk up to find
+the nearest `AGENTS.md` or `README.md` — subdirectory docs often define
+component names more precisely than root docs. The goal is to build a
+mental map: what are the project's top-level components, what are their
+sub-components, and what names does the project use for them. This takes
+one or two read calls — do not deep-traverse the entire repo.
+
 **Action 3 — Identify functional concern(s).** Determine *what
-functionality* each change serves by reading the diff content — the
-symbols, identifiers, API routes, types, and behavior being modified.
-Do not rely on folder structure; repository layout is often misleading
-(e.g. files under `server/src/api/v1/` may implement the *reports*
-API). Treat folder names as a weak hint only, never as the answer. When
-the domain is unclear, scan surrounding repository code to learn which
-feature, component, or tool the changed symbols belong to. Group the
-changes by the functionality they serve (e.g. `reports-api`, `auth`, an
-AI-agent tool, deployment).
+functionality* each change serves. Use the diff content (symbols,
+identifiers, types, behavior) as the primary signal. Use folder names
+only as a weak hint — repository layout is often misleading (e.g.
+files under `server/src/api/v1/` may implement the *reports* API).
+Cross-reference with the project documentation from Action 2.5 to
+find the correct component or feature name. Prefer the most specific
+name available: if the docs define both a parent area and a named
+sub-component that matches the changed code, use the sub-component
+name. Group the changes by the functionality they serve (e.g.
+`reports-api`, `auth`, `sda-dev-quality`).
 
 **Action 4 — Plan commits.** Decide automatically, without asking:
 - One concern → plan a single commit.
@@ -173,15 +186,16 @@ Format:
 | `revert` | Reverting a previous commit |
 
 **Typing rules:**
-- `.agent.md`, `SKILL.md`, `.prompt.md`, `.instructions.md`,
-  `AGENTS.md` define behavior — not docs. **Always** use
-  `feat`/`fix`/`refactor` for these files — never `docs`.
-- **scope**: derive from the **functional concern** identified in
-  Phase 3 Action 3 — the feature, component, or domain the change serves
-  (e.g. `reports-api`, `auth`, `sda`), not the folder it lives in. Use a
-  folder name only when it matches the functionality. Never use a file
-  name as scope. Omit scope when the change is broad or the concern has
-  no short name.
+- `docs` is for informational documentation only: README, API docs,
+  guides, tutorials. Files that define behavior, rules, instructions,
+  or configuration — regardless of extension — are not docs. Use
+  `feat`/`fix`/`refactor` for them instead.
+- **scope**: use the **functional concern** name identified in
+  Phase 3 Action 3 — the most specific component or feature the change
+  serves (e.g. `reports-api`, `auth`, `sda-dev-quality`). Do not use
+  the parent folder when a more specific sub-component name exists in
+  the project documentation. Omit scope when the change is broad or the
+  concern has no short name.
 - **`!`**: append before `:` for breaking changes.
 - **summary**: imperative mood, lowercase, ≤72 chars.
 - **body**: explain _why_, not _what_. If SESSION_CONTEXT is set, use
