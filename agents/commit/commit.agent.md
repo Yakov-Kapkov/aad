@@ -133,11 +133,14 @@ identifiers, types, behavior) as the primary signal. Use folder names
 only as a weak hint — repository layout is often misleading (e.g.
 files under `server/src/api/v1/` may implement the *reports* API).
 Cross-reference with the project documentation from Action 2.5 to
-find the correct component or feature name. Prefer the most specific
-name available: if the docs define both a parent area and a named
-sub-component that matches the changed code, use the sub-component
-name. Group the changes by the functionality they serve (e.g.
-`reports-api`, `auth`, `sda-dev-quality`).
+find the correct component name. A component is a named unit with its
+own documentation identity — it has its own AGENTS.md or README.md, or
+is listed as a named entry in a parent component table (e.g. root
+README). Files, topics, and practice concerns within a component are
+NOT components; use the enclosing component name for the scope. Their
+specific names belong in the summary or body. Prefer the most specific
+component that has its own documentation identity. Group the changes by
+component (e.g. `reports-api`, `auth`, `sda-dev-quality`).
 
 **Action 4 — Plan commits.** Decide automatically, without asking:
 - One concern → plan a single commit.
@@ -190,12 +193,11 @@ Format:
   guides, tutorials. Files that define behavior, rules, instructions,
   or configuration — regardless of extension — are not docs. Use
   `feat`/`fix`/`refactor` for them instead.
-- **scope**: use the **functional concern** name identified in
-  Phase 3 Action 3 — the most specific component or feature the change
-  serves (e.g. `reports-api`, `auth`, `sda-dev-quality`). Do not use
-  the parent folder when a more specific sub-component name exists in
-  the project documentation. Omit scope when the change is broad or the
-  concern has no short name.
+- **scope**: use the component name identified in Phase 3 Action 3
+  (e.g. `reports-api`, `auth`, `sda-dev-quality`). Never use a file
+  name, topic name, or practice concern name as the scope — those
+  belong in the summary or body. Omit scope when the change spans
+  multiple components or no component name is available.
 - **`!`**: append before `:` for breaking changes.
 - **summary**: imperative mood, lowercase, ≤72 chars.
 - **body**: explain _why_, not _what_. If SESSION_CONTEXT is set, use
