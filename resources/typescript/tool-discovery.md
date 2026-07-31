@@ -17,6 +17,7 @@
    - Check `package.json` `devDependencies` for `typescript`; check `scripts` for `tsc`, `type-check`, `typecheck`
    - Report findings: "Found tsconfig.json → strict mode enabled, target ES2022"
    - **If NOT found:** Flag as MISSING REQUIRED TOOL
+   - **Command generation:** `tsc --noEmit` does not support folder-scoped checking — it always type-checks the entire project per `tsconfig.json`. Generate `type-path` identical to `type-all` (no path argument in either variant).
 
 4. **Linter detection (OPTIONAL):**
    - Scan: `.eslintrc`, `.eslintrc.js`, `.eslintrc.json`, `eslint.config.js`, `eslint.config.ts` for ESLint
