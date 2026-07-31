@@ -39,7 +39,7 @@ Rules:
 ## Adding a new practice rule
 
 1. Create `practices/{area}/{concern}.md` following the format above.
-2. Add a row to `practices/{area}/index.md` — include a narrow "When to Apply" trigger.
+2. Add a row to `practices/{area}/index.md` — describe the scope where this practice applies (the "When to Apply" column is a scope, not a narrow change trigger).
 3. If the concern introduces new keywords, update the Keywords column in `practices/index.md`.
 4. If this adds a new concern category, update the Topic Areas table in `README.md`.
 
