@@ -567,7 +567,8 @@ Run the `get-timestamp` script and use the returned value verbatim for the
 - **Read `.sda/resources/toolscan/project-tools-schema.md`** before composing (if not already read this session). The schema is the authoritative section list and order — do not rely on any list in this agent.
 - Render every section the schema defines, in schema order.
 - **Output Filter Command is always written** — it has no detection step. Derive the filter label from the shell detected in PHASE 2:
-  - `filter-last-n`: PowerShell → `Select-Object -Last` | bash/zsh → `tail -n`
+  - `filter-last-n`: PowerShell → `Select-Object -Last` (no `2>&1` — pipe stdout only) | bash/zsh → `tail -n` (include ` 2>&1` before pipe)
+  - `{stderr-redirect}` placeholder: PowerShell → (empty) | bash/zsh → ` 2>&1`
 - Write using the **`create_file` tool** (or equivalent full-overwrite tool) — this replaces the entire file in one operation.
 - **Never use an `edit` / insert / patch tool** — those append or modify lines and will corrupt the existing file rather than replace it.
 - Use a direct path — gitignored folder won't resolve via search tools.

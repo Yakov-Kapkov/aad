@@ -187,7 +187,9 @@ symbols in the pattern.
   relative to `working-dir`).
 - Compose `filter-test-output` from the mapping above using the area's
   Language, with `{N}` = `100`. Append to `test-path`:
-  `` {test-path} 2>&1 | {composed-filter} ``
+  `` {test-path} 2>&1 | {composed-filter} `` (bash/zsh)
+  `` {test-path} | {composed-filter} `` (PowerShell — `2>&1` causes
+  spurious exit code 1 when libraries log stderr warnings)
 - Pass `Working directory: {working-dir}` alongside. Never omit the filter.
 - No coverage or report flags — Phase 5 coverage uses `test-path-coverage` separately.
 - **Integration-only:** substitute `{path}` with `Related tests` paths. Omit

@@ -222,10 +222,11 @@ Defines the structure and content rules for `project-tools.md` — the machine-r
 
 ```{shell}
 # filter-last-n (keep last N lines of output — N is supplied by the caller)
-<command> 2>&1 | {last-n-lines-tool} {N}
+<command>{stderr-redirect} | {last-n-lines-tool} {N}
 ```
 
 <!-- <command>: placeholder — substitute the actual command being filtered -->
+<!-- {stderr-redirect}: PowerShell → (empty — omit; `2>&1` causes spurious exit code 1 when libraries log stderr) | bash/zsh → ` 2>&1` -->
 <!-- {last-n-lines-tool}: PowerShell → `Select-Object -Last` | bash/zsh → `tail -n` -->
 
 ---
