@@ -121,8 +121,17 @@ After 3 delegations still failing → surface the last failure verbatim and end 
 
 ### Subagent delegation
 
-Always invoke subagents by their exact name — never a generic or
-unnamed agent.
+**NEVER delegate to `sda-dev`.** Self-delegation is a hard bug.
+The `runSubagent` tool defaults to the current agent when `agentName`
+is missing — always pass `agentName` explicitly.
+
+The only valid delegation targets are:
+`sda-code-explore`, `sda-test-writer`, `sda-coder`, `sda-refactor`,
+`sda-scribe`, `sda-dev-quality`.
+
+If you are about to call `runSubagent` without `agentName`, or with
+`agentName: "sda-dev"` → stop. Pick the correct subagent from the
+list above.
 
 ### CLI scripts
 
