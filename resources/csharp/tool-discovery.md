@@ -68,11 +68,11 @@ Detected Tools:
 Suggested Commands:
   Test execution:
     # test-all
-    dotnet test
+    dotnet test --verbosity quiet
     # test-path  (no coverage; --filter accepts class name or namespace)
-    dotnet test --filter "FullyQualifiedName~MyClassTests" --no-build
+    dotnet test --verbosity quiet --filter "FullyQualifiedName~MyClassTests" --no-build
     # test-path-coverage  (accepts class name or namespace; threshold from config)
-    dotnet test --filter "FullyQualifiedName~MyClassTests" --collect:"XPlat Code Coverage" --no-build
+    dotnet test --verbosity quiet --filter "FullyQualifiedName~MyClassTests" --collect:"XPlat Code Coverage" --no-build
 
   ⚠️  --filter format:
       `--filter` matches against test metadata, NOT file paths.

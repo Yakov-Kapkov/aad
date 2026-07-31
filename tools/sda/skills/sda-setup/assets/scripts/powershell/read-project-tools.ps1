@@ -1,6 +1,6 @@
 param(
     [Parameter(Mandatory=$true)][string]$Folder,
-    [string]$Commands = 'test-path,type-path,format-code-path,filter-tool,filter-test-output,validate'
+    [string]$Commands = 'test-path,type-path,format-code-path,filter-tool,validate'
 )
 
 $ErrorActionPreference = 'Stop'
@@ -132,12 +132,6 @@ if ('shell' -in $requestedCmds) {
 if ('filter-tool' -in $requestedCmds) {
     $v = Get-CommandByLabel $allArr 'filter-last-n'
     if ($v) { $out.Add("filter-tool=$v") }
-}
-
-# Global: filter-test-output
-if ('filter-test-output' -in $requestedCmds) {
-    $v = Get-CommandByLabel $allArr 'filter-test-output'
-    if ($v) { $out.Add("filter-test-output=$v") }
 }
 
 # Global: validate-*-path labels

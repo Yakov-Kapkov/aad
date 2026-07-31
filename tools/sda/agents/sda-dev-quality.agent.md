@@ -92,9 +92,22 @@ Never add flags, arguments, or path-exclusion options that are not
 present in the documented command.
 
 **Cap noisy output.** Any command that may produce more than ~100 lines
-must use `filter-tool` (`{N}` = `10`). For `filter-test-output`, use
-`{N}` = `20`. Skip the filter only for commands that are inherently
+must use `filter-tool` (`{N}` = `10`). Skip the filter only for commands that are inherently
 concise (type-checking).
+
+**Filter-test-output — composed at runtime.** Do NOT request
+`filter-test-output` from `{read-project-tools}`. Compose it per area
+from the Language→regex mapping below, using the area's Language from
+the `project-tools.md` Area Index.
+
+#### Language → test-output regex mapping
+
+Construct a regex that extracts test result lines and summary from the
+area's test framework output — failure/pass indicators plus summary count
+lines. Join pieces with `|`. Cap output with the last {N} lines (shell-
+appropriate syntax). Never include bare `failed` or `passed` — those
+match log/warning lines. Use shell-appropriate escaping for any Unicode
+symbols in the pattern.
 
 **Escalate on failure — re-run with expanded `{N}`.** The small `{N}`
 above keeps passing runs clean but may trim error details on failure.
@@ -176,8 +189,8 @@ Baseline failures are only needed for G3 regression classification.
 
 1. Store baseline failures from input as `{baseline-failures}`.
 2. **If no baseline provided:**
-   - For each target area, call `{read-project-tools} -Folder {workdir} -Commands "test-all,filter-test-output"`.
-   - Run `test-all` with filter-test-output (`{N}` = `20`).
+   - For each target area, call `{read-project-tools} -Folder {workdir} -Commands "test-all,filter-last-n"`.
+   - Compose `filter-test-output` from the [Language→regex mapping](#language--test-output-regex-mapping) using the area's Language with `{N}` = `20`, append to `test-all`, and run.
    - Merge all failing test names into `{baseline-failures}`.
    - Fully passing → `{baseline-failures}` = `[]`.
 
@@ -190,8 +203,8 @@ immediately (e.g., `L1 Types: ✅`). Accumulate all results for the
 final report in Phase 6.
 
 1. **Fetch commands** — call `{read-project-tools} -Folder {workdir}` with:
-   `-Commands "type-path,lint-path,test-path,test-path-coverage,format-code-path,filter-test-output,filter-tool"`
-   Omit `lint-path` / `type-path` / `test-path-coverage` / `format-code-path` / `filter-tool` / `filter-test-output` when absent.
+   `-Commands "type-path,lint-path,test-path,test-path-coverage,format-code-path,filter-tool"`
+   Omit `lint-path` / `type-path` / `test-path-coverage` / `format-code-path` / `filter-tool` when absent.
 
 2. **L1 — Types:**
    - N/A if no `type-path`. If absent, try `type-all` on the area's working directory. If both absent → N/A.
@@ -205,7 +218,7 @@ final report in Phase 6.
 
 4. **L3 — Tests:**
    - N/A if no `test-path`.
-   - Fill `{path}` with area's target Test file paths. Apply filter-test-output (`{N}` = `20`).
+   - Fill `{path}` with area's target Test file paths. Compose `filter-test-output` from the [Language→regex mapping](#language--test-output-regex-mapping) using the area's Language with `{N}` = `20`, append to `test-path`, and run.
    - Pass condition: all green.
 
 5. **L4 — Coverage:**
@@ -222,7 +235,7 @@ immediately (e.g., `G1 Types: ✅`). Accumulate all results for the
 final report in Phase 6.
 
 1. **Fetch commands** — call `{read-project-tools} -Folder {workdir}` with:
-   `-Commands "type-all,lint-all,test-all,build-all,precommit-all,filter-test-output,filter-tool"`
+   `-Commands "type-all,lint-all,test-all,build-all,precommit-all,filter-tool"`
    Also fetch `precommit-all` from `-Folder .` (project-global).
 
 2. **G1 — Types:**
@@ -237,7 +250,7 @@ final report in Phase 6.
    - Commands may auto-fix files. Re-run once before reporting failure.
 
 4. **G3 — Tests:**
-   - N/A if no `test-all`. Apply filter-test-output (`{N}` = `20`).
+   - N/A if no `test-all`. Compose `filter-test-output` from the [Language→regex mapping](#language--test-output-regex-mapping) using the area's Language with `{N}` = `20`, append to `test-all`, and run.
    - Pass condition: all green.
    - Classify failures against `{baseline-failures}`:
      - Name in baseline → pre-existing.

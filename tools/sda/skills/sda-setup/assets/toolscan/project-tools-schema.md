@@ -217,20 +217,16 @@ Defines the structure and content rules for `project-tools.md` — the machine-r
 
 <!-- Two filter labels are consumed by SDA agents:
      filter-last-n  — caps output length (used for test-all baseline).
-     filter-test-output — extracts test result lines and summary (used for targeted test-path runs). -->
+     filter-test-output — composed at runtime by sda-dev/sda-dev-quality
+     per area from Language→regex mapping; not stored in project-tools.md. -->
 
 ```{shell}
 # filter-last-n (keep last N lines of output — N is supplied by the caller)
 <command> 2>&1 | {last-n-lines-tool} {N}
-
-# filter-test-output (extract test result lines and summary — N is supplied by the caller)
-<command> 2>&1 | {test-lines-filter} | {first-n-lines-tool} {N}
 ```
 
 <!-- <command>: placeholder — substitute the actual command being filtered -->
 <!-- {last-n-lines-tool}: PowerShell → `Select-Object -Last` | bash/zsh → `tail -n` -->
-<!-- {test-lines-filter}: PowerShell → `Select-String -Pattern "✓|×|✕| FAIL | PASS |failed|passed|Test Files|Tests\s" | ForEach-Object { $_.Line }` | bash/zsh → `grep -E "✓|×|✕| FAIL | PASS |failed|passed|Test Files|Tests "` -->
-<!-- {first-n-lines-tool}: PowerShell → `Select-Object -First` | bash/zsh → `head -n` -->
 
 ---
 

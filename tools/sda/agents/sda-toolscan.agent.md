@@ -566,9 +566,8 @@ Run the `get-timestamp` script and use the returned value verbatim for the
 
 - **Read `.sda/resources/toolscan/project-tools-schema.md`** before composing (if not already read this session). The schema is the authoritative section list and order — do not rely on any list in this agent.
 - Render every section the schema defines, in schema order.
-- **Output Filter Command is always written** — it has no detection step. Derive both filter labels from the shell detected in PHASE 2:
+- **Output Filter Command is always written** — it has no detection step. Derive the filter label from the shell detected in PHASE 2:
   - `filter-last-n`: PowerShell → `Select-Object -Last` | bash/zsh → `tail -n`
-  - `filter-test-output`: PowerShell → `Select-String -Pattern "✓|×|✕| FAIL | PASS |failed|passed|Test Files|Tests\s" | ForEach-Object { $_.Line }` then `Select-Object -First` | bash/zsh → `grep -E "✓|×|✕| FAIL | PASS |failed|passed|Test Files|Tests "` then `head -n`
 - Write using the **`create_file` tool** (or equivalent full-overwrite tool) — this replaces the entire file in one operation.
 - **Never use an `edit` / insert / patch tool** — those append or modify lines and will corrupt the existing file rather than replace it.
 - Use a direct path — gitignored folder won't resolve via search tools.
@@ -650,6 +649,12 @@ If a tool doesn't support scoped execution, add:
   **Exception: `## Application Run` is exempt from this rule.** Servers, dev-servers,
   and workers are long-running by design — do NOT add single-run flags.
   See [4.5 — Application run commands](#45--application-run-commands).
+- **Output suppression.** Extract the test runner's `Hook command` from the
+  tool-catalog — it carries the framework's canonical invocation flags. Any
+  output-suppression flags defined there belong in every generated test
+  command (`test-all`, `test-path`, `test-path-coverage`). This suppresses
+  `console.log` / `stdout` noise from tests — only test result lines are
+  emitted, making the `filter-test-output` regex pipeline fully reliable.
 - **Intentional modifications are fine.** Lint-fix / format commands are expected
   to modify files — label them as fix/format variants.
 
@@ -751,8 +756,8 @@ replace them.
 flags are used, then construct direct invocation with:
 1. Ecosystem runner prefix
 2. Test runner binary
-3. Essential flags (transpiler registration, config path) — NOT file globs,
-   coverage wrappers, or CI flags
+3. Essential flags (transpiler registration, config path, output suppression
+   from the tool-catalog Hook command) — NOT file globs, coverage wrappers, or CI flags
 4. Placeholder for file/folder path
 
 **Self-check before writing** (if any answer is NO, rewrite):

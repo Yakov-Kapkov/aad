@@ -5,8 +5,8 @@ Priority 1 = recommended default; 2 = alternative. Read by `sda-setup` (Step 7) 
 
 | Category | Tool | Priority | Install command | Hook command | Init command | Check command | Description |
 |---|---|---|---|---|---|---|---|
-| Test runner | vitest | 1 | `npm install -D vitest` | `npx vitest run` | | `npx vitest --version` | Modern Vite-native test runner; fast and ESM-first |
-| Test runner | jest | 2 | `npm install -D jest @types/jest ts-jest` | `npx jest --passWithNoTests` | `(interactive) npx jest --init` | `npx jest --version` | Widely adopted test runner with rich ecosystem |
+| Test runner | vitest | 1 | `npm install -D vitest` | `npx vitest run --silent` | | `npx vitest --version` | Modern Vite-native test runner; fast and ESM-first |
+| Test runner | jest | 2 | `npm install -D jest @types/jest ts-jest` | `npx jest --passWithNoTests --silent` | `(interactive) npx jest --init` | `npx jest --version` | Widely adopted test runner with rich ecosystem |
 | Type checker | typescript | 1 | `npm install -D typescript` | `npx tsc --noEmit` | `npx tsc --init` | `npx tsc --version` | Microsoft's type checker and transpiler for TypeScript |
 | Linter | eslint | 1 | `npm install -D eslint` | `npx eslint .` | `(interactive) npm init @eslint/config@latest` | `npx eslint --version` | Pluggable linter for JavaScript and TypeScript |
 | Linter | biome | 2 | `npm install -D @biomejs/biome` | `npx @biomejs/biome check .` | `npx @biomejs/biome init` | `npx @biomejs/biome --version` | Fast Rust-based linter and formatter; replaces eslint + prettier |

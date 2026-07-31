@@ -81,9 +81,9 @@ Suggested Commands:
     # test-all (script alias — verified non-interactive with --run)
     npm test -- --run
     # test-path  (no coverage; accepts file or folder path — direct invocation)
-    npx vitest run src/module/module.test.ts
+    npx vitest run --silent src/module/module.test.ts
     # test-path-coverage  (accepts file or folder path; threshold from config — direct invocation)
-    npx vitest run --coverage src/module/module.test.ts
+    npx vitest run --silent --coverage src/module/module.test.ts
   
   Type checking:
     npx tsc --noEmit
