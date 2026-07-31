@@ -64,6 +64,10 @@ You receive:
      - No ❌ risks remain.
    - If `## Prerequisites` exists: every entry is a checkbox
      (`- [ ]` or `- [x]`). Flag plain bullets as malformed.
+   - If `## Design Approach` exists: each `### Unit N — {name}` subsection
+     (excluding `### Summary`) must match a unit heading in
+     `## Implementation Plan` by number and name. Skip if Design Approach
+     is absent (small tasks omit it).
    - Every unit's `**Type:**` field is exactly one of: `tests required`,
      `tests only`, or `integration only`. Flag any other value as invalid.
    - `tests required` units must have a `**Test:**` file. If `**Test:**`

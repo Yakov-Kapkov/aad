@@ -21,10 +21,15 @@
 - [ ] {service or tool} — {must be running/configured; how to verify}
 
 ## Design Approach
-{Omit for small, obvious changes. One subsection per unit when
-multiple units exist.}
+{Omit for small, obvious changes. Subsections must map 1:1 to
+Implementation Plan units using the same `Unit N — {name}` headings.
+Include `### Summary` for decisions that span multiple units.}
 
-### {Unit name}
+### Summary
+{Optional — overall design decisions and rationale that apply across
+all units. Omit when every decision fits neatly into a single unit.}
+
+### Unit 1 — {unit name}
 
 **Problem:** {1-2 sentences — what is wrong or missing today.}
 — OR —
@@ -36,7 +41,11 @@ or refactors where nothing is "wrong".}
 - {another action}
 
 **Details:** {optional — omit when the solution is self-explanatory}
-- {edge case handling, backward compat, concurrency note}
+- {edge case: what happens when the user submits twice?}
+- {backward compat: existing API consumers expect field X — preserve it}
+- {concurrency: two users editing simultaneously}
+Do NOT list file names, function names, type names, class names,
+import paths, or code snippets — those belong in the Implementation Plan.
 
 ## Source References
 {Omit if not based on external documents.}
@@ -220,11 +229,16 @@ Algorithm:
 - Do not add setup dependencies to `## Regression Risks`.
 
 ### Design Approach
-- Uses **Problem/Context → Solution → Details** structure per unit.
+- High-level explanation of the solution — the "what and why" a dev needs before reading the detailed Implementation Plan.
+- Subsections map 1:1 to Implementation Plan units: `### Unit N — {name}` (same name as the unit).
+- `### Summary` (optional) — overall decisions that span multiple units.
+- Per-unit content uses **Problem/Context → Solution → Details** structure.
 - **Problem:** for bug fixes and regressions (what is broken today).
 - **Context:** for new features and refactors (relevant current state).
 - **Solution:** bullet list — one decision per bullet, no justification prose.
-- **Details:** optional — edge cases, backward compat, concurrency notes.
+- **Details:** optional — edge cases, backward compat, concurrency notes. Conceptual only: describe what could go wrong, not which file or function handles it. No file/function/type/class names, no code snippets, no import paths — those belong in the Implementation Plan.
+- Keep per-unit descriptions proportional: trivial units (integration-only, renames) get 2-3 lines; complex units get full Problem/Context + Solution + Details.
+- Keep language non-technical — save implementation specifics (file paths, signatures, test details) for the Implementation Plan.
 
 ### Source References
 - Omit if task is not based on external documents.

@@ -653,8 +653,7 @@ build output), ask the user to run the command and share results.
    h. Plan integration test scenarios for each verified crossing
       (included in Implementation Plan).
 
-**Design Approach structure:** `### {Unit name}` with
-**Problem/Context → Solution → Details** per unit.
+**Design Approach structure:** High-level explanation of the solution — the "what and why" a dev needs before reading the detailed plan. `### Summary` (optional, cross-unit decisions) + `### Unit N — {name}` per unit (matching Implementation Plan unit names exactly). Per-unit: **Problem/Context → Solution → Details**. Keep it conceptual; save implementation specifics (file paths, function/type/class names, signatures, code snippets, test details) for the Implementation Plan.
 
 **Summary:** One-line restatement of the agreed approach.
 
