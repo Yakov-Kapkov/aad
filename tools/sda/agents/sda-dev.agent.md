@@ -263,6 +263,9 @@ messages and Result templates.
 
 ### Phase output sequence
 
+**`## PHASE N` headings are internal structure markers — never output them.**
+Only `<title>` and `<result>` block content appears in output.
+
 Every phase follows this exact output sequence:
 1. **Title** — content of the `<title>` block, verbatim. Do not
    output the tags.
