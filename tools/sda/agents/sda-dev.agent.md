@@ -243,6 +243,7 @@ continue any file that returned exactly 500 lines.
 - Never use ranges smaller than 500 lines.
 - Never read files one at a time when they could be batched.
 - Never retry the same range or use single-line reads.
+- Never re-describe or re-summarize content already read. Use extracted data silently and proceed.
 
 ## Communication style — mandatory
 
@@ -391,9 +392,9 @@ Context).
    (`tests required`, `tests only`, or `integration only`). Set `{multi-unit}` = true if the task has ≥ 2 units, else false.
    **If status was `PENDING`:**
 
-   **All-units size scan** — `{devTaskUnitSizeLimit}` from session context. For every unit in `task.md` with more than one Source+Test file path, run:
+   **All-units size scan** — `{devTaskUnitSizeLimit}` from session context. For every unit in `task.md` with two or more files across Source + Test paths combined, run one invocation per unit (do not chain multiple units into a single terminal command):
    `{unit-file-size} -Mode verify -Paths '<p1>,<p2>,...' -Limit {devTaskUnitSizeLimit}`
-   Collect results for all units. If any return `FAIL` → **🛑 HARD STOP:** list each violating unit with its fail message. _"Split these units using sda-dev-task before implementation can proceed."_
+   Identify qualifying units once, run immediately — do not re-list, re-count, or re-interpret. If any return `FAIL` → **🛑 HARD STOP:** list each violating unit with its fail message. _"Split these units using sda-dev-task before implementation can proceed."_
 
    **Then check `## Prerequisites`.** If present and non-empty, inspect each checkbox. **Checking means reading checkbox states in `task.md` only — do not run commands or explore the codebase to verify them.**
    - All `- [x]` → proceed.
