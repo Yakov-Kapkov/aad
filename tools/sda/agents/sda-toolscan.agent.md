@@ -566,10 +566,10 @@ Run the `get-timestamp` script and use the returned value verbatim for the
 
 - **Read `.sda/resources/toolscan/project-tools-schema.md`** before composing (if not already read this session). The schema is the authoritative section list and order — do not rely on any list in this agent.
 - Render every section the schema defines, in schema order.
-- **Output Filter Command is always written** — it has no detection step. Derive both filter labels from the shell detected in PHASE 2:
+- **Output Filter Command is always written** — it has no detection step. It holds only the shell-level machinery and `filter-last-n`, derived from the shell detected in PHASE 2:
   - `filter-last-n`: PowerShell → `Select-Object -Last` (no `2>&1` — pipe stdout only) | bash/zsh → `tail -n` (include ` 2>&1` before pipe)
-  - `filter-test-output`: read the `## Test output filter patterns` section from each loaded tool-discovery spec. Compose per detected test framework — select the row matching the framework, join pieces with `|`, wrap with `Select-String -Pattern "..." | ForEach-Object { $_.Line }` (PowerShell) or `grep -E "..."` (bash/zsh), then `Select-Object -Last` / `tail -n`. For multi-framework projects, union all matching rows.
   - `{stderr-redirect}` placeholder: PowerShell → (empty) | bash/zsh → ` 2>&1`
+- **`filter-test-output` is area-scoped, not global.** Emit one per area inside that area's `### Test Execution` block. Read the `## Test output filter patterns` section from the tool-discovery spec of that area's language. Compose per the area's detected test framework — select the row matching the framework, join pieces with `|`, wrap with `Select-String -Pattern "..." | ForEach-Object { $_.Line }` (PowerShell) or `grep -E "..."` (bash/zsh), then `Select-Object -Last` / `tail -n`. For multiple frameworks in one area, union that area's rows. Areas with no test framework emit `# filter-test-output` with `# _Not detected._`.
 - Write using the **`create_file` tool** (or equivalent full-overwrite tool) — this replaces the entire file in one operation.
 - **Never use an `edit` / insert / patch tool** — those append or modify lines and will corrupt the existing file rather than replace it.
 - Use a direct path — gitignored folder won't resolve via search tools.
@@ -849,4 +849,5 @@ Before reporting complete, verify all items:
 | AC-10 | Every standalone tool detected in Phase 4 had its runability verified (via the catalog's `Check command` or manifest-trust fallback when Check command is empty) before commands were written; any tool that failed with an unrecognised error was flagged in Phase 5 |
 | AC-11 | `### Application Run` section is present in each area block; each detected layer has `# app-run-start`, `# app-run-url`, and `# app-run-healthcheck` labels with their values; if no layer detected for that area, each label stub carries `# _Not detected._` |
 | AC-12 | `### Build` section is present in each area block; `# build-all` stub is populated with the detected command, or `# _Not detected._` when no build command is found |
+| AC-13 | Every area's `### Test Execution` carries `# filter-test-output`; absent test framework → `# _Not detected._` stub |
 

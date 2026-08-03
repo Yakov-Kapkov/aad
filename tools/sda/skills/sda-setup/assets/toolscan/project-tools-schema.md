@@ -86,7 +86,11 @@ Defines the structure and content rules for `project-tools.md` — the machine-r
      Project-level coverage injection: some runners embed coverage flags in project config,
      causing every invocation to trigger full-codebase coverage. When a discovery spec flags
      this pattern, scoped commands must include the language-appropriate override flags.
-     Full-suite commands inherit project config unchanged. -->
+     Full-suite commands inherit project config unchanged.
+     filter-test-output is area-scoped, not global — composed per area from that area's
+     language tool-discovery spec. Absent framework → `# _Not detected._` stub.
+     Shell wrapper placeholders (`{stderr-redirect}`, `{last-n-lines-tool}`, `{test-lines-filter}`)
+     are defined in the global `## Output Filter Command` section. -->
 
 ```{shell}
 # test-all (run entire test suite)
@@ -97,6 +101,9 @@ Defines the structure and content rules for `project-tools.md` — the machine-r
 
 # test-path-coverage (run specific file or folder with coverage, threshold from config)
 {command} path/to/test_file_or_folder {--cov-flags}
+
+# filter-test-output (extract test result lines and summary — N is supplied by the caller)
+<command> {stderr-redirect} | {test-lines-filter} | {last-n-lines-tool} {N}
 ```
 
 ---
@@ -210,31 +217,27 @@ Defines the structure and content rules for `project-tools.md` — the machine-r
 
 ## Output Filter Command
 
-<!-- Project-global. Command labels are machine-readable keys — do not rename them. -->
+<!-- Project-global. Holds the shell-level filter machinery only.
+     filter-last-n lives here — shell-global, no framework dependency.
+     Command labels are machine-readable keys —
+     do not rename them. -->
 
 **Detected shell:** {PowerShell | bash | zsh | other}
 **Command Separator:** {; (PowerShell) | && (bash/zsh)}
 
-<!-- Two filter labels are consumed by SDA agents:
-     filter-last-n  — caps output length (used for test-all baseline).
-     filter-test-output — extracts test result lines and summary (used for targeted test-path runs). -->
-
 ```{shell}
 # filter-last-n (keep last N lines of output — N is supplied by the caller)
 <command> {stderr-redirect} | {last-n-lines-tool} {N}
-
-# filter-test-output (extract test result lines and summary — N is supplied by the caller)
-<command> {stderr-redirect} | {test-lines-filter} | {last-n-lines-tool} {N}
 ```
 
 <!-- <command>: placeholder — substitute the actual command being filtered -->
 <!-- {stderr-redirect}: PowerShell → (empty — omit; `2>&1` causes spurious exit code 1 when libraries log stderr) | bash/zsh → ` 2>&1` -->
 <!-- {last-n-lines-tool}: PowerShell → `Select-Object -Last` | bash/zsh → `tail -n` -->
-<!-- {test-lines-filter}: composed per detected test framework by sda-toolscan —
-     from the `## Test output filter patterns` section in each language's tool-discovery spec.
+<!-- {test-lines-filter}: composed per area by sda-toolscan — from the `## Test output filter patterns`
+     section in that area's language tool-discovery spec.
      PowerShell: `Select-String -Pattern "..." | ForEach-Object { $_.Line }`
      bash/zsh:   `grep -E "..."`
-     For multi-framework projects, the agent unions the patterns. -->
+     For multiple frameworks in one area, union that area's patterns. -->
 
 ---
 

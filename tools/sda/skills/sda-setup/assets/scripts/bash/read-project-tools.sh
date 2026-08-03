@@ -31,6 +31,7 @@ AREA_COMMANDS = {
     'lint-path', 'lint-all',
     'format-code-path',
     'app-run-start', 'app-run-url', 'app-run-healthcheck',
+    'filter-test-output',
 }
 
 def normalize(p):
@@ -149,12 +150,6 @@ if 'filter-tool' in commands:
     v = get_command(all_lines, 'filter-last-n')
     if v:
         out.append(f"filter-tool={v}")
-
-# Global: filter-test-output
-if 'filter-test-output' in commands:
-    v = get_command(all_lines, 'filter-test-output')
-    if v:
-        out.append(f"filter-test-output={v}")
 
 # Global: validate-*-path labels
 if 'validate' in commands:

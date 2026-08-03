@@ -111,7 +111,8 @@ $areaCommands = @(
     'type-path','type-all',
     'lint-path','lint-all',
     'format-code-path',
-    'app-run-start','app-run-url','app-run-healthcheck'
+    'app-run-start','app-run-url','app-run-healthcheck',
+    'filter-test-output'
 )
 foreach ($cmd in $requestedCmds) {
     if ($cmd -in $areaCommands) {
@@ -132,12 +133,6 @@ if ('shell' -in $requestedCmds) {
 if ('filter-tool' -in $requestedCmds) {
     $v = Get-CommandByLabel $allArr 'filter-last-n'
     if ($v) { $out.Add("filter-tool=$v") }
-}
-
-# Global: filter-test-output
-if ('filter-test-output' -in $requestedCmds) {
-    $v = Get-CommandByLabel $allArr 'filter-test-output'
-    if ($v) { $out.Add("filter-test-output=$v") }
 }
 
 # Global: validate-*-path labels
