@@ -52,6 +52,17 @@
    - Scan `Makefile`, `.github/workflows/`, `scripts/` for a custom `build` target wrapping `dotnet build`; prefer the project script if found
    - Report findings: "Build: `dotnet build`"
 
+---
+
+## Test output filter patterns
+
+Pieces joined with `|`. PS uses `$([char]0x...)` for symbols; bash uses literal.
+sda-toolscan reads this to generate `filter-test-output` in `project-tools.md`.
+
+**dotnet test:** `^\s*[Ff]ail`, `^\s*[Pp]ass`, `Total:?\s+\d`
+
+---
+
 **Example output (for reference):**
 ```
 Repository Discovery Report

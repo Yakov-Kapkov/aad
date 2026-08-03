@@ -566,8 +566,9 @@ Run the `get-timestamp` script and use the returned value verbatim for the
 
 - **Read `.sda/resources/toolscan/project-tools-schema.md`** before composing (if not already read this session). The schema is the authoritative section list and order — do not rely on any list in this agent.
 - Render every section the schema defines, in schema order.
-- **Output Filter Command is always written** — it has no detection step. Derive the filter label from the shell detected in PHASE 2:
+- **Output Filter Command is always written** — it has no detection step. Derive both filter labels from the shell detected in PHASE 2:
   - `filter-last-n`: PowerShell → `Select-Object -Last` (no `2>&1` — pipe stdout only) | bash/zsh → `tail -n` (include ` 2>&1` before pipe)
+  - `filter-test-output`: read the `## Test output filter patterns` section from each loaded tool-discovery spec. Compose per detected test framework — select the row matching the framework, join pieces with `|`, wrap with `Select-String -Pattern "..." | ForEach-Object { $_.Line }` (PowerShell) or `grep -E "..."` (bash/zsh), then `Select-Object -Last` / `tail -n`. For multi-framework projects, union all matching rows.
   - `{stderr-redirect}` placeholder: PowerShell → (empty) | bash/zsh → ` 2>&1`
 - Write using the **`create_file` tool** (or equivalent full-overwrite tool) — this replaces the entire file in one operation.
 - **Never use an `edit` / insert / patch tool** — those append or modify lines and will corrupt the existing file rather than replace it.
@@ -656,6 +657,7 @@ If a tool doesn't support scoped execution, add:
   command (`test-all`, `test-path`, `test-path-coverage`). This suppresses
   `console.log` / `stdout` noise from tests — only test result lines are
   emitted, making the `filter-test-output` regex pipeline fully reliable.
+
 - **Intentional modifications are fine.** Lint-fix / format commands are expected
   to modify files — label them as fix/format variants.
 

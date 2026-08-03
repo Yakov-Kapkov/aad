@@ -69,6 +69,15 @@
 
 ---
 
+## Test output filter patterns
+
+Pieces joined with `|`. PS uses `$([char]0x...)` for symbols; bash uses literal.
+sda-toolscan reads this to generate `filter-test-output` in `project-tools.md`.
+
+**pytest:** `FAILED`, `PASSED`, `FAILURES`, `\d+\s+failed`, `\d+\s+passed`
+
+---
+
 **Command generation rules:**
 
 **Package manager runner (applies to ALL generated commands):** Use the runner prefix that matches the package manager detected in step 1. Every CLI command — test runners, type checkers, linters, formatters, and app-run start commands — must be prefixed:

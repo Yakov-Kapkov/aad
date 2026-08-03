@@ -52,6 +52,17 @@
    - Prefer Gradle wrapper when present — ensures the correct Gradle version is used
    - Report findings: "Build: `./gradlew build -x test`" or "Build: `mvn package -DskipTests`"
 
+---
+
+## Test output filter patterns
+
+Pieces joined with `|`. PS uses `$([char]0x...)` for symbols; bash uses literal.
+sda-toolscan reads this to generate `filter-test-output` in `project-tools.md`.
+
+**JUnit (mvn):** `Tests run:`, `BUILD`
+
+---
+
 **Example output (for reference):**
 ```
 Repository Discovery Report

@@ -63,6 +63,18 @@
    - Report findings: "Build: `npm run build` (vite)" or "Build: `npx tsc`"
    - **Never write** a watch-mode command (`tsc --watch`, `vite --watch`) as `# build-all`
 
+---
+
+## Test output filter patterns
+
+Pieces joined with `|`. PS uses `$([char]0x...)` for symbols; bash uses literal.
+sda-toolscan reads this to generate `filter-test-output` in `project-tools.md`.
+
+**vitest:** ✓, ×, ` FAIL `, `Tests:?\s+\d`, `Test\s+Files:?\s+\d`
+**jest:**   ✓, ✕, ` FAIL `, ` PASS `, `Tests:?\s+\d`, `Test\s+Suites:?\s+\d`
+
+---
+
 **Example output (for reference):**
 ```
 Repository Discovery Report

@@ -217,17 +217,24 @@ Defines the structure and content rules for `project-tools.md` — the machine-r
 
 <!-- Two filter labels are consumed by SDA agents:
      filter-last-n  — caps output length (used for test-all baseline).
-     filter-test-output — composed at runtime by sda-dev/sda-dev-quality
-     per area from Language→regex mapping; not stored in project-tools.md. -->
+     filter-test-output — extracts test result lines and summary (used for targeted test-path runs). -->
 
 ```{shell}
 # filter-last-n (keep last N lines of output — N is supplied by the caller)
-<command>{stderr-redirect} | {last-n-lines-tool} {N}
+<command> {stderr-redirect} | {last-n-lines-tool} {N}
+
+# filter-test-output (extract test result lines and summary — N is supplied by the caller)
+<command> {stderr-redirect} | {test-lines-filter} | {last-n-lines-tool} {N}
 ```
 
 <!-- <command>: placeholder — substitute the actual command being filtered -->
 <!-- {stderr-redirect}: PowerShell → (empty — omit; `2>&1` causes spurious exit code 1 when libraries log stderr) | bash/zsh → ` 2>&1` -->
 <!-- {last-n-lines-tool}: PowerShell → `Select-Object -Last` | bash/zsh → `tail -n` -->
+<!-- {test-lines-filter}: composed per detected test framework by sda-toolscan —
+     from the `## Test output filter patterns` section in each language's tool-discovery spec.
+     PowerShell: `Select-String -Pattern "..." | ForEach-Object { $_.Line }`
+     bash/zsh:   `grep -E "..."`
+     For multi-framework projects, the agent unions the patterns. -->
 
 ---
 

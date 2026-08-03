@@ -160,36 +160,17 @@ An absent key in `{read-project-tools}` output means the tool was not detected �
 Call `{read-project-tools}` with each unique file directory and the relevant
 `-Commands` list. Compose each command from the returned templates.
 
-**Filter-last-n:** fill `<command>` with the full command and `{N}` with `100`.
-Use for raw output capping on `test-all` baseline runs (Phase 1) and any
-command whose unfiltered output may exceed ~100 lines.
+**Filter-test-output:** fill `<command>` with the full command and `{N}` with `100`.
+Apply to `test-path` targeted runs (Phase 2 RED, Phase 5 L3) and `test-all`
+baseline runs (Phase 1).
 
 **Filter-tool:** fill `<command>` with the full command and `{N}` with `50`.
 Apply to Phase 5 L4 coverage output only.
 
-**Filter-test-output — composed at runtime.** Do NOT request
-`filter-test-output` from `{read-project-tools}`. Compose it per area
-from the Language→regex mapping below, using the area's Language from
-the `project-tools.md` Area Index.
-
-#### Language → test-output regex mapping
-
-Construct a regex that extracts test result lines and summary from the
-area's test framework output — failure/pass indicators plus summary count
-lines. Join pieces with `|`. Cap output with the last {N} lines (shell-
-appropriate syntax). Never include bare `failed` or `passed` — those
-match log/warning lines. Use shell-appropriate escaping for any Unicode
-symbols in the pattern.
-
 **Test command** — call with each unique test-file directory,
-`-Commands "test-path,type-path,format-code-path,validate"`:
+`-Commands "test-path,type-path,format-code-path,filter-test-output,validate"`:
 - Fill `{path}` in `test-path` with all test file paths (space-separated,
-  relative to `working-dir`).
-- Compose `filter-test-output` from the mapping above using the area's
-  Language, with `{N}` = `100`. Append to `test-path`:
-  `` {test-path} 2>&1 | {composed-filter} `` (bash/zsh)
-  `` {test-path} | {composed-filter} `` (PowerShell — `2>&1` causes
-  spurious exit code 1 when libraries log stderr warnings)
+  relative to `working-dir`); apply filter-test-output.
 - Pass `Working directory: {working-dir}` alongside. Never omit the filter.
 - No coverage or report flags — Phase 5 coverage uses `test-path-coverage` separately.
 - **Integration-only:** substitute `{path}` with `Related tests` paths. Omit
@@ -425,7 +406,12 @@ Context).
      Do not proceed.
 
    **Then capture test baseline.** Skip if `{baseline-failures}` is already set for this session.
-   Identify affected areas: for each unique parent directory of every Source and Test path in `task.md`, call `{read-project-tools} -Folder {dir} -Commands "test-all,filter-last-n"`. Group returned commands by `working-dir`. For each unique `working-dir`, compose `filter-test-output` from the [Language→regex mapping](#language--test-output-regex-mapping) using the area's Language with `{N}` = `100`, append to its `test-all` command, and run. Merge all failing test names into `{baseline-failures}`. A fully-passing result across all areas → set `{baseline-failures}` = `[]`.
+   Collect every area listed in `task.md`'s per-unit `**Area:**` annotations
+   (one `test-all` per unique area, not per file). For each unique area,
+   call `{read-project-tools} -Folder {area-workdir} -Commands "test-all,filter-test-output"`,
+   fill `{N}` = `100`, and run. Merge all failing test names into
+   `{baseline-failures}`. A fully-passing result across all areas → set
+   `{baseline-failures}` = `[]`.
 4. **Extract unit inputs** from `task.md`:
    - `tests required` / `tests only`: scenarios, Source/Test paths,
      Test Context, and Changes blocks (if present).
@@ -467,7 +453,12 @@ Context).
      `integration only`.
 3. **Determine route** — see [Route table](#route-table).
 
-4. **Capture test baseline.** Identify affected areas: for each unique parent directory of the Source and Test paths derived in step 2, call `{read-project-tools} -Folder {dir} -Commands "test-all,filter-last-n"`. Group returned commands by `working-dir`. For each unique `working-dir`, compose `filter-test-output` from the [Language→regex mapping](#language--test-output-regex-mapping) using the area's Language with `{N}` = `100`, append to its `test-all` command, and run. Merge all failing test names into `{baseline-failures}`. A fully-passing result across all areas → set `{baseline-failures}` = `[]`.
+4. **Capture test baseline.** Skip if `{baseline-failures}` is already set for this session.
+   Collect the unique areas from step 2 (one `test-all` per area, not per file).
+   For each unique area, call `{read-project-tools} -Folder {area-workdir} -Commands "test-all,filter-test-output"`,
+   fill `{N}` = `100`, and run. Merge all failing test names into
+   `{baseline-failures}`. A fully-passing result across all areas → set
+   `{baseline-failures}` = `[]`.
 
 ### Dispatch
 
@@ -541,7 +532,7 @@ wait.
    Language: {per-file annotations from the unit header — test-writer writes each test file in the language(s) annotated on its Test path}
    Source: {source file path(s)}
    Test: {test file path(s)}
-   Test command: {test-path with {path} filled and filter-test-output composed from Language→regex mapping applied — fully composed command}
+   Test command: {test-path with {path} filled and filter-test-output applied — fully composed command}
    Format-code command: {from read-project-tools script — omit if absent}
    Type-check command: {from read-project-tools script — omit if absent}
    Validate-data commands: {from read-project-tools script — omit if absent}
@@ -626,7 +617,7 @@ or changes from other units. Delegate and wait.
    Source: {source file path(s)}   ← integration only: current unit's target files ONLY — do not include files from other units
    Test: {test file path(s)}       ← GREEN only; omit for integration only
    Related tests: {the unit's `**Related tests:**` paths}   ← integration only; include only when the work unit has Related tests; omit for GREEN
-   Test command: {test-path with {path}=Related tests paths and filter-test-output composed from Language→regex mapping applied}   ← integration only; include only when Related tests are present; omit entirely when none listed
+   Test command: {test-path with {path}=Related tests paths and filter-test-output applied}   ← integration only; include only when Related tests are present; omit entirely when none listed
    Format-code command: {from read-project-tools script — omit if absent}
    Type-check command: {from read-project-tools script — omit if absent}
    Validate-data commands: {from read-project-tools script — omit if absent}
@@ -827,12 +818,12 @@ Max 3 quality-gate cycles total (original + 2 re-runs). After 3 cycles with unre
 Triggered when `sda-dev-quality` flags a regression (test failure not in baseline).
 
 1. Use the flagged test file path(s) and failure detail from the quality agent's report.
-2. Construct the test command using `test-path` with flagged test file paths, then compose `filter-test-output` from the [Language→regex mapping](#language--test-output-regex-mapping) and append.
+2. Construct the test command using `test-path` with flagged test file paths (+ filter-test-output).
 3. Invoke `sda-coder` by name. Use the **GREEN (make tests pass)** input format from [Phase 3](#phase-3--green-delegate-implementation) with:
    - `Language`: infer from file extensions
    - `Source`: this task's changed source files
    - `Test`: flagged test files
-   - `Test command`: `test-path` with flagged test files, filter-test-output composed from Language→regex mapping applied
+   - `Test command`: `test-path` with flagged test files + filter-test-output
    - Omit `Validate-data commands` and `Changes`
    - Add: `Regression context: These tests passed before this task started. The source files listed above were modified by this task and likely caused the failures. Fix the source to restore the failing tests without reverting the task's intended changes.`
 4. Apply [Failure handling & escalation](#failure-handling--escalation) if `sda-coder` returns a failure.
