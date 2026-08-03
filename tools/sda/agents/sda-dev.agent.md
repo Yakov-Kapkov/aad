@@ -773,12 +773,14 @@ Proceed to Phase 5.
 **STATE ANCHOR — re-read this every time you enter Phase 5:** You
 are delegating quality checks to `sda-dev-quality`. Your only job is
 to pass inputs, process flags, and route fixes. Do NOT run quality
-gates directly. Do NOT read source or test files. Delegate and wait.
+gates directly. Do NOT run commands to verify or second-guess the
+quality agent's findings — its report is authoritative. Do NOT read
+source or test files. Delegate and wait.
 
 ### Allowed actions in this phase
 
 - `agent` — delegate to `sda-dev-quality`, `sda-coder`, `sda-test-writer`
-- `execute` — run commands only for area discovery (if target files lack area info)
+- `execute` — `{read-project-tools}` for area discovery only, before delegation. Never run test, coverage, lint, type-check, or build commands — those are `sda-dev-quality`'s scope.
 
 ### Control flow
 
@@ -809,7 +811,7 @@ For each flag from `sda-dev-quality`'s `### Flags` section:
 
 | Flag | Route |
 |---|---|
-| Coverage below threshold | **Ask user.** Present the coverage detail from the flag and: _Coverage below threshold in {Area} — what next?_\n  - `add-tests` — delegate to `sda-test-writer`, then re-delegate to `sda-dev-quality`\n  - `skip` — accept gap, proceed to next flag or Phase 6 |
+| Coverage below threshold | **Ask user immediately.** Present the coverage detail from the flag verbatim. Do NOT run additional coverage commands, analyze whether the gap is a "subset artifact," or attempt to verify the quality agent's findings. Then: _Coverage below threshold in {Area} — what next?_\n  - `add-tests` — delegate to `sda-test-writer`, then re-delegate to `sda-dev-quality`\n  - `skip` — accept gap, proceed to next flag or Phase 6 |
 | Regression (test failure not in baseline) | If flagged test was written by this task → delegate to `sda-coder`. If flagged test is pre-existing → delegate to `sda-coder` with [regression fix inputs](#regression-fix). If unclear → delegate to `sda-coder` first. |
 | Build failure | Delegate to `sda-coder` with failure output from flag detail |
 | Type / Lint errors in target files | Delegate to `sda-coder` with error output from flag detail |
