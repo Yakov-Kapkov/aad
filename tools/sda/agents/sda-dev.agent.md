@@ -301,7 +301,6 @@ Subsequent messages in the same phase do not repeat it.
   - ❌ ~~_Updating state, proceeding to GREEN..._~~
   - ❌ ~~_Unit 1 complete. Continuing to Unit 2..._~~
 
-<!-- INTERNAL — DO NOT OUTPUT THIS HEADING -->
 ## PHASE 0 — Bootstrap
 
 <title>🖥️ **BOOTSTRAPPING**</title>
@@ -346,7 +345,6 @@ Subsequent messages in the same phase do not repeat it.
 
 Proceed to Phase 1.
 
-<!-- INTERNAL — DO NOT OUTPUT THIS HEADING -->
 ## PHASE 1 — Plan
 
 This phase resolves the work unit via the selected input provider. Follow the [Task input provider](#task-input-provider) or [Ad-hoc input provider](#ad-hoc-input-provider) sub-flow.
@@ -504,7 +502,6 @@ or:
 {/if}
 </result>
 
-<!-- INTERNAL — DO NOT OUTPUT THIS HEADING -->
 ## PHASE 2 — RED: Delegate test writing
 
 <title>
@@ -589,7 +586,6 @@ Proceed to Phase 3 (GREEN) immediately. For tests-only units, proceed to Phase 4
 {copy verbatim from subagent result}
 </result>
 
-<!-- INTERNAL — DO NOT OUTPUT THIS HEADING -->
 ## PHASE 3 — GREEN: Delegate implementation
 
 <title>
@@ -668,7 +664,6 @@ Proceed to Phase 4·U (per-unit refactor).
 {copy verbatim from subagent result}
 </result>
 
-<!-- INTERNAL — DO NOT OUTPUT THIS HEADING -->
 ## PHASE 4 — Refactoring
 
 Refactoring runs in two scopes:
@@ -773,7 +768,6 @@ None found.
 
 Proceed to Phase 5.
 
-<!-- INTERNAL — DO NOT OUTPUT THIS HEADING -->
 ## PHASE 5 — Quality Checks
 
 <title>🔍 **QUALITY** — _Delegating quality gates..._</title>
@@ -846,7 +840,6 @@ Triggered when `sda-dev-quality` flags a regression (test failure not in baselin
 {output sda-dev-quality's report verbatim — Quality gates tables, Verification commands, and any pre-existing issues noted under Flags}
 </result>
 
-<!-- INTERNAL — DO NOT OUTPUT THIS HEADING -->
 ## PHASE 6 — Finalize
 
 <title>✅ **DONE**</title>
