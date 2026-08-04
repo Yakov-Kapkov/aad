@@ -651,12 +651,12 @@ If a tool doesn't support scoped execution, add:
   **Exception: `## Application Run` is exempt from this rule.** Servers, dev-servers,
   and workers are long-running by design — do NOT add single-run flags.
   See [4.5 — Application run commands](#45--application-run-commands).
-- **Output suppression.** Extract the test runner's `Hook command` from the
-  tool-catalog — it carries the framework's canonical invocation flags. Any
-  output-suppression flags defined there belong in every generated test
-  command (`test-all`, `test-path`, `test-path-coverage`). This suppresses
-  `console.log` / `stdout` noise from tests — only test result lines are
-  emitted, making the `filter-test-output` regex pipeline fully reliable.
+- **Output suppression.** Read the test runner's `Hook command` from the
+  tool-catalog. Extract its silence flag — the flag that suppresses
+  non-result output (e.g. `--silent`, `-q`, `--quiet`). Append it to every
+  generated test command: `test-all`, `test-path`, `test-path-coverage`.
+  If `test-all` uses a script alias, pass the silence flag through the
+  script wrapper's argument separator.
 
 - **Intentional modifications are fine.** Lint-fix / format commands are expected
   to modify files — label them as fix/format variants.
