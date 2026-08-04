@@ -26,10 +26,13 @@ is the report's main value.
 - {scenario N — name} — {brief description, with steps where relevant}
 
 ## Issues Encountered
-{Problems hit during RED/GREEN: gate failures,
+{Problems hit during RED/GREEN/REFACTOR/QUALITY: gate failures,
 unresolved items, workarounds, deviations from task.md, assumptions made under
 uncertainty. Omit only if genuinely none.}
-- {issue} — {how it was resolved, or left open}
+1. {Unit or PHASE if the issues happenned after all units}.
+{issue}
+{how it was resolved, or left open}
+2. ...
 ```
 
 ---
