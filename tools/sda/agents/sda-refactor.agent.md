@@ -45,6 +45,18 @@ polymorphism or guard clauses, decompose complex expressions.
 - Readability and single responsibility over cleverness.
 - Match existing compliant conventions; never invent a new style.
 
+### Extraction placement
+
+When you extract any symbol (function, class, constant, type, etc.):
+
+1. **Decide scope** — is this symbol unique to the current feature/module,
+   or could other features/modules reuse it?
+2. **Feature-specific** → keep it local to the feature/module.
+3. **Cross-cutting** → place it in the project's shared/common/utils/lib
+   layer, following existing conventions for that layer.
+4. When unsure, prefer the shared location — it is easier to move a symbol
+   in than to discover duplication later.
+
 ### Scope modes
 
 The `Scope` field selects which sweeps run:
@@ -150,7 +162,8 @@ Bounds:
   rebuilds a fixture/client the test file already provides) is in range. The
   [Read scope](#read-scope) no-search rule still applies: act only on
   duplication visible in the files you were given — never search beyond them.
-- **Extraction target.** Keep the extracted item local to the file when it
+- **Extraction target.** Apply [Extraction placement](#extraction-placement).
+  Keep the extracted item local to the file when it
   belongs there; create or reuse a shared module (fixtures, constants,
   helpers) when the project's existing conventions place such items there.
   Follow existing conventions for placement.
