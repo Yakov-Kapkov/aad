@@ -1,7 +1,8 @@
 ---
 name: sda-dev-task-verifier
 description: "Runs consistency checks, regression analysis, and contract compliance on task.md. Returns structured report with findings and proposed solutions. Use when: verifying a task spec for correctness, checking regression risks, or validating task.md against the codebase and contract specifications."
-tools: ["read", "search", "execute"]
+tools: ["read", "search", "agent", "execute"]
+agents: ["sda-code-explore"]
 model: Claude Sonnet 4.6
 user-invocable: true
 hooks:
@@ -40,6 +41,27 @@ Access all files below by exact path from the repo root — never search for the
 You receive:
 1. **Task folder path** — where `task.md` and `state.json` exist.
 2. **Scope** — `full` (default: run all checks) or `regression-only`.
+
+---
+
+## Delegation
+
+For Checks 2 and 3, when the implementation plan references **>3 files**,
+delegate raw file-gathering to `sda-code-explore`. When ≤3 files, read
+directly.
+
+**Query format for `sda-code-explore`:**
+
+- **Check 2** — send the list of file paths. Ask for: current contents
+  (relevant sections only), existing function/class signatures, current
+  import directives.
+- **Check 3** — send the list of file paths. Ask for: consumers of each
+  file's exports (trace imports), existing test files covering each path,
+  pipeline entry points that process values from these files.
+
+After receiving results, apply verification judgment (mismatch detection,
+regression risk identification). `sda-code-explore` reports facts only —
+never ask it to judge.
 
 ---
 
@@ -96,7 +118,9 @@ You receive:
 ### 2. Structural Consistency (task.md against codebase)
 
 3. Collect every file path referenced in the implementation plan.
-4. For each referenced file, read it and verify:
+   If >3 files, delegate file-gathering to `sda-code-explore`
+   (see [Delegation](#delegation)). Otherwise, read files directly.
+4. For each referenced file, verify against gathered data:
    - **Structural:** path exists, function/class names match,
      signatures match.
    - **Import directives:** when the task says "add to existing import
@@ -114,7 +138,9 @@ You receive:
 
 ### 3. Regression Analysis
 
-5. For each file path in the implementation plan, trace data flow:
+5. For each file path, trace data flow. If >3 files, delegate
+   consumer/test discovery to `sda-code-explore`
+   (see [Delegation](#delegation)). Otherwise, trace directly:
    - What consumes the output of this code? (other modules, APIs,
      message queues, external systems)
    - What existing pipelines will process new types/values?

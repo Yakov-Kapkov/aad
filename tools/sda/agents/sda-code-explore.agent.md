@@ -1,6 +1,6 @@
 ---
 name: sda-code-explore
-description: "Fast codebase exploration subagent. Use when: sda-dev-task, sda-qa-task, or sda-dev needs to read source/test files, discover patterns, or gather context."
+description: "Fast codebase exploration subagent. Use when: sda-dev-task, sda-dev-task-verifier, sda-qa-task, or sda-dev needs to read source/test files, discover patterns, or gather context."
 tools: ["read", "search"]
 model: Claude Haiku 4.5
 user-invocable: false

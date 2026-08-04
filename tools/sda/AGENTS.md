@@ -111,6 +111,7 @@ sda-dev-task ─delegates─▸ sda-code-explore              task design pipeli
 sda-dev-task ─delegates─▸ sda-web-explore               task design pipeline (web/API research)
 sda-dev-task ─delegates─▸ sda-scribe                     task design pipeline (Phase 6: task.md + specs)
 sda-dev-task ─delegates─▸ sda-dev-task-verifier              task design pipeline (Phase 7 + contract compliance)
+sda-dev-task-verifier ─delegates─▸ sda-code-explore     file-gathering for structural + regression checks
 sda-dev-task ────handoff──▸ sda-dev                  design → implementation
 
 user ──▸ sda-qa-task                                      qa-task.md authoring (standalone / coupled)
@@ -156,6 +157,7 @@ sda-dev ─delegates─▸ sda-qa                      runtime acceptance QA (ta
 | `sda-qa-task` FR / read-list rules | `qa-task-schema.md` (authoritative FR rules), `sda-qa` (verifies the resulting FRs) | Designer applies the schema's black-box FR rules; sda-qa executes them |
 | `sda-qa-task` delegation format (Mode 4) | `sda-scribe` Mode 4 input contract | Scribe parses the exact QA Task fields sda-qa-task sends — precondition, reproduce, Settle, Expected data, expected outcome, compare, layers, Setup, Credentials |
 | `sda-dev-task-verifier` output format | `sda-dev-task` (processes results), `sda.dev.task-verify` prompt | Both depend on the report structure |
+| `sda-dev-task-verifier` delegation to `sda-code-explore` | `sda-code-explore` input contract | Verifier sends file lists for structural + regression fact-gathering; explorer returns raw findings |
 | Consistency/regression check rules | `sda-dev-task-verifier` | All verification logic lives in the verifier |
 | Contract spec file format or storage conventions | `sda-system` (defines policy in § 4, writes canonical specs via sda-scribe), `sda-feature` (identifies affected specs), `sda-dev-task` (designs content), `sda-scribe` (writes files), `sda-dev-task-verifier` (reads for verification) | All planning agents share spec conventions |
 | `feature.md` schema (in `sda-feature`) | `sda-dev-task` (reads feature context) | Task designer reads the feature spec |
