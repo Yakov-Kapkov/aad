@@ -33,6 +33,8 @@ Access all files below by exact path from the repo root — never search for the
 | design.md | `{design-root}/design.md` |
 | feature.md | `{features-root}/<NN>. <name>/feature.md` |
 
+**⛔ Never search, glob, or use `file_search` / `grep_search` to find any `.sda/` file.**
+
 ## Input Contract
 
 You receive:
