@@ -336,6 +336,12 @@ from `task.md` alone — they do not read `feature.md` or explore the
 codebase for design decisions. Gather enough context during Research
 so the writer can produce a complete document.
 
+**Intra-document references satisfy self-containment.** When multiple
+units follow the same mechanical pattern, define it fully in the first
+unit; subsequent units reference it by name and specify only deltas
+(different routes, schemas, constants). The implementer reads Unit 1
+for the full definition — no external file is needed.
+
 ### Coding standards compliance — mandatory
 All code in task.md — Changes blocks, Design Approach snippets,
 illustrative examples — must comply with all applicable coding standards.
@@ -785,6 +791,22 @@ the approved Design Approach, produce for each unit:
 - **Integration test units** for each boundary crossing identified
   during contract trace (type: `integration`). Scenarios assert
   contract compliance: correct fields, types, shapes, error handling.
+- **Pattern reuse across units.** When multiple units apply the same
+  transformation (same imports, same registration call, same handler
+  shape), define it completely in the first unit. Subsequent units
+  reference the pattern by name and list only differences (route,
+  Zod schema fields, constants). Never inline the same boilerplate
+  in every unit.
+- **Shared Test Context.** When test helpers (`createAuthContext`,
+  mock boundaries) repeat across units, define them once in the first
+  unit that uses them. Subsequent units reference them by name:
+  _"Same `createAuthContext` as Unit 1"_ — no redefinition.
+- **Prefer transformation description over full inlining** for
+  mechanical changes. Instead of a 40-line code block of the
+  resulting file, describe the transformation: _"Apply the Unit 1
+  `Endpoint.register` pattern — route is `'user/reward'`, handler
+  reads `context.user!.userId`, Zod schema has only `reason`."_
+  Inline full code only when the change is non-obvious or unique.
 
 **Step 3 — Write Acceptance Criteria.** One checkbox per criterion,
 each mapped to ≥1 scenario: `- [ ] {criterion} _(Unit N, scenarios X–Y)_`.
