@@ -30,6 +30,7 @@ AREA_COMMANDS = {
     'type-path', 'type-all',
     'lint-path', 'lint-all',
     'format-code-path',
+    'build-all',
     'app-run-start', 'app-run-url', 'app-run-healthcheck',
     'filter-test-output',
 }
