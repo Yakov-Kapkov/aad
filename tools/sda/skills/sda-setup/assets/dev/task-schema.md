@@ -331,3 +331,76 @@ Algorithm:
 - Every criterion maps to ≥1 scenario or integration step.
 - `tests required` / `tests only`: `- [ ] {criterion} _(Unit N, scenarios X–Y)_`
 - `integration only`: `- [ ] {criterion} _(Unit N, step N.M)_`
+
+### Scenarios test behaviour, never structure
+Assert **observable behaviour**, never that a symbol exists or has a shape
+(constant/type/field defined, importable, or signature-correct). Such checks
+are tautologies — they pass the moment the symbol is typed.
+
+Pure declarations (constants, types, enums, re-exports) are **`integration only`**
+(no tests). Test a constant only through the behaviour that consumes it
+(e.g. "request missing a required field is rejected" — not "`REQUIRED_FIELDS`
+contains `name`").
+
+When a scenario verifies a response/entity shape (which fields are
+present/absent), it must also assert the returned **values** match the
+source data from `Given:`. A shape-only check passes even when every
+field is the wrong value.
+
+| ✅ Do (behaviour) | 🚫 Don't (structure) |
+|---|---|
+| `GET /api/items returns 200 with items` | `ItemsController has a getItems method` |
+| `Removing a method still serves the endpoint` | `findAll is not a property of the instance` |
+| `Error returns 500` | `ErrorHandler class exists` |
+| `Then: body[0] fields match createMockDoc() values; nameEn, descriptionEn absent` | `Then: body[0] has id, name; no descriptionEn` |
+
+### Unit sizing
+- Cap each unit at **6 scenarios**. When a behaviour needs more, split into
+  multiple sequential units sharing the same Source/Test files.
+- Number units with **plain integers only** (Unit 1, Unit 2) — never letters
+  or suffixes (`2a`, `2b`).
+- Split along behavioural seams (happy path, validation, edge cases) — never
+  mid-behaviour.
+- Renumber all later units so the sequence stays contiguous.
+- Scenario numbering is continuous across all units — never resets per unit.
+- **Source file cap:** limit to **3 files per unit**. When a unit touches more
+  files, split by file group into sequential units. Test files may be shared
+  across splits.
+- Units are split by **boundary** and **size** only — never by language.
+  A single unit may span multiple languages.
+
+### Source-change and test consistency
+When a `tests required` unit modifies source behaviour in ways that cause
+pre-existing tests to fail, those tests must be addressed within the same
+unit — never deferred to a later `tests only` unit.
+
+- List the affected tests explicitly in the unit's scope.
+- Include their removal or update in the unit's Changes alongside the
+  source changes.
+
+### End-to-end deliverability
+Every task must produce a **self-consistent, reachable result** — not dead
+code. Before finalizing the implementation plan, verify:
+- All layers required for the feature to be invocable end-to-end are covered
+  (UI, API, persistence, localization, routing, etc.).
+- No unit produces code that nothing calls or renders.
+- If a layer is intentionally deferred to a follow-up task, state this
+  explicitly in Design Approach with a reference to the planned task.
+
+**Self-check:** _"After implementing this task, can a user (or system) actually
+trigger the new behavior through the normal entry point?"_ If no, the task is
+incomplete.
+
+**Exception — maintenance tasks:** Bugfixes, test coverage, and refactors are
+exempt.
+
+### Self-containment
+`task.md` must be **self-contained for implementation**. Dev agents work from
+`task.md` alone — they do not read `feature.md` or explore the codebase for
+design decisions.
+
+**Intra-document references satisfy self-containment.** When multiple units
+follow the same mechanical pattern, define it fully in the first unit;
+subsequent units reference it by name and specify only deltas (different
+routes, schemas, constants). The implementer reads Unit 1 for the full
+definition — no external file is needed.
