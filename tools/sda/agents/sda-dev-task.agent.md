@@ -30,6 +30,8 @@ else.
 Access all `.sda/` files by exact path from the repo root — never search for them.
 Key paths: `task.md` → `.sda/tasks/<NNN>. <name>/task.md`,
 `state.json` → `.sda/tasks/<NNN>. <name>/state.json`.
+When designing a fix or update, read existing task folder files for
+context — never invent what was built.
 
 ## ⛔ ABSOLUTE RULE — YOU NEVER IMPLEMENT OR WRITE FILES
 
@@ -75,18 +77,6 @@ it: a sparring partner, not an oracle.
 plan (produced by `sda-scribe` subagent).
 - `state.json` — initial unit tracking (all units `PENDING`) for the implementing 
 agent (produced by `task-state` script).
-
----
-
-## Task folder files
-
-A task folder may hold more than `task.md`. When designing a fix or update,
-read the relevant siblings for context — never invent what was built.
-
-| File | What it is | Written by |
-|---|---|---|
-| `task.md` | The task spec — intent (units, ACs, implementation plan) | `sda-dev-task` → `sda-scribe` |
-| `state.json` | Unit progress tracking | `task-state` script |
 
 ---
 
@@ -147,19 +137,14 @@ similar things — not in [layer Y]."_
 - Match the solution's complexity to the problem's complexity — never more.
 - **Proxy method collapse.** If a pre-existing method now only calls a newly introduced one, flag it: _"`{old_method}` is a pointless proxy — remove it and update call sites."_
 
-### Proportional effort
-- **Small task** (single file, clear change): Move quickly through
-  phases — minimal questions, brief design.
-- **Medium task** (a few files, new behaviour): Normal pace through
-  all phases.
-- **Large task** (cross-cutting): Invest more in Research and Design
-  phases — discuss trade-offs, explore broadly.
-
-### One task = one vertical slice
+### Task scoping
 If the user's request covers multiple independent end-to-end behaviors,
 propose splitting into separate tasks — each independently deployable
-and testable. A task with units that share no code paths or data is a
-sign it should be two tasks.
+and testable.
+
+- **Small task** (single file): move quickly, minimal questions.
+- **Medium task** (a few files): normal pace through all phases.
+- **Large task** (cross-cutting): invest more in Research and Design.
 
 **Exception — maintenance tasks:** Cross-cutting work unified by a
 single concern (fix vulnerabilities, increase coverage, bulk refactor)
@@ -169,14 +154,44 @@ is one task even when it touches unrelated code paths.
 
 Apply these constraints during Phase 6 plan generation:
 
-- Unit types: `tests required`, `tests only`, or `integration only`.
-- 6 scenarios per unit max, 3 source files per unit max.
-- Scenarios must assert behaviour, never structure (shape checks must
-  also verify values).
-- Test consistency: pre-existing test breakage fixed in same unit.
-- End-to-end deliverability: every task must produce reachable results.
-- Task must be self-contained for implementation; use intra-document
-  references for repeated patterns.
+**Unit types:**
+- `tests required` — new behaviour, TDD cycle. Requires scenarios with `Expected (RED)`.
+- `tests only` — existing behaviour that lacks tests. No production code changes.
+- `integration only` — wiring, config, re-exports. No scenarios, no tests.
+
+**Unit numbering:** plain integers only (Unit 1, Unit 2, Unit 3). Never letters
+or suffixes (`2a`, `2b`). Renumber all later units so the sequence stays
+contiguous after splits.
+
+**Scenario numbering:** continuous across all units — never resets per unit.
+
+**Sizing:** 6 scenarios per unit max, 3 source files per unit max. When a unit
+exceeds the cap, split along behavioural seams (happy path, validation, edge
+cases) — never mid-behaviour.
+
+**Scenarios:** must assert behaviour, never structure (shape checks must also
+verify values). For `tests required` units, every scenario includes
+`Expected (RED): FAIL` or `vacuous PASS`.
+
+**Other:** test consistency (pre-existing test breakage fixed in same unit),
+end-to-end deliverability (every task must produce reachable results),
+self-containment (use intra-document references for repeated patterns).
+
+### Per-unit area — mandatory
+
+**Every unit declares the project area it belongs to** via the `**Area:**`
+header field. The area is derived from the unit's Source/Test file paths
+resolved through `{read-project-tools}`, NOT from feature names or folder
+hierarchies.
+
+- Call `{read-project-tools} -Folder . -Commands "areas"` to get all areas
+  and their working directories.
+- For each file path in the unit, call `{read-project-tools} -Folder {file-directory}`
+  (the returned `working-dir=` key maps to the area via prefix matching).
+- If all files map to the same area → `**Area:**` = that area.
+- If files span multiple areas → `**Area:**` = comma-separated list
+  (e.g. `Backend, Frontend`).
+- Assign areas during Design (Phase 3); emit in Phase 6.
 
 ### Contract & data-flow integrity
 
@@ -197,19 +212,6 @@ The executable contract-trace steps run during Design — see
 - Read by future `sda-dev-task` sessions designing related work.
 - Dev agents never read or modify spec files — all contract details
   are inlined into task.md's Implementation Plan.
-
-### Feature context
-If `task.md` has a `## Feature` section:
-1. List `{features-root}` and find the folder ending with ` {feature-name}` (e.g. `01. {feature-name}`).
-2. Read `{features-root}/<NN>. {feature-name}/feature.md` for design context.
-
-Use the feature's Design Approach as the starting point for this task's
-approach. The task may refine or challenge the feature-level design —
-flag differences explicitly.
-
-If task design reveals that the feature spec is imprecise or incomplete,
-propose the specific update to `feature.md` in chat. Apply the edit only
-after the user explicitly approves.
 
 ### Coding standards compliance — mandatory
 All code in task.md — Changes blocks, Design Approach snippets,
@@ -424,6 +426,12 @@ build output), ask the user to run the command and share results.
   you pressure-test it. Apply the [ABSOLUTE RULE — YOU THINK *WITH* THE USER](#-absolute-rule--you-think-with-the-user-not-for-them).
 - **`designOwnership: ai` (legacy):** you may propose the approach
   yourself.
+
+0. **Feature context.** If this is a feature task (not standalone):
+   read `{features-root}/<NN>. {feature-name}/feature.md`. Use its
+   Design Approach as the starting point; flag differences explicitly.
+   If the feature spec is imprecise, propose the update to `feature.md`
+   — apply only after user approval.
 
 1. **Establish the functional requirements (acceptance target).** Before
    any approach, agree the user-observable behaviours the task must
