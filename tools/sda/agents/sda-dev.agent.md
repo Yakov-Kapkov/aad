@@ -153,46 +153,14 @@ list above.
 **`{unit-file-size}` (PowerShell):** `{unit-file-size} -Mode {mode} -Paths '{p1},{p2},...' -Limit {n}`
 **`{unit-file-size}` (Bash/zsh):** `{unit-file-size} {mode} '{p1},{p2},...' {n}`
 
-**`{read-project-tools}` — one call per unique folder:**
-- **PowerShell:** `{read-project-tools} -Folder {folder} [-Commands "{label,...}"]`
-- **Bash/zsh:** `{read-project-tools} {folder} [{label,...}]`
+**`{read-project-tools}` — one call per unique folder.**
+Call form: `{read-project-tools} {folder} [{labels}]`
+Expand per `{shell}`:
+- **PowerShell:** `{read-project-tools} -Folder {folder} -Commands "{labels}"`
+- **Bash/zsh:**   `{read-project-tools} {folder} {labels}`
+Omit `[{labels}]` when no labels are needed.
 
 An absent key in `{read-project-tools}` output means the tool was not detected — skip silently.
-
-### CLI command construction
-
-Call `{read-project-tools}` with each unique file directory and the relevant
-`-Commands` list. Compose each command from the returned templates.
-
-**Filter-test-output:** fill `<command>` with the full command and `{N}` with `100`.
-Apply to `test-path` targeted runs (Phase 2 RED, Phase 5 L3) and `test-all`
-baseline runs (Phase 1).
-
-**Filter-tool:** fill `<command>` with the full command and `{N}` with `50`.
-Apply to Phase 5 L4 coverage output only.
-
-**Test command** — call with each unique test-file directory,
-`-Commands "test-path,type-path,format-code-path,filter-test-output,validate"`:
-- Fill `{path}` in `test-path` with all test file paths (space-separated,
-  relative to `working-dir`); apply filter-test-output.
-- Pass `Working directory: {working-dir}` alongside. Never omit the filter.
-- No coverage or report flags — Phase 5 coverage uses `test-path-coverage` separately.
-- **Integration-only:** substitute `{path}` with `Related tests` paths. Omit
-  entirely when no related tests are listed — never target source files.
-
-**Type-check command:** fill `{path}` in `type-path` with all Source file paths
-(and Test file paths, when delegating to `sda-test-writer`) — individual files,
-not folders. No filter. Omit if absent.
-
-**Format-code command:** fill every `{path}` in `format-code-path` with all
-Source (and Test, when delegating to `sda-test-writer`) file paths, space-separated.
-Omit if absent.
-
-**Validate-data commands** — only when Source or Test files have data extensions
-(`.json`, `.yaml`, `.yml`, `.xml`):
-- Derive label `validate-{ext}-path` (normalize: `.yml` → `yaml`).
-- Fill `{path}` with each file's path relative to `working-dir`.
-- Skip silently if label absent. Omit the field entirely if the list is empty.
 
 ### No file output for command results
 
@@ -310,7 +278,7 @@ Subsequent messages in the same phase do not repeat it.
 <title>🖥️ **BOOTSTRAPPING**</title>
 
 1. **Verify tooling.**
-   Call `{read-project-tools} -Folder . -Commands "shell"`.
+   Call `{read-project-tools} . ["shell"]`.
    Retain `{shell}` from the script output for the whole session.
    Retain the `Project configuration:` block from session context as `{project-configuration}` — **all `key=value` lines, verbatim, in the original order. No filtering, no reformatting, no summarizing.**
 
@@ -417,10 +385,11 @@ Context).
    **Then capture test baseline.** Skip if `{baseline-failures}` is already set for this session.
    Collect every area listed in `task.md`'s per-unit `**Area:**` annotations
    (one `test-all` per unique area, not per file). For each unique area,
-   call `{read-project-tools} -Folder {area-workdir} -Commands "test-all,filter-test-output"`,
-   fill `{N}` = `100`, and run. Merge all failing test names into
-   `{baseline-failures}`. A fully-passing result across all areas → set
-   `{baseline-failures}` = `[]`.
+   call `{read-project-tools} {area-workdir} ["test-all,filter-last-n,filter-test-output"]`.
+   **First pass:** run `test-all` with filter-last-n (`{N}` = `10`). Exit 0 → baseline is clear.
+   **On failure:** re-run with filter-test-output (`{N}` = `100`) to detect failing tests.
+   Merge all failing test names into `{baseline-failures}`. A fully-passing
+   result across all areas → set `{baseline-failures}` = `[]`.
 4. **Extract unit inputs** from `task.md`:
    - `tests required` / `tests only`: scenarios, Source/Test paths,
      Test Context, and Changes blocks (if present).
@@ -455,7 +424,7 @@ Context).
    - **Source / Test files** — paths for production and test code.
    - **Per-file language** — annotate each Source/Test path with the
      language(s) it contains, inferred from the file type (no task.md in ad-hoc provider).
-   - **Area** — resolve via `{read-project-tools} -Folder {file-directory}` for each file;
+   - **Area** — resolve via `{read-project-tools} {file-directory}` for each file;
      the `working-dir=` key maps to the area. If all files map to the same
      area → that area. If files span multiple areas → comma-separated list.
    - **Work type** — `tests required` (default), `tests only`, or
@@ -464,10 +433,11 @@ Context).
 
 4. **Capture test baseline.** Skip if `{baseline-failures}` is already set for this session.
    Collect the unique areas from step 2 (one `test-all` per area, not per file).
-   For each unique area, call `{read-project-tools} -Folder {area-workdir} -Commands "test-all,filter-test-output"`,
-   fill `{N}` = `100`, and run. Merge all failing test names into
-   `{baseline-failures}`. A fully-passing result across all areas → set
-   `{baseline-failures}` = `[]`.
+   For each unique area, call `{read-project-tools} {area-workdir} ["test-all,filter-last-n,filter-test-output"]`.
+   **First pass:** run `test-all` with filter-last-n (`{N}` = `10`). Exit 0 → baseline is clear.
+   **On failure:** re-run with filter-test-output (`{N}` = `100`) to detect failing tests.
+   Merge all failing test names into `{baseline-failures}`. A fully-passing
+   result across all areas → set `{baseline-failures}` = `[]`.
 
 ### Dispatch
 
@@ -541,10 +511,10 @@ wait.
    Language: {per-file annotations from the unit header — test-writer writes each test file in the language(s) annotated on its Test path}
    Source: {source file path(s)}
    Test: {test file path(s)}
-   Test command: {test-path with {path} filled and filter-test-output applied — fully composed command}
-   Format-code command: {from read-project-tools script — omit if absent}
-   Type-check command: {from read-project-tools script — omit if absent}
-   Validate-data commands: {from read-project-tools script — omit if absent}
+   Test command: {test-path with {path}=test file paths; filter-test-output ({N}=100)}
+   Format-code command: {format-code-path with {path}=source + test file paths — omit if absent}
+   Type-check command: {type-path with {path}=source + test file paths — omit if absent}
+   Validate-data commands: {validate-{ext}-path with {path}=data file paths; normalize .yml → yaml — omit if absent}
    Shell: {shell}
    Standards skill: {standardsSkill}
    Working directory: {Working directory}
@@ -626,10 +596,10 @@ or changes from other units. Delegate and wait.
    Source: {source file path(s)}   ← integration only: current unit's target files ONLY — do not include files from other units
    Test: {test file path(s)}       ← GREEN only; omit for integration only
    Related tests: {the unit's `**Related tests:**` paths}   ← integration only; include only when the work unit has Related tests; omit for GREEN
-   Test command: {test-path with {path}=Related tests paths and filter-test-output applied}   ← integration only; include only when Related tests are present; omit entirely when none listed
-   Format-code command: {from read-project-tools script — omit if absent}
-   Type-check command: {from read-project-tools script — omit if absent}
-   Validate-data commands: {from read-project-tools script — omit if absent}
+   Test command: {test-path with {path}=Related tests paths; filter-test-output ({N}=100)}   ← integration only; include only when Related tests are present; omit entirely when none listed
+   Format-code command: {format-code-path with {path}=source file paths — omit if absent}
+   Type-check command: {type-path with {path}=source files — omit if absent}
+   Validate-data commands: {validate-{ext}-path with {path}=data file paths; normalize .yml → yaml — omit if absent}
    Shell: {shell}
    Standards skill: {standardsSkill}
    Working directory: {Working directory}
@@ -694,10 +664,10 @@ Scope: per-unit
 Source files: {current unit's source files}
 Test files: {current unit's test files}
 In-scope symbols: {symbols this unit added or modified; "{file}: *" for a wholly new file}
-Test command: {from read-project-tools script}
-Format-code command: {from read-project-tools script — omit if absent}
-Type-check command: {from read-project-tools script — omit if absent}
-Validate-data commands: {from read-project-tools script — omit if absent}
+Test command: {test-path with {path}=test file paths; filter-test-output ({N}=100)}
+Format-code command: {format-code-path with {path}=source + test file paths — omit if absent}
+Type-check command: {type-path with {path}=source + test file paths — omit if absent}
+Validate-data commands: {validate-{ext}-path with {path}=data file paths; normalize .yml → yaml — omit if absent}
 Shell: {shell}
 Standards skill: {standardsSkill}
 Working directory: {Working directory}
@@ -747,10 +717,10 @@ Units:
   Source files: {unit M source files}
   Test files: {unit M test files}
   In-scope symbols: {symbols unit M added or modified; "{file}: *" for a wholly new file}
-Test command: {from read-project-tools script}
-Format-code command: {from read-project-tools script — omit if absent}
-Type-check command: {from read-project-tools script — omit if absent}
-Validate-data commands: {from read-project-tools script — omit if absent}
+Test command: {test-path with {path}=test file paths; filter-test-output ({N}=100)}
+Format-code command: {format-code-path with {path}=source + test file paths — omit if absent}
+Type-check command: {type-path with {path}=source + test file paths — omit if absent}
+Validate-data commands: {validate-{ext}-path with {path}=data file paths; normalize .yml → yaml — omit if absent}
 Shell: {shell}
 Standards skill: {standardsSkill}
 Working directory: {Working directory}
@@ -790,7 +760,7 @@ source or test files. Delegate and wait.
 
 ### Control flow
 
-1. **Gather inputs.** Collect all source + test files from all units processed this session (from RED/GREEN phase results). If a file's area is unknown, resolve it via `{read-project-tools} -Folder {file-directory}` (the `working-dir=` key maps to the area).
+1. **Gather inputs.** Collect all source + test files from all units processed this session (from RED/GREEN phase results). If a file's area is unknown, resolve it via `{read-project-tools} {file-directory}` (the `working-dir=` key maps to the area).
 
 2. **Invoke `sda-dev-quality` by name.** Pass:
 
@@ -829,12 +799,12 @@ Max 3 quality-gate cycles total (original + 2 re-runs). After 3 cycles with unre
 Triggered when `sda-dev-quality` flags a regression (test failure not in baseline).
 
 1. Use the flagged test file path(s) and failure detail from the quality agent's report.
-2. Construct the test command using `test-path` with flagged test file paths (+ filter-test-output).
+2. Construct the test command using `test-path` with flagged test file paths (+ filter-test-output, `{N}` = `100`).
 3. Invoke `sda-coder` by name. Use the **GREEN (make tests pass)** input format from [Phase 3](#phase-3--green-delegate-implementation) with:
    - `Language`: infer from file extensions
    - `Source`: this task's changed source files
    - `Test`: flagged test files
-   - `Test command`: `test-path` with flagged test files + filter-test-output
+   - `Test command`: `test-path` with flagged test files + filter-test-output (`{N}` = `100`)
    - Omit `Validate-data commands` and `Changes`
    - Add: `Regression context: These tests passed before this task started. The source files listed above were modified by this task and likely caused the failures. Fix the source to restore the failing tests without reverting the task's intended changes.`
 4. Apply [Failure handling & escalation](#failure-handling--escalation) if `sda-coder` returns a failure.

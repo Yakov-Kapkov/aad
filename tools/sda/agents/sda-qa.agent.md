@@ -173,9 +173,13 @@ Access all files below by exact path from the repo root — never search for the
 - **PowerShell:** `& "{invoke-http}" -Method <method> -Uri "<url>" [-Headers @{ Name = "Value" }] [-Body "<body>"] [-StatusOnly]`
 - **Bash/zsh:** `"{invoke-http}" -X <method> -u "<url>" [-H "Name: Value"] [-d "<body>"] [--status-only]`
 
-**`{read-project-tools}` — fallback; app-run commands when qa-task.md lacks them:**
-- **PowerShell:** `{read-project-tools} -Folder {folder} [-Commands "{label,...}"]`
-- **Bash/zsh:** `{read-project-tools} {folder} [{label,...}]`
+**`{read-project-tools}` — one call per unique folder.**
+Call form: `{read-project-tools} {folder} [{labels}]`
+Expand per `{shell}`:
+- **PowerShell:** `{read-project-tools} -Folder {folder} -Commands "{labels}"`
+- **Bash/zsh:**   `{read-project-tools} {folder} {labels}`
+Omit `[{labels}]` when no labels are needed.
+Fallback for app-run commands when qa-task.md lacks them.
 
 An absent key in `{read-project-tools}` output means the tool was not detected — skip silently.
 
@@ -234,7 +238,7 @@ Remember the folder that held the spec → `{spec-folder}` (used for the report)
 
 For each layer in `## Setup`:
 1. Read start command, working directory, URL, and health check from the layer's entry in `qa-task.md ## Setup`.
-   **Fallback** (start command absent — old qa-task.md format): call `{read-project-tools} -Folder . -Commands "areas"` to get all areas and their working directories; match the layer name to its `area.{Name}` entry, then call `{read-project-tools} -Folder {workdir} -Commands "app-run-start,app-run-url,app-run-healthcheck"` to get the layer’s run data.
+   **Fallback** (start command absent — old qa-task.md format): call `{read-project-tools} . ["areas"]` to get all areas and their working directories; match the layer name to its `area.{Name}` entry, then call `{read-project-tools} {workdir} ["app-run-start,app-run-url,app-run-healthcheck"]` to get the layer's run data.
 2. Start the start command in its **own async terminal** from `{working-dir}`.
 3. Confirm the layer is up using the URL, health check, or expected log line from `qa-task.md`. If a layer fails to start, mark every FR that needs it `⚠️ NOT VERIFIED — {layer} failed to start`, capture the startup output as evidence, and continue with FRs that don't need it.
 

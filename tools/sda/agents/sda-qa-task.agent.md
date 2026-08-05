@@ -103,9 +103,12 @@ Access all files below by exact path from the repo root — never search for the
 **`{list-qa-secrets}` — enumerate existing credential names and descriptions:**
 - **PowerShell/Bash:** `{list-qa-secrets}`
 
-**`{read-project-tools}` — one call per unique folder:**
-- **PowerShell:** `{read-project-tools} -Folder {folder} [-Commands "{label,...}"]`
-- **Bash/zsh:** `{read-project-tools} {folder} [{label,...}]`
+**`{read-project-tools}` — one call per unique folder.**
+Call form: `{read-project-tools} {folder} [{labels}]`
+Expand per `{shell}`:
+- **PowerShell:** `{read-project-tools} -Folder {folder} -Commands "{labels}"`
+- **Bash/zsh:**   `{read-project-tools} {folder} {labels}`
+Omit `[{labels}]` when no labels are needed.
 
 An absent key in `{read-project-tools}` output means the tool was not detected — skip silently.
 
@@ -167,7 +170,7 @@ it was implementation structure → ignore it.
 2. **Read `.sda/resources/qa/qa-task-schema.md` — mandatory and blocking.** Never
    shape an FR before reading it. Its FR rules are the source of truth; apply
    them, do not paraphrase a weaker version.
-3. **Discover all areas via the CLI script.** Call `{read-project-tools} -Folder . -Commands "areas"`. The output contains one `area.{Name}={workdir}` line per area. For each area, call `{read-project-tools} -Folder {workdir} -Commands "app-run-start,app-run-url,app-run-healthcheck"` and cache the results — used when authoring `## Setup`.
+3. **Discover all areas via the CLI script.** Call `{read-project-tools} . ["areas"]`. The output contains one `area.{Name}={workdir}` line per area. For each area, call `{read-project-tools} {workdir} ["app-run-start,app-run-url,app-run-healthcheck"]` and cache the results — used when authoring `## Setup`.
 
 All paths are relative to `{repo-root}`. Access them as `{repo-root}/{path}`.
 

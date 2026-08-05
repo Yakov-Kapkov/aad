@@ -184,9 +184,9 @@ header field. The area is derived from the unit's Source/Test file paths
 resolved through `{read-project-tools}`, NOT from feature names or folder
 hierarchies.
 
-- Call `{read-project-tools} -Folder . -Commands "areas"` to get all areas
+- Call `{read-project-tools} . ["areas"]` to get all areas
   and their working directories.
-- For each file path in the unit, call `{read-project-tools} -Folder {file-directory}`
+- For each file path in the unit, call `{read-project-tools} {file-directory}`
   (the returned `working-dir=` key maps to the area via prefix matching).
 - If all files map to the same area → `**Area:**` = that area.
 - If files span multiple areas → `**Area:**` = comma-separated list

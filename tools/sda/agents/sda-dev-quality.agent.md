@@ -61,9 +61,12 @@ Access all files below by exact path from the repo root — never search for the
 |---|---|
 | `{read-project-tools}` | `scripts.readProjectTools` |
 
-**`{read-project-tools}` — one call per unique folder:**
-- **PowerShell:** `{read-project-tools} -Folder {folder} [-Commands "{label,...}"]`
-- **Bash/zsh:** `{read-project-tools} {folder} [{label,...}]`
+**`{read-project-tools}` — one call per unique folder.**
+Call form: `{read-project-tools} {folder} [{labels}]`
+Expand per `{shell}`:
+- **PowerShell:** `{read-project-tools} -Folder {folder} -Commands "{labels}"`
+- **Bash/zsh:**   `{read-project-tools} {folder} {labels}`
+Omit `[{labels}]` when no labels are needed.
 
 An absent key in `{read-project-tools}` output means the tool was not detected — gate is N/A.
 
@@ -159,7 +162,7 @@ Coverage enabled:  true|false
 
 ### Phase 1 — Discover areas
 
-1. **Call** `{read-project-tools} -Folder . -Commands "areas"` to get all areas and their working directories.
+1. **Call** `{read-project-tools} . ["areas"]` to get all areas and their working directories.
 2. **Build area map:** `{areaName: workingDir}`.
 3. **If specific areas requested** (from inputs) → filter to those areas only.
 4. **If no areas discovered** → **🛑 HARD STOP:** _"No areas found. Run sda-toolscan first."_
@@ -167,7 +170,7 @@ Coverage enabled:  true|false
 ### Phase 2 — Map files to areas
 
 1. **For each target file**, resolve its area by matching file path prefix against each area's working directory:
-   - Call `{read-project-tools} -Folder {file-directory} -Commands "shell"` (the `working-dir=` key suffices — no other commands needed).
+   - Call `{read-project-tools} {file-directory} ["shell"]` (the `working-dir=` key suffices — no other commands needed).
    - The returned `working-dir=` maps to the area.
 2. **Build per-area file lists:**
    ```
@@ -187,7 +190,7 @@ Baseline failures are only needed for G3 regression classification.
 
 1. Store baseline failures from input as `{baseline-failures}`.
 2. **If no baseline provided:**
-   - For each target area, call `{read-project-tools} -Folder {workdir} -Commands "test-all,filter-last-n,filter-test-output"`.
+   - For each target area, call `{read-project-tools} {workdir} ["test-all,filter-last-n,filter-test-output"]`.
    - **First pass:** Run `test-all` with filter-last-n (`{N}` = `10`). Exit 0 → baseline = `[]`.
    - **If first pass fails:** Re-run with filter-test-output (`{N}` = `20`).
    - Merge all failing test names into `{baseline-failures}`.
@@ -200,8 +203,7 @@ For each area with target files:
 immediately (e.g., `L1 Types: ✅`). Accumulate all results for the
 final report in Phase 6.
 
-1. **Fetch commands** — call `{read-project-tools} -Folder {workdir}` with:
-   `-Commands "type-path,lint-path,test-path,test-path-coverage,format-code-path,filter-last-n,filter-test-output,filter-tool"`
+1. **Fetch commands** — call `{read-project-tools} {workdir} ["type-path,lint-path,test-path,test-path-coverage,format-code-path,filter-last-n,filter-test-output,filter-tool"]`.
    Omit `lint-path` / `type-path` / `test-path-coverage` / `format-code-path` / `filter-last-n` / `filter-tool` / `filter-test-output` when absent.
 
 2. **L1 — Types:**
@@ -234,9 +236,8 @@ For each target area:
 immediately (e.g., `G1 Types: ✅`). Accumulate all results for the
 final report in Phase 6.
 
-1. **Fetch commands** — call `{read-project-tools} -Folder {workdir}` with:
-   `-Commands "type-all,lint-all,test-all,build-all,precommit-all,filter-last-n,filter-test-output,filter-tool"`
-   Also fetch `precommit-all` from `-Folder .` (project-global).
+1. **Fetch commands** — call `{read-project-tools} {workdir} ["type-all,lint-all,test-all,build-all,precommit-all,filter-last-n,filter-test-output,filter-tool"]`.
+   Also fetch `precommit-all` from `{read-project-tools} . ["precommit-all"]` (project-global).
 
 2. **G1 — Types:**
    - N/A if no `type-all`. If absent, try `type-path` on all area source files. If both absent → ❌ unable to verify.
@@ -259,7 +260,7 @@ final report in Phase 6.
      - Name absent → **regression** — flag for caller.
 
 5. **G4 — Pre-merge:**
-   - N/A if no `precommit-all`. Use `-Folder .` for this command.
+   - N/A if no `precommit-all`. Command fetched from `{read-project-tools} .` (project-global).
    - Apply [Decompose chained commands](#terminal-command-scope) — `precommit-all`
      often chains multiple tools with `;`. Run each segment as a
      separate call with `filter-tool` (`{N}` = `10`).
