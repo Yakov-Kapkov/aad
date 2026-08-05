@@ -1,6 +1,6 @@
 param(
     [Parameter(Mandatory=$true)][string]$Folder,
-    [string]$Commands = 'test-path,type-path,format-code-path,filter-tool,filter-test-output,validate'
+    [string]$Commands = 'test-path,type-path,format-code-path,filter-last-n,filter-tool,filter-test-output,validate'
 )
 
 $ErrorActionPreference = 'Stop'
@@ -130,7 +130,13 @@ if ('shell' -in $requestedCmds) {
     }
 }
 
-# Global: filter-tool
+# Global: filter-last-n (label name in project-tools.md = filter-last-n)
+if ('filter-last-n' -in $requestedCmds) {
+    $v = Get-CommandByLabel $allArr 'filter-last-n'
+    if ($v) { $out.Add("filter-last-n=$v") }
+}
+
+# Global: filter-tool (alias for filter-last-n)
 if ('filter-tool' -in $requestedCmds) {
     $v = Get-CommandByLabel $allArr 'filter-last-n'
     if ($v) { $out.Add("filter-tool=$v") }

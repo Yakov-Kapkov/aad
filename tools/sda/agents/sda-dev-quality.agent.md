@@ -92,9 +92,11 @@ Never add flags, arguments, or path-exclusion options that are not
 present in the documented command.
 
 **Cap noisy output.** Any command that may produce more than ~100 lines
-must use `filter-tool` (`{N}` = `10`). For `filter-test-output`, use
-`{N}` = `20`. Skip the filter only for commands that are inherently
-concise (type-checking).
+must use `filter-tool` (`{N}` = `10`). For test commands, use
+`filter-last-n` (`{N}` = `10`) for the first pass (shows summary); use
+`filter-test-output` (`{N}` = `20`) only when re-running after a failure.
+Skip the filter only for commands that are inherently concise
+(type-checking).
 
 **Escalate on failure — re-run with expanded `{N}`.** The small `{N}`
 above keeps passing runs clean but may trim error details on failure.
@@ -102,6 +104,11 @@ When a filtered gate exits non-zero, re-run the same command with
 expanded `{N}` and use that output for the Flags section:
 - `filter-tool` → `{N}` = `50`
 - `filter-test-output` → `{N}` = `100`
+**Tests (L3, G3, Phase 3) use a two-pass approach:** first pass with
+`filter-last-n` (`{N}` = `10`) for the summary; on failure, re-run with
+`filter-test-output` (`{N}` = `20`). Escalate to N=100 on
+`filter-test-output` only when that second pass still lacks
+sufficient failure detail.
 Exception: skip re-run when it would be expensive and error context
 is already sufficient — use judgment.
 
@@ -176,10 +183,10 @@ Baseline failures are only needed for G3 regression classification.
 
 1. Store baseline failures from input as `{baseline-failures}`.
 2. **If no baseline provided:**
-   - For each target area, call `{read-project-tools} -Folder {workdir} -Commands "test-all,filter-test-output"`.
-   - Run `test-all` with filter-test-output (`{N}` = `20`).
+   - For each target area, call `{read-project-tools} -Folder {workdir} -Commands "test-all,filter-last-n,filter-test-output"`.
+   - **First pass:** Run `test-all` with filter-last-n (`{N}` = `10`). Exit 0 → baseline = `[]`.
+   - **If first pass fails:** Re-run with filter-test-output (`{N}` = `20`).
    - Merge all failing test names into `{baseline-failures}`.
-   - Fully passing → `{baseline-failures}` = `[]`.
 
 ### Phase 4 — Run local gates per area
 
@@ -190,8 +197,8 @@ immediately (e.g., `L1 Types: ✅`). Accumulate all results for the
 final report in Phase 6.
 
 1. **Fetch commands** — call `{read-project-tools} -Folder {workdir}` with:
-   `-Commands "type-path,lint-path,test-path,test-path-coverage,format-code-path,filter-test-output,filter-tool"`
-   Omit `lint-path` / `type-path` / `test-path-coverage` / `format-code-path` / `filter-tool` / `filter-test-output` when absent.
+   `-Commands "type-path,lint-path,test-path,test-path-coverage,format-code-path,filter-last-n,filter-test-output,filter-tool"`
+   Omit `lint-path` / `type-path` / `test-path-coverage` / `format-code-path` / `filter-last-n` / `filter-tool` / `filter-test-output` when absent.
 
 2. **L1 — Types:**
    - N/A if no `type-path`. If absent, try `type-all` on the area's working directory. If both absent → N/A.
@@ -205,7 +212,9 @@ final report in Phase 6.
 
 4. **L3 — Tests:**
    - N/A if no `test-path`.
-   - Fill `{path}` with area's target Test file paths. Apply filter-test-output (`{N}` = `20`).
+   - Fill `{path}` with area's target Test file paths.
+   - **First pass:** Run with filter-last-n (`{N}` = `10`). Exit 0 → pass.
+   - **If first pass fails:** Re-run with filter-test-output (`{N}` = `20`) for detailed output.
    - Pass condition: all green.
 
 5. **L4 — Coverage:**
@@ -222,7 +231,7 @@ immediately (e.g., `G1 Types: ✅`). Accumulate all results for the
 final report in Phase 6.
 
 1. **Fetch commands** — call `{read-project-tools} -Folder {workdir}` with:
-   `-Commands "type-all,lint-all,test-all,build-all,precommit-all,filter-test-output,filter-tool"`
+   `-Commands "type-all,lint-all,test-all,build-all,precommit-all,filter-last-n,filter-test-output,filter-tool"`
    Also fetch `precommit-all` from `-Folder .` (project-global).
 
 2. **G1 — Types:**
@@ -237,7 +246,9 @@ final report in Phase 6.
    - Commands may auto-fix files. Re-run once before reporting failure.
 
 4. **G3 — Tests:**
-   - N/A if no `test-all`. Apply filter-test-output (`{N}` = `20`).
+   - N/A if no `test-all`.
+   - **First pass:** Run with filter-last-n (`{N}` = `10`). Exit 0 → pass.
+   - **If first pass fails:** Re-run with filter-test-output (`{N}` = `20`) for detailed output.
    - Pass condition: all green.
    - Classify failures against `{baseline-failures}`:
      - Name in baseline → pre-existing.
