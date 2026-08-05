@@ -36,6 +36,21 @@ Access all files below by exact path from the repo root — never search for the
 
 **⛔ Never search, glob, or use `file_search` / `grep_search` to find any `.sda/` file.**
 
+### CLI scripts
+
+**Use the raw relative path — no `&`, no quotes, no absolute paths.** On `error=...` → **🛑 HARD STOP**: print the exact message, end your response.
+
+**Example — PowerShell:**
+- ✅ `.sda/scripts/some-script.ps1 -Mode verify -Paths 'api/foo.ts,api/foo.test.ts' -Limit 2500`
+- ❌ `& '.sda/scripts/some-script.ps1' -Mode verify -Paths 'api/foo.ts,api/foo.test.ts' -Limit 2500`
+
+| Placeholder | Session context key |
+|---|---|
+| `{unit-file-size}` | `scripts.unitFileSize` |
+
+**`{unit-file-size}` (PowerShell):** `{unit-file-size} -Mode {mode} -Paths '{p1},{p2},...' -Limit {n}`
+**`{unit-file-size}` (Bash/zsh):** `{unit-file-size} {mode} '{p1},{p2},...' {n}`
+
 ## Input Contract
 
 You receive:
@@ -113,7 +128,7 @@ never ask it to judge.
      identical annotations.
    - No unit exceeds 6 scenarios. Flag oversized units — they must be
      split into sequential units sharing the same Source/Test files.
-   - For each multi-file unit: run `scripts.unitFileSize` with `-Mode verify -Paths '{p1},{p2},...' -Limit devTaskUnitSizeLimit` for its Source+Test paths. `FAIL` → flag oversized unit — split by file group into sequential units. `PASS` → no action. Single-file units are exempt.
+   - For each multi-file unit: run `{unit-file-size}` with `-Mode verify -Paths '{p1},{p2},...' -Limit devTaskUnitSizeLimit` (see [CLI scripts](#cli-scripts)) for its Source+Test paths. `FAIL` → flag oversized unit — split by file group into sequential units. `PASS` → no action. Single-file units are exempt.
 
 ### 2. Structural Consistency (task.md against codebase)
 
@@ -240,7 +255,7 @@ Return a structured report to the calling agent:
 ## Constraints
 
 - **NEVER edit any file.** You are read-only.
-- **`execute` scope:** only to run `scripts.unitFileSize` for line counting. No other commands.
+- **`execute` scope:** only to run `{unit-file-size}` for line counting (see [CLI scripts](#cli-scripts)). No other commands.
 - **NEVER make design decisions.** Report findings; the caller decides
   what to do.
 - **Return the full report** — do not summarize or omit sections.

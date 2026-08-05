@@ -154,7 +154,11 @@ Access all files below by exact path from the repo root — never search for the
 
 ### CLI scripts
 
-All paths from session context. **No `&` operator, no absolute paths** — use the path value as-is (relative). If any script returns `error=...` → **🛑 HARD STOP**: print the error message exactly, end your response. Nothing else.
+**Use the raw relative path — no `&`, no quotes, no absolute paths.** On `error=...` → **🛑 HARD STOP**: print the exact message, end your response.
+
+**Example — PowerShell:**
+- ✅ `.sda/scripts/some-script.ps1 -Folder . -Commands "shell"`
+- ❌ `& '.sda/scripts/some-script.ps1' -Folder . -Commands "shell"`
 
 | Placeholder | Session context key |
 |---|---|
