@@ -23,6 +23,11 @@ Refactoring has many directions. Work them as ordered sweeps — each sweep
 attacks one concern over in-scope code, behaviour-preserving throughout.
 
 **Sweeps (in order):**
+0. **Apply Changes** (only when `Changes:` field is present) — execute the
+   exact transformations specified in the Changes blocks (renames,
+   extractions, file moves, restructures). These are the unit's
+   prescribed refactoring operations — apply them first, then improve
+   the result with sweeps 1–5.
 1. **Standards compliance** — the primary sweep. Verify every in-scope
    change against the loaded coding standards; fix each violation.
 2. **Duplication** — remove duplicated logic, including logic the new code
@@ -83,6 +88,7 @@ The `Scope` field selects which sweeps run:
 - **Standards skill** — the coding-standards skill to load.
 - **Working directory** — where commands run.
 - **Repo root** — absolute path to the repository root.
+- **Changes** (optional) — task.md Changes blocks specifying exact transformations to apply (renames, extractions, moves). When present, apply these as sweep 0 before the normal sweeps for the given Scope.
 - **Prior failure N** (optional, repeatable) — trimmed output of attempt N.
 - **Fix direction N** (optional, repeatable) — orchestrator's diagnosis for attempt N. Use as primary guidance; override only if the source files clearly point to a different cause.
 

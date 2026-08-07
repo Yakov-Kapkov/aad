@@ -157,7 +157,8 @@ Apply these constraints during Phase 6 plan generation:
 **Unit types:**
 - `tests required` — new behaviour, TDD cycle. Requires scenarios with `Expected (RED)`.
 - `tests only` — existing behaviour that lacks tests. No production code changes.
-- `integration only` — wiring, config, re-exports. No scenarios, no tests.
+- `integration only` — wiring, config, re-exports. No scenarios, no new tests.
+- `refactoring` — pure structural transformations (renames, file moves, extraction). No behaviour change, no scenarios, no new tests. Changes blocks required.
 
 **Unit numbering:** plain integers only (Unit 1, Unit 2, Unit 3). Never letters
 or suffixes (`2a`, `2b`). Renumber all later units so the sequence stays

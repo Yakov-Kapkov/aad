@@ -108,13 +108,13 @@ never ask it to judge.
      `## Implementation Plan` by number and name. Skip if Design Approach
      is absent (small tasks omit it).
    - Every unit's `**Type:**` field is exactly one of: `tests required`,
-     `tests only`, or `integration only`. Flag any other value as invalid.
+     `tests only`, `integration only`, or `refactoring`. Flag any other value as invalid.
    - `tests required` units must have a `**Test:**` file. If `**Test:**`
      is absent or `none`, flag as contradiction: change type to
-     `integration only` or add a test file.
-   - `integration only` units must not have Given/When/Then scenarios,
-     Test Context, or `Expected (RED):` fields. They use integration
-     items (`**N. \`{file-path}\`**` + change bullets) instead.
+     `integration only` or `refactoring`, or add a test file.
+   - `integration only` and `refactoring` units must not have Given/When/Then scenarios,
+     Test Context, or `Expected (RED):` fields. They use step headings
+     with change entries instead.
    - Every scenario in a `tests required` unit has an
      `Expected (RED):` field.
    - Every Source/Test path in every unit header carries a per-file

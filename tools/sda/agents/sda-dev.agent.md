@@ -21,8 +21,8 @@ own bootstrapping, state tracking, unit routing, refactoring, and quality checks
 **Subagents:**
 - `sda-code-explore` — explores the codebase (Phase 1)
 - `sda-test-writer` — writes tests (RED phase) and tests-only units
-- `sda-coder` — writes implementation (GREEN phase) and integration units
-- `sda-refactor` — per-unit refactor (Phase 4·U) and cross-unit dedup (Phase 4·X)
+- `sda-coder` — writes implementation (GREEN phase) and integration-only units
+- `sda-refactor` — per-unit refactor (Phase 4·U, including `refactoring` units) and cross-unit dedup (Phase 4·X)
 - `sda-scribe` — writes dev-report.md (Phase 6)
 - `sda-dev-quality` — runs per-area quality gates (Phase 5)
 
@@ -196,7 +196,7 @@ evaluated and execute.
 "I'm ready to write," the next action must be a tool call — not
 more reasoning.
 
-- Never skip or defer integration-only units.
+- Never skip or defer any unit.
 
 ### State updates
 
@@ -328,6 +328,7 @@ This phase resolves the work unit via the selected input provider. Follow the [T
 | `tests required` | Phase 2 (RED) → Phase 3 (GREEN) → Phase 4·U |
 | `tests only` | Phase 2 (RED, expected GREEN) → Phase 4·U |
 | `integration only` | Phase 3 (GREEN, integration) → Phase 4·U |
+| `refactoring` | Phase 4·U |
 
 ### Provider registry
 
@@ -350,7 +351,7 @@ source or test files at this stage. Do NOT delegate exploration to a
 subagent at this moment. Do NOT search the codebase. Extract all
 available unit inputs directly from `task.md`: for `tests required` /
 `tests only` units that is scenarios, file paths, Test Context, and
-Changes; for `integration only` units that is step headings, Source
+Changes; for `integration only` and `refactoring` units that is step headings, Source
 paths, Related tests (when listed), and Changes (no scenarios, no Test
 Context).
 
@@ -362,7 +363,7 @@ Context).
    - `GREEN` → resuming — mark DONE, proceed to Phase 4·U (per-unit refactor).
    - Script returns `{"done": true}` → warn user, ask whether to proceed.
 3. **Read `task.md`** — identify all units and the current unit type
-   (`tests required`, `tests only`, or `integration only`). Set `{multi-unit}` = true if the task has ≥ 2 units, else false.
+   (`tests required`, `tests only`, `integration only`, or `refactoring`). Set `{multi-unit}` = true if the task has ≥ 2 units, else false.
    **If status was `PENDING`:**
 
    **All-units size scan** — `{devTaskUnitSizeLimit}` from session context. For every unit in `task.md` with two or more files across Source + Test paths combined, run one invocation per unit (do not chain multiple units into a single terminal command):
@@ -393,7 +394,7 @@ Context).
 4. **Extract unit inputs** from `task.md`:
    - `tests required` / `tests only`: scenarios, Source/Test paths,
      Test Context, and Changes blocks (if present).
-   - `integration only`: step headings (from `#### Step N.N —` lines),
+   - `integration only` / `refactoring`: step headings (from `#### Step N.N —` lines),
      Source paths, Related tests (the `**Related tests:**` line, when
      present), and Changes blocks (if present). No scenarios.
    In all cases, extract per-file language annotations (the
@@ -420,15 +421,15 @@ Context).
 2. **Derive work unit** — from the user's request + exploration
    results:
    - **Scenarios** — concrete Given/When/Then statements.
-     (`tests required` / `tests only` only — omit for `integration only`.)
+     (`tests required` / `tests only` only — omit for `integration only` and `refactoring`.)
    - **Source / Test files** — paths for production and test code.
    - **Per-file language** — annotate each Source/Test path with the
      language(s) it contains, inferred from the file type (no task.md in ad-hoc provider).
    - **Area** — resolve via `{read-project-tools} {file-directory}` for each file;
      the `working-dir=` key maps to the area. If all files map to the same
      area → that area. If files span multiple areas → comma-separated list.
-   - **Work type** — `tests required` (default), `tests only`, or
-     `integration only`.
+   - **Unit type** — `tests required` (default), `tests only`,
+     `integration only`, or `refactoring`.
 3. **Determine route** — see [Route table](#route-table).
 
 4. **Capture test baseline.** Skip if `{baseline-failures}` is already set for this session.
@@ -446,7 +447,7 @@ After the provider sub-flow produces the work unit, proceed immediately through 
 When `{state-tracking}` is true: after each unit's Phase 4·U completes, loop back to Phase 1 for the next unit **within the same response**. Continue until all units are `DONE`, then proceed to Phase 4·X.
 When `{state-tracking}` is false: after Phase 4·U, proceed directly to Phase 5.
 
-**Before printing the result:** expand each scenario to Given/When/Then using the scenario description and Changes blocks (when present). Skip for `integration only`.
+**Before printing the result:** expand each scenario to Given/When/Then using the scenario description and Changes blocks (when present). Skip for `integration only` and `refactoring`.
 
 <result>
 ### Pre-existing failures     ← always shown; task provider: first unit only — omit on subsequent units
@@ -461,7 +462,7 @@ or:
 **Area:** {area}
 **Language:** {languages}
 **Route:** {e.g. RED → GREEN → REFACTOR}
-{if type == integration only:}
+{if type == integration only or type == refactoring:}
 **Steps:**
 - {step heading}
 ...
@@ -642,15 +643,15 @@ Proceed to Phase 4·U (per-unit refactor).
 
 Refactoring runs in two scopes:
 - **4·U (per-unit)** — full refactor of the **current unit's** files, once per
-  unit, inside the unit loop (after Phase 3 GREEN, or after a tests-only unit's
-  Phase 2). Runs for every unit type.
+  unit, inside the unit loop (after Phase 3 GREEN, after a tests-only unit's
+  Phase 2, or directly for `refactoring` units). Runs for every unit type.
 - **4·X (cross-unit)** — a single thin pass after all units are DONE, scoped to
   inter-unit duplication only. Runs when `{multi-unit}` is true; skip when false.
 
-**Sourcing `In-scope symbols`:** take them from the subagent results you
-already hold — the source `symbol_name`s from each unit's GREEN `### Implemented`
-list, plus the `test_name`s from its RED `### Tests written` list. Never read
-files to derive them. Use `{file}: *` only when a unit created that file whole.
+**Sourcing `In-scope symbols`:**
+- For `tests required` / `tests only` / `integration only` units: take them from the subagent results you already hold — the source `symbol_name`s from each unit's GREEN `### Implemented` list, plus the `test_name`s from its RED `### Tests written` list.
+- For `refactoring` units: derive from the unit's Changes blocks — the symbol names in each `**\`symbol\`**` entry.
+Never read files to derive them. Use `{file}: *` only when a unit created that file whole.
 
 ### Phase 4·U — Per-unit refactor
 
@@ -659,6 +660,8 @@ files to derive them. Use `{file}: *` only when a unit created that file whole.
 #### Control flow
 
 Invoke `sda-refactor` by name:
+
+**For `tests required` / `tests only` / `integration only` units:**
 ```
 Scope: per-unit
 Source files: {current unit's source files}
@@ -672,6 +675,25 @@ Shell: {shell}
 Standards skill: {standardsSkill}
 Working directory: {Working directory}
 Repo root: {repo-root}
+```
+
+**For `refactoring` units:**
+```
+Scope: per-unit
+Source files: {current unit's source files}
+Test files: {current unit's test files — omit if none}
+In-scope symbols: {symbols from Changes blocks; "{file}: *" for a wholly new file}
+Test command: {test-path with {path}=Related tests paths; filter-test-output ({N}=100) — omit if no Related tests}
+Format-code command: {format-code-path with {path}=source file paths — omit if absent}
+Type-check command: {type-path with {path}=source files — omit if absent}
+Validate-data commands: {validate-{ext}-path with {path}=data file paths; normalize .yml → yaml — omit if absent}
+Shell: {shell}
+Standards skill: {standardsSkill}
+Working directory: {Working directory}
+Repo root: {repo-root}
+
+Changes:
+{changes blocks}
 ```
 
 When `sda-refactor` returns — route by result:

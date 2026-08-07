@@ -204,6 +204,18 @@ File: `{file-path}`
 Algorithm:
 1. {step}
 2. {step}
+
+### Unit 4 — {unit name}
+**Type:** refactoring
+**Area:** {area name}
+**Language:** {langs — union of the per-file annotations}
+**Source:** `{file-path}` ({langs})
+**Related tests:** `{existing-test-path-or-folder}` ({langs})   <!-- optional — existing tests that cover the changed code paths, run as a regression check. Omit the line entirely when none exist. -->
+
+#### Step 4.1 — {what this step does}
+
+**`{symbol_name}`** _(rename to `{new_name}`)_
+File: `{file-path}`
 ```
 
 ---
@@ -237,7 +249,7 @@ Algorithm:
 - **Context:** for new features and refactors (relevant current state).
 - **Solution:** bullet list — one decision per bullet, no justification prose.
 - **Details:** optional — edge cases, backward compat, concurrency notes. Conceptual only: describe what could go wrong, not which file or function handles it. No file/function/type/class names, no code snippets, no import paths — those belong in the Implementation Plan.
-- Keep per-unit descriptions proportional: trivial units (integration-only, renames) get 2-3 lines; complex units get full Problem/Context + Solution + Details.
+- Keep per-unit descriptions proportional: trivial units (`integration only`, `refactoring`) get 2-3 lines; complex units get full Problem/Context + Solution + Details.
 - Keep language non-technical — save implementation specifics (file paths, signatures, test details) for the Implementation Plan.
 
 ### Source References
@@ -262,22 +274,24 @@ Algorithm:
 
 ### Units
 - Named after the **behaviour** they deliver (`Token refresh`, `Error responses`), not architectural tiers.
-- Annotated: **tests required**, **tests only**, or **integration only**.
+- Annotated: **tests required**, **tests only**, **integration only**, or **refactoring**.
 - **Area:** the project area the unit belongs to (e.g. `Backend`, `Frontend`, `Worker`), derived from the unit's file paths matched against the Area Index in `project-tools.md`. Multi-area units list comma-separated areas (e.g. `Backend, Frontend`). The Area field is mandatory — always present on every unit.
 - **Per-file language.** Annotate every Source/Test path with the programming language(s) it contains: `` `src/repo.py` (python, postgres) ``.
 - **Language:** header line = deduplicated **union** of the per-file annotations (e.g. `python, postgres`).
   - Fence tags on Changes / Test Context blocks must match the language of the code they contain.
   - Use dialect-specific names (`postgres`, not `sql`).
+- **Unit types:**
   - **tests required** — new behaviour: TDD cycle (RED → GREEN).
   - **tests only** — existing behaviour that lacks tests: write tests that pass against existing code.
-  - **integration only** — wiring, config, re-exports: no tests, no scenarios. Use step headings with change entries (Symbol layout); use `Algorithm:` for non-trivial logic.
-- **Refactoring pattern:** `tests only` for regression scenarios + `integration only` for implementation swap. Reserve `tests required` for genuinely new behavior.
+  - **integration only** — wiring, config, re-exports: no scenarios, no new tests. Use step headings with change entries (Symbol layout); use `Algorithm:` for non-trivial logic.
+  - **refactoring** — pure structural transformations: renames, file moves, extraction, restructure. No behaviour change, no new tests, no scenarios. Existing tests must pass. Changes blocks required. Use step headings with change entries.
+- **Refactoring tasks:** use `refactoring` units for renames, extraction, and structural changes. For high-risk refactoring, precede with a `tests only` unit as a regression safety net. Reserve `tests required` for genuinely new behavior.
 - **Ordering matters.** Foundational behaviour first, dependent behaviour after.
-- **Structural prep:** renames, file merges, import rewiring → own integration-only unit before dependent units.
+- **Structural prep:** renames, file merges, import rewiring → own `refactoring` unit before dependent units.
 
 ### Changes
 - **`tests required` / `tests only` units:** optional — include when: complex algorithms, new type definitions, coordinated multi-file changes, tricky signatures. When omitted, dev agents derive signatures from Source files.
-- **`integration only` units:** always required — change entries are the unit's content.
+- **`integration only` and `refactoring` units:** always required — change entries are the unit's content.
 - If duplicates Design Approach content, cross-reference instead: `See Design Approach > {Unit name} for {detail}.`
 
 ### Symbol layout
@@ -293,7 +307,7 @@ Algorithm:
 - **Imports:** list non-obvious imports (third-party, cross-module) as separate entry or inline. When an existing production utility/helper — in this file or another — already provides logic the unit needs, name it here as **reuse — do not recreate** (symbol + import) so the implementer calls it instead of re-implementing.
 
 ### Test Context
-- Mandatory for `tests required` and `tests only` units.
+- Mandatory for `tests required` and `tests only` units. Omit for `integration only` and `refactoring` units.
 - Heading: `#### Test Context` (same level as `#### Step N.M`).
 - Three subsections:
   - **Patterns:** one bullet per pattern — description, when to use, scenario numbers.
@@ -309,7 +323,7 @@ Algorithm:
 - Scenario numbering continuous across all steps and units.
 
 ### Scenarios
-- Applies to `tests required` and `tests only` units only. `integration only` units use step headings with change entries — no scenarios, no Given/When/Then.
+- Applies to `tests required` and `tests only` units only. `integration only` and `refactoring` units use step headings with change entries — no scenarios, no Given/When/Then.
 - **Location:** Include a `**Scenarios:**` section immediately after the unit header (Type/Language/Source/Test lines), before `#### Test Context`. All scenario definitions live here — scenarios do NOT appear inside steps.
 - **Format:** Numbered bold paragraphs `**N. {name}**` with `Given`/`When`/`Then` (flat bullets). Include `Expected (RED):` for `tests required` units.
 - Cover happy path, errors, edge cases.
@@ -319,7 +333,7 @@ Algorithm:
 - Values:
   - `FAIL` — test should fail because production code doesn't exist yet.
   - `vacuous PASS — {reason}` — test passes trivially (e.g., empty collection, no-op stub, default return). Include reason so reviewer understands why it's not a real pass.
-- Omit for `tests only` and `integration only` units.
+- Omit for `tests only`, `integration only`, and `refactoring` units.
 
 ### Source and Test paths
 - The `{langs}` placeholder means **one or more** comma-separated languages — a file may contain several (e.g. `python, postgres`).
@@ -330,7 +344,7 @@ Algorithm:
 ### Acceptance Criteria
 - Every criterion maps to ≥1 scenario or integration step.
 - `tests required` / `tests only`: `- [ ] {criterion} _(Unit N, scenarios X–Y)_`
-- `integration only`: `- [ ] {criterion} _(Unit N, step N.M)_`
+- `integration only` / `refactoring`: `- [ ] {criterion} _(Unit N, step N.M)_`
 
 ### Scenarios test behaviour, never structure
 Assert **observable behaviour**, never that a symbol exists or has a shape

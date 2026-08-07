@@ -133,12 +133,13 @@ sda-dev ─delegates─▸ sda-qa                      runtime acceptance QA (ta
 |---|---|---|
 | `sda-dev` RED/test-writing rules | `sda-test-writer` | `sda-test-writer` executes the RED phase the orchestrator delegates |
 | `sda-dev` GREEN/implementation rules | `sda-coder` | `sda-coder` executes the GREEN phase the orchestrator delegates |
-| `sda-dev` REFACTOR/refactoring rules | `sda-refactor` | `sda-refactor` executes both refactor scopes (per-unit 4·U, cross-unit 4·X) the orchestrator delegates |
+| `sda-dev` REFACTOR/refactoring rules | `sda-refactor` | `sda-refactor` executes both refactor scopes (per-unit 4·U, cross-unit 4·X) the orchestrator delegates; for `refactoring` units, also receives and applies Changes blocks as sweep 0 |
 | `sda-dev` delegation format | `sda-test-writer`, `sda-coder`, and `sda-refactor` input contracts | Subagents parse the exact format the orchestrator sends |
 | Approval gate structure or output templates | All of: `sda-dev`, `sda-test-writer`, `sda-coder`, `sda-refactor` | Gate outputs must be consistent across the orchestrated flow |
 | `read-project-tools.ps1` / `read-project-tools.sh` (area-matching logic) | `sda-dev`, `sda-dev-quality`, `sda-dev-task`, `sda-qa-task`, `sda-qa` (call it per area with command labels) | Changing area-matching logic, command labels, or output format → update both scripts and agent call sites |
-| `task.md` schema (`task-schema.md`) | `sda-scribe`, `sda-dev`, `sda-test-writer`, `sda-coder` | Scribe produces the schema; implementation agents consume it |
+| `task.md` schema (`task-schema.md`) | `sda-scribe`, `sda-dev`, `sda-test-writer`, `sda-coder`, `sda-refactor` | Scribe produces the schema; implementation agents consume it |
 | Integration-unit `Related tests` field (`task-schema.md`) | `sda-dev-task` (identifies runnable tests), `sda-scribe` (writes), `sda-dev` (passes as the test target or omits), `sda-coder` (runs them or skips) | Regression check for integration-only units; when absent, no tests run |
+| `refactoring` unit type routing | `sda-dev` (routes to Phase 4·U directly, passes Changes blocks), `sda-refactor` (accepts Changes field, applies as sweep 0) | New unit type skips GREEN; sda-refactor handles both prescribed transformations and improvement sweeps |
 | `Detected shell` (`project-tools.md`, Output Filter Command) | `sda-dev` (passes `Shell:` in every delegation), `sda-coder`, `sda-refactor`, `sda-test-writer` (run commands in that shell; never translate idioms) | Prevents shell-mismatch errors (e.g. `tail` vs `Select-Object`) |
 | `standardsSkill` (`project-config.json`) | `sda-dev` (from session context, passes `Standards skill:` in every delegation), `sda-coder`, `sda-refactor`, `sda-test-writer` (load the named skill), `sda-dev-task` (loads it for task.md code examples), **sda-setup skill** (scaffolds default) | Configurable coding-standards skill; default `standards-compliance` (the literal name lives only in `project-config.json` + docs, never in `.agent.md` files) |
 | `qa-task.md` schema (`qa-task-schema.md`) | `sda-qa-task` (designs FRs — coupled or standalone), `sda-scribe` (writes — Mode 4), `sda-qa` (reads — sole input) | sda-qa-task designs the QA spec; scribe writes it; sda-qa verifies against it black-box. Standalone specs live under `paths.issues` |
@@ -183,10 +184,11 @@ sda-dev ─delegates─▸ sda-qa                      runtime acceptance QA (ta
 
 ### 1. Orchestrator–Subagent Synchronization (highest priority)
 
-`sda-dev` owns the TDD workflow; `sda-test-writer` and `sda-coder` execute the RED and GREEN phases it delegates. When changing workflow logic:
+`sda-dev` owns the TDD workflow; `sda-test-writer`, `sda-coder`, and `sda-refactor` execute the phases it delegates. When changing workflow logic:
 
 - A RED-phase change in `sda-dev` must be reflected in `sda-test-writer`.
 - A GREEN-phase change in `sda-dev` must be reflected in `sda-coder`.
+- A REFACTOR-phase change in `sda-dev` must be reflected in `sda-refactor`.
 - A change in a subagent's contract must be reflected in the orchestrator's delegation templates.
 
 Before considering any workflow change complete, verify the orchestrator and subagents handle the same scenarios consistently.
