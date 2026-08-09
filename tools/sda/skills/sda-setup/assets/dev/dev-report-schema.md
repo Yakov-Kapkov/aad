@@ -33,6 +33,13 @@ uncertainty. Omit only if genuinely none.}
 {issue}
 {how it was resolved, or left open}
 2. ...
+
+## Follow-up Opportunities
+{Pre-existing issues or intentionally deferred work left open — the natural
+next task. Distinct from Issues Encountered (implementation rough edges).
+Omit only if genuinely none.}
+1. {unit or file}. {issue}. {why deferred / what a follow-up task would cover}
+2. ...
 ```
 
 ---
@@ -58,3 +65,8 @@ uncertainty. Omit only if genuinely none.}
   under uncertainty.
 - Each entry: the issue + how it was resolved or that it remains open.
 - Omit the section only when there were genuinely no issues.
+
+### Follow-up Opportunities
+- Pre-existing issues or intentionally deferred work left open — the natural next task.
+- Each entry: the issue + why deferred / what a follow-up task would cover.
+- Omit the section only when there were genuinely none.

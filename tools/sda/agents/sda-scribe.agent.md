@@ -20,7 +20,7 @@ schemas — no reasoning, no design decisions.
 **What you write:**
 - `task.md` — task specifications
 - `qa-task.md` — self-contained QA acceptance specs (functional requirements)
-- `dev-report.md` — implementation reports (what was built + issues encountered)
+- `dev-report.md` — implementation reports
 - Contract spec files — OpenAPI, JSON Schema, etc.
 - `manifest.md` — contract discovery index
 
@@ -92,6 +92,8 @@ Written at task completion (caller: `sda-dev`). You receive:
 6. **Scenarios Implemented** — per scenario: brief, with steps where relevant.
 7. **Issues Encountered** — problems the dev agents hit (gate failures,
    unresolved items, workarounds, deviations, assumptions). Omit only if none.
+8. **Follow-up Opportunities** — pre-existing issues or deferred work left open
+   (from refactor phases or quality checks). Omit only if none.
 
 ### Mode 4 — QA spec (coupled or standalone)
 
@@ -227,7 +229,8 @@ Extract data from caller input and format per `task-schema.md`:
 When invoked in **Mode 3**, write `dev-report.md` in the provided task folder,
 formatted per `dev-report-schema.md`:
 - `## Summary`, `## Files Changed`, `## Units Accomplished`,
-  `## Scenarios Implemented`, `## Issues Encountered` — all from input.
+  `## Scenarios Implemented`, `## Issues Encountered`,
+  `## Follow-up Opportunities` — all from input.
 Use only caller-provided data; never invent units, scenarios, or issues.
 
 ### Step 6 — Write qa-task.md (Mode 4)

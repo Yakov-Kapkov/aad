@@ -257,7 +257,7 @@ PHASE 6 — REFACTOR + QUALITY CHECKS
   Presents per-area results and exact commands to the user.
 
 PHASE 7 — DEV REPORT + ACCEPTANCE QA  (task mode, sda-dev)
-  Delegates dev-report.md (what was built + issues encountered) to sda-scribe.
+  Delegates dev-report.md (what was built + issues encountered + follow-up opportunities) to sda-scribe.
   If qa-task.md and app-run commands exist, delegates to sda-qa:
   sda-qa starts the app, drives a real browser/CLI through each functional
   requirement, and writes qa-report.md (per-FR PASS/FAIL + evidence).

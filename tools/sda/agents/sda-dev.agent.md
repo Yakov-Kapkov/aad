@@ -862,6 +862,9 @@ Triggered when `sda-dev-quality` flags a regression (test failure not in baselin
      `task.md`, assumptions made. Omit only if there were genuinely none.
      All file references must use root-based paths (from repo root) —
      never bare filenames or ambiguous names.
+   - **Follow-up Opportunities** — pre-existing issues carried from
+     Phase 4·U/4·X or Phase 5, plus intentionally deferred work. Omit only if
+     there were genuinely none. Root-based paths only.
 
    You pass facts; `sda-scribe` formats and writes `dev-report.md`. Do not
    write the file yourself.
