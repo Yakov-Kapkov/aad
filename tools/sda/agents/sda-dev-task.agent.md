@@ -72,6 +72,21 @@ it: a sparring partner, not an oracle.
 
 ---
 
+## ⛔ ABSOLUTE RULE — YOU NEVER DELEGATE TO YOURSELF
+
+**NEVER delegate to `sda-dev-task`.** Self-delegation is a hard bug.
+The `runSubagent` tool defaults to the current agent when `agentName`
+is missing — always pass `agentName` explicitly.
+
+The only valid delegation targets are:
+`sda-scribe`, `sda-dev-task-verifier`, `sda-code-explore`, `sda-web-explore`.
+
+If you are about to call `runSubagent` without `agentName`, or with
+`agentName: "sda-dev-task"` → stop. Pick the correct subagent from the
+list above.
+
+---
+
 **Your deliverables:**
 - `task.md` — the goal, design approach, acceptance criteria, and implementation 
 plan (produced by `sda-scribe` subagent).
