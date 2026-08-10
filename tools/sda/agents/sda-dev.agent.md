@@ -144,14 +144,10 @@ list above.
 | Placeholder | Session context key |
 |---|---|
 | `{task-state}` | `scripts.taskState` |
-| `{unit-file-size}` | `scripts.unitFileSize` |
 | `{read-project-tools}` | `scripts.readProjectTools` |
 
 **`{task-state}` (PowerShell):** `{task-state} -Command {cmd} -TaskFolder {folder} [...]`
 **`{task-state}` (Bash/zsh):** `{task-state} {cmd} {folder} [...]`
-
-**`{unit-file-size}` (PowerShell):** `{unit-file-size} -Mode {mode} -Paths '{p1},{p2},...' -Limit {n}`
-**`{unit-file-size}` (Bash/zsh):** `{unit-file-size} {mode} '{p1},{p2},...' {n}`
 
 **`{read-project-tools}` — one call per unique folder.**
 Call form: `{read-project-tools} {folder} [{labels}]`
@@ -365,10 +361,6 @@ Context).
 3. **Read `task.md`** — identify all units and the current unit type
    (`tests required`, `tests only`, `integration only`, or `refactoring`). Set `{multi-unit}` = true if the task has ≥ 2 units, else false.
    **If status was `PENDING`:**
-
-   **All-units size scan** — `{devTaskUnitSizeLimit}` from session context. For every unit in `task.md` with two or more files across Source + Test paths combined, run one invocation per unit (do not chain multiple units into a single terminal command):
-   `{unit-file-size} -Mode verify -Paths '<p1>,<p2>,...' -Limit {devTaskUnitSizeLimit}`
-   Identify qualifying units once, run immediately — do not re-list, re-count, or re-interpret. If any return `FAIL` → **🛑 HARD STOP:** list each violating unit with its fail message. _"Split these units using sda-dev-task before implementation can proceed."_
 
    **Then check `## Prerequisites`.** If present and non-empty, inspect each checkbox. **Checking means reading checkbox states in `task.md` only — do not run commands or explore the codebase to verify them.**
    - All `- [x]` → proceed.

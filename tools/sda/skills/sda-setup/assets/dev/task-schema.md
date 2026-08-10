@@ -379,7 +379,8 @@ field is the wrong value.
 - Scenario numbering is continuous across all units — never resets per unit.
 - **Source file cap:** limit to **3 files per unit**. When a unit touches more
   files, split by file group into sequential units. Test files may be shared
-  across splits.
+  across splits. Waived for units that only delete code or edit docs — no new
+  code, no behaviour change. The line-count limit still applies.
 - Units are split by **boundary** and **size** only — never by language.
   A single unit may span multiple languages.
 

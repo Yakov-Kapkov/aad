@@ -185,6 +185,10 @@ contiguous after splits.
 exceeds the cap, split along behavioural seams (happy path, validation, edge
 cases) — never mid-behaviour.
 
+**Deletion/doc waiver:** the 3-file cap is waived for units that only delete
+code or edit docs — no new production code, no behaviour change. The
+`{unit-file-size}` line-count guard still applies.
+
 **Scenarios:** must assert behaviour, never structure (shape checks must also
 verify values). For `tests required` units, every scenario includes
 `Expected (RED): FAIL` or `vacuous PASS`.
