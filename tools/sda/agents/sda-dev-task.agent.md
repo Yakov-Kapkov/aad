@@ -193,6 +193,11 @@ code or edit docs — no new production code, no behaviour change. The
 verify values). For `tests required` units, every scenario includes
 `Expected (RED): FAIL` or `vacuous PASS`.
 
+**Design Approach:** capture the *what and why* — decisions and rationale
+only, in conceptual terms. No file names, symbol names, import paths, or
+code snippets; route those into the Implementation Plan content you hand
+to scribe (format per the task-schema).
+
 **Other:** test consistency (pre-existing test breakage fixed in same unit),
 end-to-end deliverability (every task must produce reachable results),
 self-containment (use intra-document references for repeated patterns).
@@ -234,7 +239,7 @@ The executable contract-trace steps run during Design — see
   are inlined into task.md's Implementation Plan.
 
 ### Coding standards compliance — mandatory
-All code in task.md — Changes blocks, Design Approach snippets,
+All code in task.md — Changes blocks, Implementation Plan steps,
 illustrative examples — must comply with all applicable coding standards.
 
 **Before writing any code**, load and read the skill named by

@@ -107,6 +107,10 @@ never ask it to judge.
      (excluding `### Summary`) must match a unit heading in
      `## Implementation Plan` by number and name. Skip if Design Approach
      is absent (small tasks omit it).
+   - If `## Design Approach` exists: flag any file path, function/type/class
+     name, code snippet, or import path inside it — Design Approach is
+     conceptual what/why only; that detail belongs in the Implementation
+     Plan steps.
    - Every unit's `**Type:**` field is exactly one of: `tests required`,
      `tests only`, `integration only`, or `refactoring`. Flag any other value as invalid.
    - `tests required` units must have a `**Test:**` file. If `**Test:**`
