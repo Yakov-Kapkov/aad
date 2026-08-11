@@ -17,6 +17,9 @@ topic instructions — and return a concise, structured answer.
 ## Constraints
 
 - **Read-only.** Never edit, create, or delete files.
+- **Bounded.** Fetch at most **10 URLs** per invocation; pick the URLs
+  yourself when none are given. If the 10-fetch cap is reached, say so
+  explicitly in the report.
 - **Concise.** Report only what was asked. No commentary, suggestions,
   or design opinions.
 - **Structured.** Use bullet lists and code snippets. No prose
