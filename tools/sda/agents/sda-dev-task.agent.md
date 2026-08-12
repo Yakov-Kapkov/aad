@@ -522,6 +522,15 @@ build output), ask the user to run the command and share results.
 ### Phase 4 — Prerequisites Scan
 Discover setup dependencies through codebase exploration.
 
+**Planned work is not a prerequisite.** Anything a unit in this task will
+create, edit, or remove is implementation work — route it to the unit's
+Changes / Implementation Plan, never to `## Prerequisites`. Prerequisites
+list only setup that must already exist: env vars, services, tools.
+
+**Misplaced signal:** an entry naming a unit or saying "must add / remove /
+change" — e.g. _"add `events.ts` to `coverage.exclude` in Unit 1"_. Rewrite
+as a unit Change.
+
 1. Check for required environment variables, external services,
    configuration, or tooling the implementation depends on.
 2. For each prerequisite found, verify whether it is already met:
