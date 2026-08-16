@@ -301,7 +301,7 @@ End your response with this block — do not add any text after it.
 
 <result>
 ### Refactoring
-- {file}: {what was fixed}
+{None needed. | Done.}
 
 ### Type gate
 {clean | ❌ could not fix after 3 attempts}
@@ -316,13 +316,12 @@ End your response with this block — do not add any text after it.
 </result>
 
 - Omit `### Pre-existing issues` when no violations were observed.
-- When nothing was fixed, emit `### Refactoring` with `None needed.`;
-  still include `### Pre-existing issues` if any were observed.
+- `### Refactoring` shows only `None needed.` (nothing fixed) or `Done.`
+  (fixes applied) — never list what was fixed.
 - In `cross-unit` scope, rename `### Refactoring` to `### Cross-unit
-  duplication`; list `- {files} → {shared logic extracted to <target>}`, or
-  `None found.` when there is no inter-unit duplication.
+  duplication`; show `None found.` or `Done.`.
 - When the [De-duplication exception](#de-duplication-exception) applied,
-  list each untouched site you updated and any new shared file created.
+  show `Done.` and list any new shared file created.
 
 ---
 

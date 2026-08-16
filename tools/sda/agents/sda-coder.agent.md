@@ -244,7 +244,6 @@ End your response with this block — do not add any text after it.
 ### Implemented
 1. [source_file.py](path/to/source_file.py)
    - `symbol_name`
-     {summary}
 ...
 
 ### GREEN gate
@@ -320,7 +319,6 @@ End your response with this block — do not add any text after it.
 ### Implemented
 1. [source_file.py](path/to/source_file.py)
    - `symbol_name`
-     {summary}
 ...
 
 ### Type gate

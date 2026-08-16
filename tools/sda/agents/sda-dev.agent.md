@@ -302,9 +302,6 @@ Subsequent messages in the same phase do not repeat it.
 ### System context
 **Shell:** {shell}
 
-### Project context
-{project-configuration}
-
 ### Invocation context
 **Input provider:** {task / ad-hoc}
 
@@ -314,6 +311,7 @@ Subsequent messages in the same phase do not repeat it.
 Proceed to Phase 1.
 
 ## PHASE 1 — Plan
+<title>📝 **PLAN** — _Preparing work unit..._</title>
 
 This phase resolves the work unit via the selected input provider. Follow the [Task input provider](#task-input-provider) or [Ad-hoc input provider](#ad-hoc-input-provider) sub-flow.
 
@@ -439,7 +437,7 @@ After the provider sub-flow produces the work unit, proceed immediately through 
 When `{state-tracking}` is true: after each unit's Phase 4·U completes, loop back to Phase 1 for the next unit **within the same response**. Continue until all units are `DONE`, then proceed to Phase 4·X.
 When `{state-tracking}` is false: after Phase 4·U, proceed directly to Phase 5.
 
-**Before printing the result:** expand each scenario to Given/When/Then using the scenario description and Changes blocks (when present). Skip for `integration only` and `refactoring`.
+**Before printing the result:** list each scenario by name only — never expand to Given/When/Then. Skip for `integration only` and `refactoring`.
 
 <result>
 ### Pre-existing failures     ← always shown; task provider: first unit only — omit on subsequent units
@@ -460,11 +458,7 @@ or:
 ...
 {else:}
 **Scenarios:**
-
-**{N}. {scenario name}**
-   Given {context}
-   When {action}
-   Then {outcome}
+{N}. {scenario name}
 ...
 {/if}
 </result>
@@ -525,7 +519,7 @@ wait.
 
 2. **When `sda-test-writer` returns** — route by result:
    - Any failure (`⚠️ UNRESOLVED`, `🛑 HARD STOP`, or any `❌ ... gate`) → apply [Failure handling & escalation](#failure-handling--escalation). Do NOT output the result block or update state until a clean result is returned.
-   - Clean result → output the result block below, copying each section verbatim. Do NOT omit any section.
+   - Clean result → output the result block below. Copy `RED gate` and `Verification commands` verbatim. 
 
 ### State update
 
@@ -536,14 +530,6 @@ When `{state-tracking}`, clean result only: run `task-state` `-Command update -U
 Proceed to Phase 3 (GREEN) immediately. For tests-only units, proceed to Phase 4·U (per-unit refactor).
 
 <result>
-### Tests written
-
-**{N}. {scenario name}**
-- `test_name` — [test_file.py](path/to/test_file.py)
-  {what it verifies}
-  [❌ FAIL | ✅ vacuous — {why}]
-...
-
 ### RED gate
 **New tests:** {N} FAIL, {N} vacuous PASS
 **Pre-existing:** {N}/{N} PASS
@@ -607,7 +593,7 @@ or changes from other units. Delegate and wait.
 
 2. **When `sda-coder` returns** — route by result:
    - Any failure (`⚠️ UNRESOLVED`, `🛑 HARD STOP`, or any `❌ ... gate`) → apply [Failure handling & escalation](#failure-handling--escalation). Do NOT output the result block or update state until a clean result is returned.
-   - Clean result → output the result block below, copying each section verbatim. Do NOT omit any section.
+   - Clean result → output the result block below. Copy `GREEN gate` and `Verification commands` verbatim.
 
 ### State update
 
@@ -618,12 +604,6 @@ When `{state-tracking}`, clean result only: run `task-state` `-Command update -U
 Proceed to Phase 4·U (per-unit refactor).
 
 <result>
-### Implemented
-1. [source_file.py](path/to/source_file.py)
-   - `symbol_name`
-     {summary}
-...
-
 ### GREEN gate
 {N}/{N} passed
 
@@ -694,14 +674,10 @@ When `sda-refactor` returns — route by result:
 
 <result>
 ### Refactoring
-- {file}: {what was fixed}
+{None needed. | Done.}
 
 ### Pre-existing issues (not fixed)
 - {file} `{symbol}`: {violation} → carried forward to Follow-up Opportunities
-
-or:
-### Refactoring
-None needed.
 
 (Omit "Pre-existing issues" if none found.)
 </result>
@@ -747,11 +723,7 @@ When `sda-refactor` returns — route by result:
 
 <result>
 ### Cross-unit duplication
-- {files} → {shared logic extracted to <target>}
-
-or:
-### Cross-unit duplication
-None found.
+{None found. | Done.}
 </result>
 
 Proceed to Phase 5.
@@ -774,7 +746,7 @@ source or test files. Delegate and wait.
 
 ### Control flow
 
-1. **Gather inputs.** Collect all source + test files from all units processed this session (from RED/GREEN phase results). If a file's area is unknown, resolve it via `{read-project-tools} {file-directory}` (the `working-dir=` key maps to the area).
+1. **Gather inputs.** Collect all source + test files from all units processed this session (from the unit inputs and the subagent results you hold). If a file's area is unknown, resolve it via `{read-project-tools} {file-directory}` (the `working-dir=` key maps to the area).
 
 2. **Invoke `sda-dev-quality` by name.** Pass:
 
@@ -840,9 +812,10 @@ Triggered when `sda-dev-quality` flags a regression (test failure not in baselin
 2. **Self-check (both providers):** Confirm that per-unit refactoring
    (Phase 4·U) ran for every unit, and that cross-unit dedup
    (Phase 4·X) ran when `{multi-unit}` is true. Report pass/fail.
-3. **Collect verification commands** — from `sda-dev-quality`'s report.
-   The quality agent's output (`### Verification commands`) contains
-   per-area commands in gate order. Reference those — do not re-derive.
+3. **Collect quality results** — from `sda-dev-quality`'s report:
+   `### Quality gates` (per-area Local + Global tables) and
+   `### Verification commands` (Local then Global, with `#` labels).
+   Reproduce both verbatim — do not re-derive or summarize.
 4. **Dev report (when `{dev-report}`).** Delegate to `sda-scribe` by name
    (Mode 3 — Dev Report), passing the task folder path and:
    - **Summary** — what the task was, what was done.
@@ -874,11 +847,11 @@ Triggered when `sda-dev-quality` flags a regression (test failure not in baselin
 - Standards self-check: {pass/fail}
 - Refactoring: {from Phase 4·U/4·X}
 
-### Quality checks
-✅/❌/⚠️ per gate
+### Quality gates
+{reproduce sda-dev-quality's `### Quality gates` verbatim — per-area Local and Global tables}
 
 ### Verification commands
-{from sda-dev-quality's report — per-area, Local then Global}
+{reproduce sda-dev-quality's `### Verification commands` verbatim — per-area, Local then Global, with `#` command labels}
 
 Dev report: {dev-report.md link}
 

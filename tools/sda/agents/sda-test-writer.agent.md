@@ -285,11 +285,7 @@ End your response with this block — do not add any text after it.
 
 <result>
 ### Tests written
-
-**{N}. {scenario name}**
-- `test_name` — [test_file.py](path/to/test_file.py)
-  {what it verifies}
-  [❌ FAIL | ✅ vacuous — {why}]
+{N}. {scenario name} — `{test_name}` — [❌ FAIL | ✅ vacuous — {why}]
 ...
 
 ### RED gate
@@ -328,10 +324,7 @@ cd {absolute-working-dir}
 
 <result>
 ### Tests written
-
-**{N}. {scenario name}**
-- `test_name` — [test_file.py](path/to/test_file.py)
-  {what it verifies} [✅ PASS]
+{N}. {scenario name} — `{test_name}` — [✅ PASS]
 ...
 
 ### GREEN gate
