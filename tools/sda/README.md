@@ -103,13 +103,13 @@ One agent, two altitudes — detect from the request:
   ```
   Design the architecture for the notification subsystem.
   ```
-  Writes design topic files under `docs/design/` and updates the app's AI readme.
+  Writes design topic files under `docs/design/` and updates all readmes (all AI readmes + human README).
 - **Feature mode** — a specific feature or bounded context:
   ```
   Design a feature for paginated order listing filtered by status.
   ```
-  Records design decisions and updates the app's `AGENTS.md` outline, then
-  hands off to `sda-dev-task` to split into tasks.
+  Records design decisions and updates §4 of all readmes, then hands off
+  to `sda-dev-task` to split into tasks.
 
 `sda-design` is conversational. By default it pressure-tests the design **you** propose rather than authoring it — describe the area you're tackling, defend your direction against its push-back on complexity and risk, and iterate together before committing. (Configurable via `designOwnership` — see [project-config.json](#project-configjson).)
 
@@ -207,6 +207,7 @@ All pipeline agents are user-invokable and used as needed.
 | `sda.qa.task-create` | Triggers sda-qa-task agent — creates a QA task for a completed task |
 | `sda.setup` | Sets up SDA tool — scaffolds `.sda/` and scans the project toolchain |
 | `sda.setup.no-scan` | Sets up SDA tool — scaffolds `.sda/` without a toolchain scan |
+| `sda.design.reconcile` | Reconciles design docs with code — finds and fixes inconsistencies across the AI readme, design topic files, and decision docs |
 
 ---
 
@@ -396,7 +397,7 @@ Read in full by `sda-dev` at the start of every session — before any source fi
 ## Key design constraints
 
 - **The `sda-setup` skill and `sda-toolscan` agent run once per project, not per task.** Re-run only if the toolchain changes.
-- **`sda-design` is read-only on the codebase.** It researches but never edits source files. Edits are scoped to design artifacts (design topic files, feature detail docs, decision docs, the readme outline).
+- **`sda-design` is read-only on the codebase.** It researches but never edits source files. Edits are scoped to design artifacts (design topic files, feature detail docs, decision docs, all readmes).
 - **`sda-dev` hard-stops if `project-tools.md` is missing.** There is no fallback — run `sda-setup` + `sda-toolscan` first.
 - **Standards are mandatory, always.** `sda-dev` reads all standards files before every session — even for trivial fixes or ad-hoc requests.
 - **Quality checks are non-negotiable.** After any code change, `sda-dev` must run and pass all quality gates (tests, coverage, pre-merge, types, lint, full test suite) before finishing.

@@ -38,7 +38,8 @@ tools/sda/
 │   ├── sda.dev.task-implement.prompt.md   ← trigger sda-dev agent (implement a task via TDD)
 │   ├── sda.qa.task-create.prompt.md       ← trigger sda-qa-task agent (create a QA task)
 │   ├── sda.setup.prompt.md               ← setup SDA tool (with toolchain scan)
-│   └── sda.setup.no-scan.prompt.md       ← setup SDA tool (skip toolchain scan)
+│   ├── sda.setup.no-scan.prompt.md       ← setup SDA tool (skip toolchain scan)
+│   └── sda.design.reconcile.prompt.md    ← trigger sda-design agent (reconcile design docs with code)
 └── skills/
     └── sda-setup/                     ← project scaffolding skill
         ├── SKILL.md
