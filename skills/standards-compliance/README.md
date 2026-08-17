@@ -6,27 +6,25 @@ A Copilot skill that enforces language-specific coding, testing, and style rules
 
 ## Setup
 
-Run the install script from the root of this repository. It assembles the skill from two source locations and copies the result into your `.copilot` user folder:
-
-- `skills/standards-compliance/` — the skill definition (`SKILL.md`)
-- `resources/{language}/standards/` — the standards files for each language
-
-After install, both live together under `~/.copilot/skills/standards-compliance/standards/`.
+The skill is self-contained — the standards files ship inside this folder and
+are copied as-is on install. Install it with the dev-suite installer or on its own.
 
 **PowerShell (Windows):**
 ```powershell
-.\scripts\powershell\update-standards-compliance.ps1
+# Install the full dev suite (SDA tool + all skills, including this one)
+.\scripts\powershell\install-dev-suite.ps1
 
-# Custom target (any folder your IDE loads skills from):
-.\scripts\powershell\update-standards-compliance.ps1 -TargetBase "$env:USERPROFILE\.copilot"
+# Install only this skill
+.\scripts\powershell\install-skill.ps1 -TargetBase "$env:USERPROFILE\.copilot" -Name "standards-compliance"
 ```
 
 **Bash (macOS / Linux):**
 ```bash
-./scripts/bash/update-standards-compliance.sh
+# Install the full dev suite
+./scripts/bash/install-dev-suite.sh
 
-# Custom target (any folder your IDE loads skills from):
-./scripts/bash/update-standards-compliance.sh -t "$HOME/.copilot"
+# Install only this skill
+./scripts/bash/install-skill.sh -t "$HOME/.copilot" -n "standards-compliance"
 ```
 
 Installs to `~/.copilot/skills/standards-compliance/` by default.
@@ -69,13 +67,16 @@ Also use when resolving conflicts between a task spec and standards, or to valid
 
 ## What's Inside
 
-Standards files **live in `resources/` in this repository** and are assembled into the skill folder on install. After install, the layout under `standards-compliance/` is:
+The skill is self-contained — all files below live in this folder and are copied
+as-is on install:
 
-| File / Folder | Source in this repo | Purpose |
-|---|---|---|
-| `SKILL.md` | `skills/standards-compliance/SKILL.md` | Skill definition — behavioral rules for standards enforcement |
-| `standards/common-standards.md` | `resources/common-standards.md` | Language-agnostic rules loaded for every language (SOLID, AAA, unit test scope) |
-| `standards/{language}/` | `resources/{language}/standards/` | Language-specific standards files |
+| File / Folder | Purpose |
+|---|---|
+| `SKILL.md` | Skill definition — behavioral rules for standards enforcement |
+| `AGENTS.md` | Rules for editing the standards files (cross-language sync, section order) |
+| `standards/common-standards.md` | Language-agnostic rules loaded for every language (SOLID, AAA, unit test scope) |
+| `standards/{language}/` | Language-specific standards files |
+| `standards/README.md` | Human index — quick navigation, decision tree, per-file summaries |
 
 Each language folder contains up to three standards files (not all are required):
 
@@ -89,9 +90,10 @@ Each language folder contains up to three standards files (not all are required)
 
 ## Adding a New Language
 
-1. Create `resources/{language}/standards/` in this repository with the applicable files:
+1. Create `standards/{language}/` in this skill with the applicable files:
    - `coding-standards.md` (required)
    - `code-style.md` (required)
    - `testing-standards.md` (only if the language has its own test patterns)
-2. Re-run the install script — it auto-discovers all language folders under `resources/` and copies them into the installed skill.
-3. The skill will pick up the new language automatically — no changes to `SKILL.md` required.
+2. Follow the section order in `AGENTS.md` and reuse rule text from an existing language — change only code examples.
+3. Re-run the install script — the skill folder (including the new language) is copied as-is.
+4. The skill will pick up the new language automatically — no changes to `SKILL.md` required.

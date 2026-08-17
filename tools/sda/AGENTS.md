@@ -91,8 +91,8 @@ tools/sda/
         │       ├── write-config.ps1       ← write project-config.json
         │       ├── read-config.ps1            ← per-agent config hook script → .sda/scripts/
         │       └── read-project-tools.ps1     ← area-aware command lookup by folder → .sda/scripts/
-        ├── tool-discovery/                ← populated by install script from resources/
-        └── tool-catalog/                  ← populated by install script from resources/
+        ├── tool-discovery/                ← language toolchain specs (shipped with the skill)
+        └── tool-catalog/                  ← language tool install catalogs (shipped with the skill)
 ```
 
 ## Agent Dependency Map

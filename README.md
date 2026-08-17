@@ -13,10 +13,7 @@ Copilot chat agents — invokable by name in the agent panel.
 
 | Agent | Description |
 |---|---|
-| [`copilot-designer`](agents/copilot-designer/) | Sole steward of this repo's authored artifacts — agent customization files (agents, skills, prompts, instructions) for any agent environment plus dependent schemas, standards, and docs; enforces separation of orchestration- vs entity-level instructions |
-| [`feature-designer`](agents/feature-designer/) | Researches, designs, and plans features and tasks for development |
-| [`system-designer`](agents/system-designer/) | System design assistant — generates and refactors `design.md` and UML diagrams |
-| [`tdd-workflow`](agents/tdd-workflow/README.md) | Orchestrates a full TDD lifecycle across focused subagents — research, test writing, implementation, quality audit |
+| [`copilot-designer`](.github/agents/copilot-designer.agent.md) | Sole steward of this repo's authored artifacts — agent customization files (agents, skills, prompts, instructions) for any agent environment plus dependent schemas, standards, and docs; enforces separation of orchestration- vs entity-level instructions |
 | [`ts-tutor`](agents/ts-tutor/) | TypeScript tutor for .NET and Python developers |
 | [`commit`](agents/commit/) | Analyzes working directory changes, composes conventional commit messages, and always commits and pushes. Accepts optional `Session context:` to enrich the message body with the caller's stated intent (pinned to Haiku for fast, cheap execution) |
 
@@ -30,7 +27,6 @@ setup required.
 | Folder | Description |
 |---|---|
 | [`prompts/commit/`](prompts/commit/) | Two prompts for the commit agent: `/commit` and `/commit-staged` — both infer session context from the conversation to produce richer commit message bodies |
-| [`prompts/tdd/`](prompts/tdd/README.md) | TDD workflow: tool discovery, standards routing, RED/GREEN/REFACTOR cycle with approval gates |
 
 ---
 
@@ -57,19 +53,10 @@ Multi-agent tool suites.
 
 ---
 
-### [`resources/`](resources/README.md)
-
-Coding standards and tool-discovery specs — used by both the `tdd-workflow`
-agents and the `prompts/tdd/` workflow.
-
-| Resource | Contents |
-|---|---|
-| `resources/common-standards.md` | Language-agnostic coding rules (SOLID, AAA, behavioral testing, constant reuse, etc.) |
-| `resources/csharp/` | `tool-discovery.md`, `coding-standards.md`, `testing-standards.md`, `code-style.md` |
-| `resources/java/` | `tool-discovery.md`, `coding-standards.md`, `testing-standards.md`, `code-style.md` |
-| `resources/postgresql/` | `coding-standards.md`, `code-style.md` |
-| `resources/python/` | `tool-discovery.md`, `coding-standards.md`, `testing-standards.md`, `code-style.md` |
-| `resources/typescript/` | `tool-discovery.md`, `coding-standards.md`, `testing-standards.md`, `code-style.md` |
+Language standards ship with the [`standards-compliance`](skills/standards-compliance/README.md)
+skill — `standards/common-standards.md` plus `standards/{language}/`. Toolchain specs
+(`tool-discovery.md`, `tool-catalog.md`) ship with the
+[`sda-setup`](tools/sda/skills/sda-setup/) skill.
 
 ---
 
@@ -78,10 +65,9 @@ agents and the `prompts/tdd/` workflow.
 Installation scripts — available for both PowerShell (Windows) and Bash (macOS/Linux).
 
 Both `install-skill` and `install-tool` support custom install scripts: if
-`{source}/scripts/{cli}/install.{ext}` exists, it is invoked instead of the
+`{source}/_installation/{cli}/install.{ext}` exists, it is invoked instead of the
 default copy logic. This enables skills/tools to run custom assembly steps
-(e.g. standards-compliance) or accept extra parameters (e.g. model overrides
-for SDA agents).
+or accept extra parameters (e.g. model overrides for SDA agents).
 
 #### [`scripts/powershell/`](scripts/powershell/)
 
@@ -101,14 +87,3 @@ for SDA agents).
 
 ---
 
-## Agent vs prompt workflow
-
-Both `agents/tdd-workflow` and `prompts/tdd` implement the same TDD process. Choose
-based on how you work:
-
-| | `agents/tdd-workflow` | `prompts/tdd` |
-|---|---|---|
-| How to invoke | Agent panel in Copilot Chat | `#file` reference in chat |
-| Setup | Copy `resources/{language}` into `.tdd-workflow/` in your project | Copy `resources/{language}` into `standards/` next to the prompt files |
-| Orchestration | Dedicated orchestrator agent with strict phase enforcement | Single file routes the assistant |
-| Best for | Complex features, teams wanting enforced workflow | Quick use, minimal setup |

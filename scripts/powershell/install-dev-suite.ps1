@@ -89,30 +89,6 @@ $sdaToolArgs = @{ TargetBase = $TargetBase; Name = 'sda' }
 # ── sda-setup skill ─────────────────────────────────────────────────────────
 Write-Host "`n== Installing sda-setup skill ==" -ForegroundColor Yellow
 & (Join-Path $PSScriptRoot 'install-skill.ps1') -TargetBase $TargetBase -Name 'sda-setup' -SourcePath 'tools\sda\skills\sda-setup'
-Write-Host '  Copying tool-discovery assets...' -ForegroundColor Gray
-$Dst = Join-Path $TargetBase 'skills\sda-setup\assets\tool-discovery'
-Get-ChildItem (Join-Path $RepoRoot 'resources') -Directory | ForEach-Object {
-    $Lang = $_.Name
-    $Src = Join-Path $_.FullName 'tool-discovery.md'
-    if (Test-Path $Src) {
-        $LangDir = Join-Path $Dst $Lang
-        New-Item -ItemType Directory -Path $LangDir -Force | Out-Null
-        Copy-Item $Src -Destination $LangDir -Force
-        Write-Host "    $Lang/tool-discovery.md"
-    }
-}
-Write-Host '  Copying tool-catalog assets...' -ForegroundColor Gray
-$Dst = Join-Path $TargetBase 'skills\sda-setup\assets\tool-catalog'
-Get-ChildItem (Join-Path $RepoRoot 'resources') -Directory | ForEach-Object {
-    $Lang = $_.Name
-    $Src = Join-Path $_.FullName 'tool-catalog.md'
-    if (Test-Path $Src) {
-        $LangDir = Join-Path $Dst $Lang
-        New-Item -ItemType Directory -Path $LangDir -Force | Out-Null
-        Copy-Item $Src -Destination $LangDir -Force
-        Write-Host "    $Lang/tool-catalog.md"
-    }
-}
 
 # ── commit agent ─────────────────────────────────────────────────────────────
 Write-Host "`n== Installing commit agent ==" -ForegroundColor Yellow

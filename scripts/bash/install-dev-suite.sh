@@ -105,30 +105,6 @@ echo -e "${CYAN}=== Installing SDA tool ===${NC}"
 echo
 echo -e "${YELLOW}== Installing sda-setup skill ==${NC}"
 "$SCRIPT_DIR/install-skill.sh" -t "$TARGET_BASE" -n "sda-setup" -s "tools/sda/skills/sda-setup"
-echo -e "${GRAY}  Copying tool-discovery assets...${NC}"
-DST="$TARGET_BASE/skills/sda-setup/assets/tool-discovery"
-for lang_dir in "$REPO_ROOT/resources"/*/; do
-    lang="$(basename "$lang_dir")"
-    src="$lang_dir/tool-discovery.md"
-    if [ -f "$src" ]; then
-        lang_dst="$DST/$lang"
-        mkdir -p "$lang_dst"
-        cp "$src" "$lang_dst/"
-        echo "    $lang/tool-discovery.md"
-    fi
-done
-echo -e "${GRAY}  Copying tool-catalog assets...${NC}"
-DST="$TARGET_BASE/skills/sda-setup/assets/tool-catalog"
-for lang_dir in "$REPO_ROOT/resources"/*/; do
-    lang="$(basename "$lang_dir")"
-    src="$lang_dir/tool-catalog.md"
-    if [ -f "$src" ]; then
-        lang_dst="$DST/$lang"
-        mkdir -p "$lang_dst"
-        cp "$src" "$lang_dst/"
-        echo "    $lang/tool-catalog.md"
-    fi
-done
 
 echo
 echo -e "${YELLOW}== Installing commit agent ==${NC}"

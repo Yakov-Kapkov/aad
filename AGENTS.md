@@ -17,7 +17,6 @@ agents/          — Copilot chat agents (.agent.md files)
 prompts/         — File-based prompt workflows (.prompt.md, .md)
 skills/          — Reusable skills (SKILL.md + supporting files)
 tools/           — Multi-agent tool suites (e.g. sda/)
-resources/       — Shared coding standards & workflow specs, per language
 scripts/         — Installation and update scripts (.bat, .ps1)
 ```
 

@@ -1,42 +1,36 @@
 # Coding Standards — Index
 
-**Purpose**: AI assistant instructions for maintaining code quality and consistency. Standards are split by language; shared workflow rules live here.
+**Purpose**: AI assistant instructions for maintaining code quality and consistency. Standards are split by language; shared workflow rules live in `common-standards.md`.
+
+These files are bundled with the **standards-compliance** skill. Toolchain specs
+(`tool-discovery.md`, `tool-catalog.md`) ship with the **sda-setup** skill instead.
 
 ---
 
 ## Structure
 
 ```
-resources/
+standards/
 ├── common-standards.md              ← language-agnostic rules
 ├── csharp/
-│   ├── tool-discovery.md
-│   └── standards/
-│       ├── coding-standards.md
-│       ├── testing-standards.md
-│       └── code-style.md
+│   ├── coding-standards.md
+│   ├── testing-standards.md
+│   └── code-style.md
 ├── java/
-│   ├── tool-discovery.md
-│   └── standards/
-│       ├── coding-standards.md
-│       ├── testing-standards.md
-│       └── code-style.md
+│   ├── coding-standards.md
+│   ├── testing-standards.md
+│   └── code-style.md
 ├── python/
-│   ├── tool-discovery.md
-│   └── standards/
-│       ├── coding-standards.md
-│       ├── testing-standards.md
-│       └── code-style.md
+│   ├── coding-standards.md
+│   ├── testing-standards.md
+│   └── code-style.md
 ├── postgresql/
-│   └── standards/
-│       ├── coding-standards.md
-│       └── code-style.md
+│   ├── coding-standards.md
+│   └── code-style.md
 └── typescript/
-    ├── tool-discovery.md
-    └── standards/
-        ├── coding-standards.md
-        ├── testing-standards.md
-        └── code-style.md
+    ├── coding-standards.md
+    ├── testing-standards.md
+    └── code-style.md
 ```
 
 ---
@@ -49,7 +43,6 @@ resources/
 | **coding-standards.md** | Core technical rules for production code | Writing production code: types, constants, imports |
 | **testing-standards.md** | How to write quality tests | Writing any test code: structure, AAA, mocking |
 | **code-style.md** | Formatting and documentation rules | Formatting code, writing comments/docs |
-| **tool-discovery.md** | Toolchain scanning spec | Detecting missing tools |
 
 ## Decision Tree: Which File Do I Need?
 
@@ -72,7 +65,7 @@ What are you doing?
 
 ### coding-standards.md
 
-**C#** (`csharp/standards/`):
+**C#** (`csharp/`):
 - Nullable reference types (MANDATORY, `<Nullable>enable</Nullable>`)
 - Records for immutable data vs classes
 - Language keywords over BCL types (`int` not `Int32`)
@@ -81,7 +74,7 @@ What are you doing?
 - Magic number/string prevention (`const` / `static readonly`)
 - Namespace and using directive organization (file-scoped, outside namespace)
 
-**Java** (`java/standards/`):
+**Java** (`java/`):
 - Type annotations (MANDATORY, NEVER use raw types or `Object`)
 - Records/classes with Bean Validation vs plain Maps
 - Optional for nullable returns
@@ -89,7 +82,7 @@ What are you doing?
 - Magic number/string prevention
 - Import organization (no wildcards, grouped by origin)
 
-**TypeScript** (`typescript/standards/`):
+**TypeScript** (`typescript/`):
 - SOLID principles
 - Type annotations (MANDATORY, NEVER use `any`)
 - Interfaces/Types vs plain objects
@@ -97,7 +90,7 @@ What are you doing?
 - Magic number/string prevention
 - Import organization (ES6 modules)
 
-**PostgreSQL** (`postgresql/standards/`):
+**PostgreSQL** (`postgresql/`):
 - Data types (TIMESTAMPTZ, NUMERIC, UUID, TEXT over VARCHAR)
 - Naming conventions (snake_case, prefixed constraints/indexes)
 - Constraints and validation (NOT NULL, CHECK, FK)
@@ -105,7 +98,7 @@ What are you doing?
 - Migration structure (forward-only, versioned)
 - Schema organization
 
-**Python** (`python/standards/`):
+**Python** (`python/`):
 - SOLID principles
 - Type annotations (MANDATORY for all parameters)
 - Pydantic models / dataclasses vs dictionaries
@@ -114,24 +107,24 @@ What are you doing?
 
 ### testing-standards.md
 
-**C#** (`csharp/standards/`):
+**C#** (`csharp/`):
 - Test/file naming (`{Class}Tests`, `Method_WhenCondition_ShouldResult`)
 - No environment variable dependencies (in-memory `IConfiguration`)
 - Async tests return `Task` (never `async void`)
 - Test parameterization (`[Theory]` + `[InlineData]` / `[MemberData]`)
 - Mocking best practices (Moq constructor injection)
 
-**Java** (`java/standards/`):
+**Java** (`java/`):
 - `@BeforeEach` setup and helper functions
 - Test parameterization (`@ParameterizedTest`, `@CsvSource`, `@MethodSource`)
 - Mocking best practices (Mockito `@Mock`, `@InjectMocks`, `mockStatic`)
 
-**TypeScript** (`typescript/standards/`):
+**TypeScript** (`typescript/`):
 - Test setup functions and utilities
 - Test parameterization (`it.each` / `describe.each`)
 - Mocking best practices (`vi.spyOn`, `vi.mock`)
 
-**Python** (`python/standards/`):
+**Python** (`python/`):
 - Fixture usage (eliminate duplication)
 - Test parameterization (`@pytest.mark.parametrize`)
 - Mocking best practices (`patch.object`)
@@ -140,31 +133,31 @@ PostgreSQL has no `testing-standards.md` — database testing is covered by the 
 
 ### code-style.md
 
-**C#** (`csharp/standards/`):
+**C#** (`csharp/`):
 - Naming conventions (PascalCase types/methods, camelCase locals — no underscores, no `_` prefix)
 - Layout and formatting (Allman braces, 4-space indent, `var` rules, `using` for disposable)
 - String formatting (quote variables in messages)
 - No file-level block comments (type XML doc serves as file doc)
 - XML doc standards (`<summary>`, `<remarks>`, `<param>`, `<returns>`, `<exception>`)
 
-**Java** (`java/standards/`):
+**Java** (`java/`):
 - String formatting (quote variables)
 - No file-level block comments (class Javadoc serves as file doc)
 - Javadoc standards (Summary + description + `@param` / `@return` / `@throws`)
 
-**TypeScript** (`typescript/standards/`):
+**TypeScript** (`typescript/`):
 - String formatting (quote variables)
 - Clean code practices
 - Comments (explain "why", not "what")
 - TSDoc standards (Title + @summary + @description)
 - Anti-patterns to avoid (orphaned constants, etc.)
 
-**PostgreSQL** (`postgresql/standards/`):
+**PostgreSQL** (`postgresql/`):
 - SQL formatting (uppercase keywords, one column per line, aligned JOINs)
 - Migration file documentation (purpose, business reason, locking notes)
 - Object documentation (`COMMENT ON` for tables, nullable columns, indexes)
 
-**Python** (`python/standards/`):
+**Python** (`python/`):
 - String formatting (quote variables)
 - Clean code practices
 - Module docstring (MANDATORY: max 5 lines at top of every file)
@@ -173,14 +166,6 @@ PostgreSQL has no `testing-standards.md` — database testing is covered by the 
 - Anti-patterns to avoid (orphaned constants, etc.)
 
 ---
-
-## For AI Assistants (Copilot)
-
-**Context loading strategy**:
-- **Production code**: Load `coding-standards.md` + `code-style.md` for the target language
-- **Test code**: Load `testing-standards.md` for the target language
-
-**All rules marked MANDATORY are non-negotiable.**
 
 ## For Human Developers
 
@@ -197,11 +182,3 @@ PostgreSQL has no `testing-standards.md` — database testing is covered by the 
 **TypeScript**: Examples use Jest/Vitest syntax but principles apply to Mocha or other frameworks. Ensure `strict: true` in `tsconfig.json`. ESLint should enforce these standards where possible.
 
 **Python**: Examples use pytest. Ensure mypy strict mode is enabled.
-
-**C#**: Examples use xUnit and Moq. Enable `<Nullable>enable</Nullable>` and `<AnalysisMode>All</AnalysisMode>` in every project. Use `.editorconfig` to enforce naming and style rules.
-
----
-
-## Adding a new language
-
-Create a folder matching the language name (as it would be inferred from the project's manifest file — e.g. `package.json` → `typescript`, `pyproject.toml` → `python`) and populate it with `tool-discovery.md` and a `standards/` folder containing `coding-standards.md`, `testing-standards.md`, and `code-style.md`.

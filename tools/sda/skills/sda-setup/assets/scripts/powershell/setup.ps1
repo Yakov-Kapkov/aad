@@ -38,11 +38,12 @@ $tcSource = "$scriptDir/tool-catalog/$Language/tool-catalog.md"
 if (Test-Path $tcSource) {
     Copy-Item $tcSource "$targetDir/resources/$Language/tool-catalog.md"
 } else {
-    Write-Warning "No tool-catalog found for '$Language'. Add one to resources/$Language/tool-catalog.md and re-run the install script."
+    Write-Warning "No tool-catalog found for '$Language'. Add one to assets/tool-catalog/$Language/tool-catalog.md and re-run the install script."
 }
 Copy-Item "$scriptDir/qa/qa.example.secrets.env"           "$targetDir/secrets/qa.example.secrets.env"
 
 # Copy read-config hook script
+New-Item -ItemType Directory -Force -Path "$targetDir/scripts" | Out-Null
 Copy-Item "$PSScriptRoot/read-config.ps1"              "$targetDir/scripts/read-config.ps1"
 Copy-Item "$PSScriptRoot/read-project-tools.ps1"      "$targetDir/scripts/read-project-tools.ps1"
 

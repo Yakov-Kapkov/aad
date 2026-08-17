@@ -42,11 +42,12 @@ TC_SOURCE="$ASSETS_DIR/tool-catalog/$LANGUAGE/tool-catalog.md"
 if [ -f "$TC_SOURCE" ]; then
   cp "$TC_SOURCE" "$TARGET_DIR/resources/$LANGUAGE/tool-catalog.md"
 else
-  echo "WARNING: No tool-catalog found for '$LANGUAGE'. Add one to resources/$LANGUAGE/tool-catalog.md and re-run the install script."
+  echo "WARNING: No tool-catalog found for '$LANGUAGE'. Add one to assets/tool-catalog/$LANGUAGE/tool-catalog.md and re-run the install script."
 fi
 cp "$ASSETS_DIR/qa/qa.example.secrets.env"           "$TARGET_DIR/secrets/qa.example.secrets.env"
 
 # Copy read-config hook script
+mkdir -p "$TARGET_DIR/scripts"
 cp "$SCRIPT_DIR/read-config.sh"                      "$TARGET_DIR/scripts/read-config.sh"
 chmod +x "$TARGET_DIR/scripts/read-config.sh"
 cp "$SCRIPT_DIR/read-project-tools.sh"               "$TARGET_DIR/scripts/read-project-tools.sh"

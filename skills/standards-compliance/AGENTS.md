@@ -1,26 +1,23 @@
-# AGENTS.md — resources/
+# AGENTS.md — standards-compliance
 
-Rules for creating and editing standards files in this folder.
+Rules for creating and editing the standards files in `standards/`.
 
 ## Folder structure
 
 ```
-resources/
+standards/
 ├── common-standards.md              ← language-agnostic rules
-├── {language}/
-│   ├── tool-discovery.md
-│   ├── tool-catalog.md
-│   └── standards/
-│       ├── coding-standards.md      ← production-code rules
-│       ├── testing-standards.md     ← test-code rules
-│       └── code-style.md           ← formatting and documentation
+└── {language}/
+    ├── coding-standards.md          ← production-code rules
+    ├── testing-standards.md         ← test-code rules
+    └── code-style.md                ← formatting and documentation
 ```
 
 ## Rules
 
 ### 1. Cross-language sync
 
-Any change to a file under `{language}/` must be mirrored in
+Any change to a file under `standards/{language}/` must be mirrored in
 the same file for **every** other language folder:
 
 - **Adding a section** → add it to every language, with language-appropriate code examples.
@@ -31,12 +28,12 @@ Only code examples differ between languages; rule text is identical.
 
 ### 2. Common standards
 
-Language-agnostic rules live in `common-standards.md` at the resources
-root — not duplicated per language. Examples: SOLID, AAA structure,
-behavioral testing, unit test scope, derive-from-mocks.
+Language-agnostic rules live in `standards/common-standards.md` — not
+duplicated per language. Examples: SOLID, AAA structure, behavioral
+testing, unit test scope, derive-from-mocks.
 
-Moving a rule to common: remove it from every `{language}/standards/`
-file and add it once in `common-standards.md`.
+Moving a rule to common: remove it from every `standards/{language}/`
+file and add it once in `standards/common-standards.md`.
 
 ### 3. File format
 
@@ -107,13 +104,14 @@ across languages where the underlying convention genuinely differs
 ### 6. New languages
 
 Adding a language:
-1. Create `{language}/standards/` with all three files.
+1. Create `standards/{language}/` with the applicable files:
+   - `coding-standards.md` (required)
+   - `code-style.md` (required)
+   - `testing-standards.md` (only if the language has its own test patterns)
 2. Follow the section order above.
 3. Reuse rule text verbatim from an existing language — change only
    code examples.
-4. Add the language to `$Languages` in
-   `scripts/powershell/update-standards-compliance.ps1` (auto-detected
-   in `scripts/bash/update-standards-compliance.sh`).
+4. Update the `standards/README.md` structure tree.
 
 ### 7. Boundaries
 
