@@ -9,13 +9,13 @@ $ErrorActionPreference = 'Stop'
 $agentKeys = @{
     'sda-dev'           = @('scripts.taskState','scripts.readProjectTools','standardsSkill','paths.design','paths.specs','tests.coverage.enabled')
     'sda-dev-quality'   = @('scripts.readProjectTools','tests.coverage.enabled')
-    'sda-dev-task'          = @('scripts.taskState','scripts.unitFileSize','devTaskUnitSizeLimit','designOwnership','standardsSkill','paths.design','paths.specs','paths.tasks','paths.features')
-    'sda-dev-task-verifier' = @('scripts.unitFileSize','devTaskUnitSizeLimit','paths.specs','paths.design','paths.features')
+    'sda-dev-task'          = @('scripts.taskState','scripts.unitFileSize','devTaskUnitSizeLimit','designOwnership','standardsSkill','paths.design','paths.specs','paths.tasks')
+    'sda-dev-task-verifier' = @('scripts.unitFileSize','devTaskUnitSizeLimit','paths.specs','paths.design')
     'sda-qa'            = @('paths.issues','scripts.qaSessionInit','scripts.loadQaSecrets','scripts.invokeHttp','scripts.readProjectTools')
-    'sda-qa-task'       = @('designOwnership','paths.tasks','paths.features','paths.issues','paths.specs','scripts.listQaSecrets','scripts.readProjectTools')
-    'sda-feature'       = @('designOwnership','paths.design','paths.specs','paths.features')
-    'sda-system'        = @('designOwnership','paths.design','paths.specs')
+    'sda-qa-task'       = @('designOwnership','paths.tasks','paths.issues','paths.specs','scripts.listQaSecrets','scripts.readProjectTools')
+    'sda-design'        = @('designOwnership','paths.design','paths.specs','paths.decisions')
     'sda-scribe'        = @('paths.specs','paths.issues')
+    'sda-docs-check'    = @('paths.decisions','paths.design','scripts.docsIntegrity')
 }
 
 $keys = $agentKeys[$Agent]
@@ -32,13 +32,13 @@ $defaults = @{
     'scripts.listQaSecrets'  = '.sda/scripts/qa/list-qa-secrets.ps1'
     'scripts.qaSessionInit'  = '.sda/scripts/qa/qa-session-init.ps1'
     'scripts.invokeHttp'     = '.sda/scripts/qa/invoke-http.ps1'
+    'scripts.docsIntegrity'  = '.sda/scripts/decisions/docs-integrity.ps1'
     'devTaskUnitSizeLimit'   = '1000'
     'designOwnership'        = 'user'
     'standardsSkill'         = 'standards-compliance'
-    'paths.design'           = '.sda/design'
+    'paths.design'           = 'docs/design'
     'paths.specs'            = '.sda/specs'
     'paths.tasks'            = '.sda/tasks'
-    'paths.features'         = '.sda/features'
     'paths.issues'           = '.sda/issues'
     'tests.coverage.enabled' = 'true'
 }
@@ -83,6 +83,15 @@ if (Test-Path $configPath) {
             $lines.Add("$key=$($defaults[$key])")
         }
     }
+}
+
+# Derive paths.decisions from paths.design (always {design-root}/decisions).
+if ($keys -contains 'paths.decisions') {
+    $designVal = $null
+    if (Test-Path $configPath) { $designVal = Get-NestedValue $config 'paths.design' }
+    if ($null -eq $designVal -and $defaults.ContainsKey('paths.design')) { $designVal = $defaults['paths.design'] }
+    if ($null -eq $designVal) { $designVal = 'docs/design' }
+    $lines.Add(('paths.decisions=' + $designVal.TrimEnd('/') + '/decisions'))
 }
 
 # $lines.Add('')

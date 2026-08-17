@@ -30,6 +30,9 @@ New-Item -ItemType Directory -Force -Path "$targetDir/resources/qa" | Out-Null
 Copy-Item "$scriptDir/qa/qa-task-schema.md"                "$targetDir/resources/qa/qa-task-schema.md"
 New-Item -ItemType Directory -Force -Path "$targetDir/resources/toolscan" | Out-Null
 Copy-Item "$scriptDir/toolscan/project-tools-schema.md"    "$targetDir/resources/toolscan/project-tools-schema.md"
+New-Item -ItemType Directory -Force -Path "$targetDir/resources/decisions" | Out-Null
+Copy-Item "$scriptDir/decisions/decision-topic-schema.md"  "$targetDir/resources/decisions/decision-topic-schema.md"
+Copy-Item "$scriptDir/decisions/decision-index-schema.md"  "$targetDir/resources/decisions/decision-index-schema.md"
 
 $tcSource = "$scriptDir/tool-catalog/$Language/tool-catalog.md"
 if (Test-Path $tcSource) {
@@ -62,6 +65,10 @@ New-Item -ItemType Directory -Force -Path "$targetDir/scripts/toolscan" | Out-Nu
 Copy-Item "$toolscanSrc/cleanup-project-tools.ps1"      "$targetDir/scripts/toolscan/cleanup-project-tools.ps1"
 Copy-Item "$toolscanSrc/get-timestamp.ps1"              "$targetDir/scripts/toolscan/get-timestamp.ps1"
 Copy-Item "$toolscanSrc/probe-validators.ps1"           "$targetDir/scripts/toolscan/probe-validators.ps1"
+
+$decisionsSrc = Join-Path (Join-Path $scriptDir 'decisions') 'powershell'
+New-Item -ItemType Directory -Force -Path "$targetDir/scripts/decisions" | Out-Null
+Copy-Item "$decisionsSrc/docs-integrity.ps1"            "$targetDir/scripts/decisions/docs-integrity.ps1"
 
 $tdSource = "$scriptDir/tool-discovery/$Language/tool-discovery.md"
 if (Test-Path $tdSource) {

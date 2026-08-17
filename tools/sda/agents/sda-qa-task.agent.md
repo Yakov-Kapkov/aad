@@ -162,7 +162,6 @@ it was implementation structure → ignore it.
    - `repoRoot` → `{repo-root}`
    - `designOwnership` — who leads design (`user` | `ai`)
    - `paths.tasks` → `{tasks-root}`
-   - `paths.features` → `{features-root}`
    - `paths.issues` → `{issues-root}`
    - `paths.specs` → `{specs-root}`
    - `scripts.listQaSecrets` → `{list-qa-secrets}`
@@ -232,7 +231,7 @@ Unclear → ask one question.
 
 ### Coupled mode
 
-1. **Locate** the task folder under `{tasks-root}` or `{features-root}/<feature>/tasks/`.
+1. **Locate** the task folder under `{tasks-root}`.
 2. **Read the whitelist only** (per [Read-list](#read-list)): `## Goal`,
    `## Acceptance Criteria`, `## Contracts` (+ each referenced spec file under
    `{specs-root}`), and `## Design Approach` behaviour filtered by the

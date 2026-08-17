@@ -8,8 +8,9 @@
 ## Goal
 {1-2 sentences: what and why.}
 
-## Feature
-{feature-name — omit this section entirely for standalone tasks}
+## Scope
+Feature: {feature-name}
+Layer: {layer-name}
 
 ## QA
 **State:** required
@@ -226,9 +227,12 @@ File: `{file-path}`
 - 1-2 sentences: what the task accomplishes and why it matters.
 - Omit implementation details — those belong in Design Approach.
 
-### Feature
-- Reference the parent feature by name (exact match to `feature.md` filename stem).
-- Omit section entirely for standalone tasks that don't belong to a feature.
+### Scope
+- Required. First line: `Feature: {name}` (exact match to a feature listed in
+  the repo's `AGENTS.md` §4) or `Global` (cross-cutting / maintenance work not
+  tied to a feature).
+- Second line: `Layer: {layer}` — the architectural layer the task primarily
+  touches (from the AI readme §3 / `architecture.md`), e.g. `Backend`, `Persistence`.
 
 ### QA
 - **`State:`** required — `required` | `declined`. Default `required`.
@@ -323,7 +327,7 @@ File: `{file-path}`
 - Scenario numbering continuous across all steps and units.
 
 ### Scenarios
-- Applies to `tests required` and `tests only` units only. `integration only` and `refactoring` units use step headings with change entries — no scenarios, no Given/When/Then.
+- Applies to `tests required` and `tests only` units only. `integration only` and `refactoring` units use step headings — no scenarios, no Given/When/Then.
 - **Location:** Include a `**Scenarios:**` section immediately after the unit header (Type/Language/Source/Test lines), before `#### Test Context`. All scenario definitions live here — scenarios do NOT appear inside steps.
 - **Format:** Numbered bold paragraphs `**N. {name}**` with `Given`/`When`/`Then` (flat bullets). Include `Expected (RED):` for `tests required` units.
 - Cover happy path, errors, edge cases.
@@ -411,7 +415,7 @@ exempt.
 
 ### Self-containment
 `task.md` must be **self-contained for implementation**. Dev agents work from
-`task.md` alone — they do not read `feature.md` or explore the codebase for
+`task.md` alone — they do not read design docs or explore the codebase for
 design decisions.
 
 **Intra-document references satisfy self-containment.** When multiple units

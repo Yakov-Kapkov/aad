@@ -7,7 +7,7 @@
 #   install    Install the dev suite (default)
 #   uninstall  Remove all dev suite files
 #   full       All SDA agents
-#   short      Core agents only (default)
+#   short      All SDA agents (default) — mode reserved for future filtering
 
 set -euo pipefail
 
@@ -100,11 +100,7 @@ echo -e "${CYAN}Mode:   $MODE${NC}"
 
 echo
 echo -e "${CYAN}=== Installing SDA tool ===${NC}"
-SDA_ARGS=()
-if [ "$MODE" = "short" ]; then
-    SDA_ARGS+=("-e" "sda-system,sda-feature")
-fi
-"$SCRIPT_DIR/install-tool.sh" -t "$TARGET_BASE" -n "sda" ${SDA_ARGS[@]+"${SDA_ARGS[@]}"}
+"$SCRIPT_DIR/install-tool.sh" -t "$TARGET_BASE" -n "sda"
 
 echo
 echo -e "${YELLOW}== Installing sda-setup skill ==${NC}"

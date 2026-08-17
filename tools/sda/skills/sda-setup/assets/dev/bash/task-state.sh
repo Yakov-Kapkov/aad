@@ -29,8 +29,7 @@ resolve_task_folder() {
   # Search known locations
   for candidate in \
     ".sda/tasks/$input" \
-    ".sda/backlog/$input" \
-    .sda/features/*/tasks/"$input"
+    ".sda/backlog/$input"
   do
     if [[ -d "$candidate" ]]; then
       echo "$candidate"; return
@@ -42,7 +41,7 @@ resolve_task_folder() {
     echo "$input"; return
   fi
 
-  echo "Error: Task folder '$input' not found in .sda/tasks/, .sda/features/*/tasks/, or .sda/backlog/." >&2
+  echo "Error: Task folder '$input' not found in .sda/tasks/ or .sda/backlog/." >&2
   exit 1
 }
 

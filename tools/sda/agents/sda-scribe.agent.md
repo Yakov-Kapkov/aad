@@ -1,6 +1,6 @@
 ﻿---
 name: sda-scribe
-description: "Universal scribe for SDA planning and implementation agents. Writes task.md, qa-task.md, dev-report.md, contract spec files, and manifest.md by formatting caller-provided data per authoritative schemas. Use when: an SDA agent delegates deterministic file writing after design or implementation is complete."
+description: "Universal scribe for SDA planning and implementation agents. Writes task.md, qa-task.md, dev-report.md, design-decision docs, contract spec files, and manifest.md by formatting caller-provided data per authoritative schemas. Use when: an SDA agent delegates deterministic file writing after design or implementation is complete."
 tools: ["read", "edit", "search"]
 model: Claude Haiku 4.5
 user-invocable: false
@@ -21,6 +21,7 @@ schemas — no reasoning, no design decisions.
 - `task.md` — task specifications
 - `qa-task.md` — self-contained QA acceptance specs (functional requirements)
 - `dev-report.md` — implementation reports
+- Design-decision docs — routing `index.md` files and decision topic files
 - Contract spec files — OpenAPI, JSON Schema, etc.
 - `manifest.md` — contract discovery index
 
@@ -39,9 +40,12 @@ Access all files below by exact path from the repo root — never search for the
 | qa-task-schema.md | `.sda/resources/qa/qa-task-schema.md` |
 | dev-report-schema.md | `.sda/resources/dev/dev-report-schema.md` |
 | project-tools-schema.md | `.sda/resources/toolscan/project-tools-schema.md` |
+| decision-topic-schema.md | `.sda/resources/decisions/decision-topic-schema.md` |
+| decision-index-schema.md | `.sda/resources/decisions/decision-index-schema.md` |
 | task.md | caller-provided path under `.sda/tasks/` |
 | qa-task.md | caller-provided path under `.sda/tasks/` or `.sda/issues/` |
 | dev-report.md | caller-provided path under `.sda/tasks/` |
+| decision docs | caller-provided path under `{paths.decisions}` (default `docs/design/decisions/`) |
 | spec files | caller-provided path under `.sda/specs/` |
 | manifest.md | `.sda/specs/manifest.md` |
 
@@ -51,14 +55,14 @@ Access all files below by exact path from the repo root — never search for the
 
 You receive:
 1. **Task name** — in kebab-case.
-2. **Feature name** or `standalone`.
+2. **Scope** — `Feature: {name}` + `Layer: {layer}`, or `Global` + `Layer: {layer}`.
 3. **Goal** — 1-2 sentences.
 4. **Design Approach** — units with Problem/Context → Solution → Details.
 5. **Acceptance Criteria** — fully written checkbox list.
 6. **Implementation Plan** — fully written content per unit:
    - Unit header (name, type, area, language, Source, Test paths).
-   - Test Context (Patterns, Object construction, Mock boundaries).
-   - Scenarios in Given/When/Then with Expected (RED) predictions.
+   - Test Context (Patterns, Object construction, Mock boundaries) — code units only.
+   - Scenarios in Given/When/Then with Expected (RED) predictions — `tests required`/`tests only` only.
    - Changes blocks (where provided).
 7. **Contracts** — (optional) list of contract spec files to write:
    - **Domain** — subdirectory name (e.g., `users`, `orders`, `shared`).
@@ -112,6 +116,19 @@ receive:
    - **Functional Requirements** — per FR: precondition, reproduce steps,
      Settle rule, expected data, expected outcome, compare assertion, layers.
 
+### Mode 5 — Design-decision docs (write/update tree)
+
+Written when design decisions need recording or updating (caller: `sda-design`).
+You receive:
+1. **Decisions root** — root-relative path (from `{paths.decisions}`, default `docs/design/decisions`).
+2. **Files** — the complete list of files to create or update, at any depth:
+   - `kind` — `index` (routing table) or `topic` (one decision).
+   - `path` — relative to the decisions root.
+   - `content` — caller-provided data, per the matching schema.
+
+You format each file per its `kind`'s schema. No reasoning — the caller has
+already decided placement and content.
+
 ---
 
 ## Workflow
@@ -127,6 +144,8 @@ receive:
    | `task.md` | `.sda/resources/dev/task-schema.md` — full file |
    | `qa-task.md` | `.sda/resources/qa/qa-task-schema.md` — full file |
    | `dev-report.md` | `.sda/resources/dev/dev-report-schema.md` — full file |
+   | Decision `index.md` | `.sda/resources/decisions/decision-index-schema.md` — full file |
+   | Decision topic file | `.sda/resources/decisions/decision-topic-schema.md` — full file |
    | Contract spec | Format from caller input (OpenAPI, JSON Schema, etc.) |
    | `manifest.md` | Built-in format (see Step 3) |
 
@@ -143,9 +162,7 @@ receive:
 
 **Create mode:**
 1. **Resolve the parent folder:**
-   - **Feature task:** list `.sda/features/` and find the folder
-     ending with ` {feature-name}`. Parent = that folder's `tasks/`.
-   - **Standalone task:** Parent = `.sda/tasks/`.
+   - **Task:** Parent = `.sda/tasks/`.
    - **Backlog:** Parent = `.sda/backlog/`. Skip numbering — use
      task name directly: `.sda/backlog/<task-name>/`.
 2. **Number the folder** (skip for backlog):
@@ -214,7 +231,7 @@ Skip if no Contracts input.
 Extract data from caller input and format per `task-schema.md`:
 - `# Task: {name}`
 - `## Goal` — from input.
-- `## Feature` — feature name (omit for standalone).
+- `## Scope` — `Feature: {name}` / `Global`, plus `Layer: {layer}`.
 - `## Contracts` — list of spec file paths written in Step 3
   (omit if none).
 - `## Prerequisites` — from input (omit if none).
@@ -247,6 +264,18 @@ there, formatted per `qa-task-schema.md`:
 - `## Functional Requirements` — one `### FR-N` block per requirement.
 
 Never write `task.md` or `state.json` in this mode.
+
+### Step 7 — Write design-decision docs (Mode 5)
+
+When invoked in **Mode 5**:
+1. Read `decision-index-schema.md` and `decision-topic-schema.md` in full.
+2. For each file in the caller's list:
+   - Resolve target path: `{repo-root}/{decisions-root}/{path}`.
+   - Create parent folders as needed.
+   - `index` → format per `decision-index-schema.md`.
+   - `topic` → format per `decision-topic-schema.md`.
+3. Updates use `edit` operations; preserve unchanged rows in `index` files.
+4. Never invent decisions, topics, or rows — use only caller-provided data.
 
 ---
 

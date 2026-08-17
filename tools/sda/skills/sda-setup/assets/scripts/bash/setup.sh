@@ -34,6 +34,9 @@ mkdir -p "$TARGET_DIR/resources/qa"
 cp "$ASSETS_DIR/qa/qa-task-schema.md"                "$TARGET_DIR/resources/qa/qa-task-schema.md"
 mkdir -p "$TARGET_DIR/resources/toolscan"
 cp "$ASSETS_DIR/toolscan/project-tools-schema.md"    "$TARGET_DIR/resources/toolscan/project-tools-schema.md"
+mkdir -p "$TARGET_DIR/resources/decisions"
+cp "$ASSETS_DIR/decisions/decision-topic-schema.md"  "$TARGET_DIR/resources/decisions/decision-topic-schema.md"
+cp "$ASSETS_DIR/decisions/decision-index-schema.md"  "$TARGET_DIR/resources/decisions/decision-index-schema.md"
 
 TC_SOURCE="$ASSETS_DIR/tool-catalog/$LANGUAGE/tool-catalog.md"
 if [ -f "$TC_SOURCE" ]; then
@@ -77,6 +80,11 @@ cp "$TOOLSCAN_SRC/probe-validators.sh"             "$TARGET_DIR/scripts/toolscan
 chmod +x "$TARGET_DIR/scripts/toolscan/cleanup-project-tools.sh"
 chmod +x "$TARGET_DIR/scripts/toolscan/get-timestamp.sh"
 chmod +x "$TARGET_DIR/scripts/toolscan/probe-validators.sh"
+
+DECISIONS_SRC="$ASSETS_DIR/decisions/bash"
+mkdir -p "$TARGET_DIR/scripts/decisions"
+cp "$DECISIONS_SRC/docs-integrity.sh"              "$TARGET_DIR/scripts/decisions/docs-integrity.sh"
+chmod +x "$TARGET_DIR/scripts/decisions/docs-integrity.sh"
 
 TD_SOURCE="$ASSETS_DIR/tool-discovery/$LANGUAGE/tool-discovery.md"
 if [ -f "$TD_SOURCE" ]; then

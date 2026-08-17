@@ -238,6 +238,13 @@ The executable contract-trace steps run during Design — see
 - Dev agents never read or modify spec files — all contract details
   are inlined into task.md's Implementation Plan.
 
+### Design decisions — escalation
+
+Task-scoped decisions live in `task.md`'s Design Approach — you own those.
+A **durable cross-cutting** decision (a rule, convention, or architecture
+that outlives this task) belongs to `sda-design`'s decision docs — flag it
+to the user; do not record it yourself.
+
 ### Coding standards compliance — mandatory
 All code in task.md — Changes blocks, Implementation Plan steps,
 illustrative examples — must comply with all applicable coding standards.
@@ -341,7 +348,6 @@ Provide any combination of:
    - `paths.design` → `{design-root}`
    - `paths.specs` → `{specs-root}`
    - `paths.tasks` → `{tasks-root}`
-   - `paths.features` → `{features-root}`
 2. **Confirm whether `designOwnership` is `user` or `ai` before
    composing any reply** — every Phase 3 branch depends on it.
 
@@ -416,11 +422,11 @@ delegate directly to scribe Mode 2.
 2. If the request is genuinely ambiguous, ask up to 2 clarifying
    questions. Otherwise proceed to Phase 2 immediately.
 
-**Feature clarification:** If the task's feature context is not already
-established (e.g. not arriving via an sda-feature handoff and not stated
-in the request), include this as one clarifying question: list
-`{features-root}` and ask — _"Is this task part of an existing feature?
-[list feature names] Or is it a standalone task?"_
+**Scope clarification:** If the task's scope is not already established
+(e.g. not arriving via an sda-design handoff and not stated in the
+request), read the **AI readme** (`AGENTS.md`, or `CLAUDE.md` / `.cursorrules`
+if no `AGENTS.md`) §4 (implemented features) and ask — _"Which feature does
+this belong to? [list from the readme §4] Or is it global?"_
 
 **Summary:** Restate the understood goal in one bullet.
 
@@ -452,11 +458,12 @@ build output), ask the user to run the command and share results.
 - **`designOwnership: ai` (legacy):** you may propose the approach
   yourself.
 
-0. **Feature context.** If this is a feature task (not standalone):
-   read `{features-root}/<NN>. {feature-name}/feature.md`. Use its
-   Design Approach as the starting point; flag differences explicitly.
-   If the feature spec is imprecise, propose the update to `feature.md`
-   — apply only after user approval.
+0. **Scope context.** If the task is scoped to a feature:
+   read the **AI readme** (`AGENTS.md`, or `CLAUDE.md` / `.cursorrules`) §4
+   (the feature entry + its linked detail doc under `{design-root}/features/`)
+   and §5 (design decisions). Use these as the starting point; flag differences
+   explicitly. If the outline/detail is imprecise, propose the update — apply
+   only after user approval.
 
 1. **Establish the functional requirements (acceptance target).** Before
    any approach, agree the user-observable behaviours the task must
@@ -489,9 +496,8 @@ build output), ask the user to run the command and share results.
       This is your discovery entry point.
    b. List boundary crossings in the proposed design.
    c. For each crossing, read existing spec file (if any) from
-      `{specs-root}`. Also read `{design-root}/design.md` § 7 and
-      `{features-root}/<NN>. {feature}/feature.md` for architectural
-      context.
+      `{specs-root}`. Also read the AI readme §3 and
+      `{design-root}/interfaces.md` for architectural context.
    d. Trace data flow: verify field names, types, optionality,
       error shapes match between producer and consumer.
    e. Flag to user: missing specs, outdated specs, data loss risks.
@@ -670,7 +676,7 @@ each mapped to ≥1 scenario: `- [ ] {criterion} _(Unit N, scenarios X–Y)_`.
 **Step 4 — Delegate to `sda-scribe` subagent.** Invoke with:
 - **Repo root** (`{repo-root}`) — absolute path; scribe must anchor all folder creation and numbering here
 - **Task name** (kebab-case)
-- **Feature name** (if feature task) or `standalone`
+- **Scope** — `Feature: {name}` + `Layer: {layer}`, or `Global` + `Layer: {layer}`
 - **Goal** (1-2 sentences)
 - **Design Approach** (from Phase 3)
 - **Acceptance Criteria** (from Step 3)

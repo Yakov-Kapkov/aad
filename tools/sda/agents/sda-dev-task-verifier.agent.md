@@ -31,8 +31,7 @@ Access all files below by exact path from the repo root — never search for the
 | state.json | task folder path (provided by caller) |
 | manifest.md | `{specs-root}/manifest.md` |
 | spec files | `{specs-root}/{domain}/*` |
-| design.md | `{design-root}/design.md` |
-| feature.md | `{features-root}/<NN>. <name>/feature.md` |
+| design topic files | `{design-root}/architecture.md`, `domain-model.md`, `standards.md`, `cross-cutting.md`, `interfaces.md` |
 
 **⛔ Never search, glob, or use `file_search` / `grep_search` to find any `.sda/` file.**
 
@@ -178,8 +177,7 @@ never ask it to judge.
    a. Use `paths.specs` from session context.
    b. **Read `manifest.md`** from `paths.specs` for spec inventory.
    c. Read each spec file referenced in `## Contracts`.
-   d. Also read `design.md` (from `paths.design`) and `feature.md`
-      (if task is feature-scoped) for architectural context.
+   d. Also read the design topic files under `paths.design` for architectural context.
    e. For each boundary crossing in the implementation plan:
       - Verify field names, types, and optionality in task.md match
         the spec exactly.

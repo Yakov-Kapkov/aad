@@ -6,13 +6,14 @@
     "loadQaSecrets": ".sda/scripts/qa/load-qa-secrets.ps1",
     "listQaSecrets": ".sda/scripts/qa/list-qa-secrets.ps1",
     "qaSessionInit": ".sda/scripts/qa/qa-session-init.ps1",
-    "invokeHttp": ".sda/scripts/qa/invoke-http.ps1"
+    "invokeHttp": ".sda/scripts/qa/invoke-http.ps1",
+    "docsIntegrity": ".sda/scripts/decisions/docs-integrity.ps1"
   },
   "devTaskUnitSizeLimit": 1000,
   "designOwnership": "user",
   "standardsSkill": "standards-compliance",
   "paths": {
-    "design": ".sda/design",
+    "design": "docs/design",
     "specs": ".sda/specs",
     "issues": ".sda/issues",
     "secrets": ".sda/secrets"

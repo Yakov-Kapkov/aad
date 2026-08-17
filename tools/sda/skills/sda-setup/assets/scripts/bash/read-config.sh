@@ -16,13 +16,13 @@ REPO_ROOT="$(pwd)"
 case "$AGENT" in
     sda-dev)           KEYS="scripts.taskState scripts.readProjectTools standardsSkill paths.design paths.specs tests.coverage.enabled" ;;
     sda-dev-quality)   KEYS="scripts.readProjectTools tests.coverage.enabled" ;;
-    sda-dev-task)          KEYS="scripts.taskState scripts.unitFileSize devTaskUnitSizeLimit designOwnership standardsSkill paths.design paths.specs paths.tasks paths.features" ;;
-    sda-dev-task-verifier) KEYS="scripts.unitFileSize devTaskUnitSizeLimit paths.specs paths.design paths.features" ;;
+    sda-dev-task)          KEYS="scripts.taskState scripts.unitFileSize devTaskUnitSizeLimit designOwnership standardsSkill paths.design paths.specs paths.tasks" ;;
+    sda-dev-task-verifier) KEYS="scripts.unitFileSize devTaskUnitSizeLimit paths.specs paths.design" ;;
     sda-qa)            KEYS="paths.issues scripts.qaSessionInit scripts.loadQaSecrets scripts.invokeHttp scripts.readProjectTools" ;;
-    sda-qa-task)       KEYS="designOwnership paths.tasks paths.features paths.issues paths.specs scripts.listQaSecrets scripts.readProjectTools" ;;
-    sda-feature)       KEYS="designOwnership paths.design paths.specs paths.features" ;;
-    sda-system)        KEYS="designOwnership paths.design paths.specs" ;;
+    sda-qa-task)       KEYS="designOwnership paths.tasks paths.issues paths.specs scripts.listQaSecrets scripts.readProjectTools" ;;
+    sda-design)        KEYS="designOwnership paths.design paths.specs paths.decisions" ;;
     sda-scribe)        KEYS="paths.specs paths.issues" ;;
+    sda-docs-check)    KEYS="paths.decisions paths.design scripts.docsIntegrity" ;;
     *)                 KEYS="" ;;
 esac
 
@@ -41,13 +41,13 @@ get_default() {
         scripts.listQaSecrets)  echo ".sda/scripts/qa/list-qa-secrets.sh" ;;
         scripts.qaSessionInit)  echo ".sda/scripts/qa/qa-session-init.sh" ;;
         scripts.invokeHttp)     echo ".sda/scripts/qa/invoke-http.sh" ;;
+        scripts.docsIntegrity)  echo ".sda/scripts/decisions/docs-integrity.sh" ;;
         devTaskUnitSizeLimit)   echo "1000" ;;
         designOwnership)        echo "user" ;;
         standardsSkill)         echo "standards-compliance" ;;
-        paths.design)           echo ".sda/design" ;;
+        paths.design)           echo "docs/design" ;;
         paths.specs)            echo ".sda/specs" ;;
         paths.tasks)            echo ".sda/tasks" ;;
-        paths.features)         echo ".sda/features" ;;
         paths.issues)           echo ".sda/issues" ;;
         tests.coverage.enabled) echo "true" ;;
         *)                      echo "" ;;
@@ -183,6 +183,16 @@ else
         [ -n "$default" ] && lines="${lines}"$'\n'"${key}=${default}"
     done
 fi
+
+# Derive paths.decisions from paths.design (always {design-root}/decisions).
+case " $KEYS " in
+    *" paths.decisions "*)
+        design=""
+        [ -f "$CONFIG_FILE" ] && design=$(json_get "$CONFIG_FILE" "paths.design")
+        [ -n "$design" ] || design="docs/design"
+        lines="${lines}"$'\n'"paths.decisions=${design%/}/decisions"
+        ;;
+esac
 
 ctx=$(json_escape "$lines")
 

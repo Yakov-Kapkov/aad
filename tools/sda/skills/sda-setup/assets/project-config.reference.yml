@@ -34,7 +34,14 @@ scripts:
   # Bash:       .sda/scripts/qa/invoke-http.sh
   invokeHttp: .sda/scripts/qa/invoke-http.ps1
 
-# user — sda-system, sda-feature, and sda-dev-task pressure-test YOUR proposed approach and never design for you
+  # Full path to the docs-integrity script. Called by sda-docs-check to verify
+  # decision-doc links, orphans, and duplicate index rows.
+  # Set automatically by setup.
+  # PowerShell: .sda/scripts/decisions/docs-integrity.ps1
+  # Bash:       .sda/scripts/decisions/docs-integrity.sh
+  docsIntegrity: .sda/scripts/decisions/docs-integrity.ps1
+
+# user — sda-design and sda-dev-task pressure-test YOUR proposed approach and never design for you
 # ai   — they may propose the design approach themselves (legacy behaviour)
 designOwnership: user
 
@@ -44,10 +51,11 @@ designOwnership: user
 standardsSkill: standards-compliance
 
 paths:
-  # Root folder for sda-system design output.
-  # Defaults to .sda/design if omitted.
-  # Use any relative path accessible from the project root, e.g. docs/architecture
-  design: .sda/design
+  # Root folder for sda-design output (design topic files + decisions/).
+  # Defaults to docs/design if omitted.
+  # Design detail is split by concern; decisions live in decisions/
+  # (derived: <design>/decisions — no separate config field).
+  design: docs/design
 
   # Root folder for specification files (OpenAPI, JSON Schema, etc.).
   # Defaults to .sda/specs if omitted.

@@ -175,6 +175,6 @@ Include an `Errors:` section for any malformed or skipped DIAGRAM blocks.
 
 - **DO NOT** read source code, explore the codebase, or call subagents.
 - **DO NOT** ask clarifying questions — render what you are given.
-- **DO NOT** modify `design.md` — that is other agents' responsibility.
+- **DO NOT** modify design topic files — that is other agents' responsibility.
 - If a required field (`TYPE`, `OUTPUT`, `COMPONENTS`, `FLOWS`) is missing,
   skip the diagram and report it in `Errors:`.

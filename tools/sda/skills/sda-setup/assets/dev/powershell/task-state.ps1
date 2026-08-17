@@ -62,12 +62,6 @@ function Resolve-TaskFolder([string]$folder) {
         ".sda/tasks/$folder"
         ".sda/backlog/$folder"
     )
-    # Feature tasks: .sda/features/*/tasks/<folder>
-    if (Test-Path '.sda/features') {
-        Get-ChildItem '.sda/features' -Directory | ForEach-Object {
-            $candidates += Join-Path $_.FullName "tasks/$folder"
-        }
-    }
 
     foreach ($c in $candidates) {
         if (Test-Path $c) { return $c }
@@ -76,7 +70,7 @@ function Resolve-TaskFolder([string]$folder) {
     # Init command — folder may not exist yet, return as-is
     if ($Command -eq 'init') { return $folder }
 
-    Write-Host "Error: Task folder '$folder' not found in .sda/tasks/, .sda/features/*/tasks/, or .sda/backlog/." -ForegroundColor Red
+    Write-Host "Error: Task folder '$folder' not found in .sda/tasks/ or .sda/backlog/." -ForegroundColor Red
     exit 1
 }
 

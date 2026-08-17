@@ -10,8 +10,9 @@
     Path to the .copilot folder. Default: $env:USERPROFILE\.copilot.
 
 .PARAMETER Mode
-    Installation mode: 'full' (all SDA agents) or 'short' (core agents only).
-    Default: short. Ignored when Action is 'uninstall'.
+    Installation mode: 'full' or 'short'. Both install all SDA agents;
+    the flag is reserved for future filtering. Default: short.
+    Ignored when Action is 'uninstall'.
 
 .PARAMETER Models
     Optional array of "agentname=model" assignments for SDA agents.
@@ -83,9 +84,6 @@ Write-Host "Mode:   $Mode" -ForegroundColor Cyan
 # ── SDA tool ─────────────────────────────────────────────────────────────────
 Write-Host "`n=== Installing SDA tool ===" -ForegroundColor Cyan
 $sdaToolArgs = @{ TargetBase = $TargetBase; Name = 'sda' }
-if ($Mode -eq 'short') {
-    $sdaToolArgs['AgentExclude'] = @('sda-system', 'sda-feature')
-}
 & (Join-Path $PSScriptRoot 'install-tool.ps1') @sdaToolArgs
 
 # ── sda-setup skill ─────────────────────────────────────────────────────────

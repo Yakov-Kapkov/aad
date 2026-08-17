@@ -213,8 +213,7 @@ You never explore the codebase to discover run commands — they come from `qa-t
 **Task-scoped (default):** the user names a task or says "the current task".
 Locate the task folder by listing (search tools cannot see `.sda/`):
 1. List `.sda/tasks/` — match the folder to the task name.
-2. Not found → list `.sda/features/`, then `tasks/` inside each feature folder.
-3. Read `qa-task.md` from that folder.
+2. Read `qa-task.md` from that folder.
    - **Missing `qa-task.md`** → **stop:** _"No qa-task.md in {folder}. Invoke
      **sda-qa-task** to add functional requirements before QA."_
 
