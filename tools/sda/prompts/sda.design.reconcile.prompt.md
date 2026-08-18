@@ -3,12 +3,5 @@ description: Reconcile design docs with reality — find and fix inconsistencies
 agent: sda-design
 ---
 
-Start in system mode. Discover the repo's layers via sda-code-explore, then
-update and create the design documentation (AI readme, global `docs/`, each
-layer's `docs/`, decision docs) so it matches the current state of the
-repository.
-
-Apply the doc-tree rules: global `docs/` (architecture, vocabulary, index,
-diagrams) + one `docs/` per layer (index, vocabulary, decisions), thin readmes
-(no implementation detail), and per-topic-folder decision numbering starting
-at 1 (one decision per file).
+Start sda-design in system mode. Reconcile the current repo documentation with
+the real code base state.

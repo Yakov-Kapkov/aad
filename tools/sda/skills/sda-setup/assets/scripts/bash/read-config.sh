@@ -16,8 +16,8 @@ REPO_ROOT="$(pwd)"
 case "$AGENT" in
     sda-dev)           KEYS="scripts.taskState scripts.readProjectTools standardsSkill paths.design paths.specs tests.coverage.enabled" ;;
     sda-dev-quality)   KEYS="scripts.readProjectTools tests.coverage.enabled" ;;
-    sda-dev-task)          KEYS="scripts.taskState scripts.unitFileSize devTaskUnitSizeLimit designOwnership standardsSkill paths.design paths.specs paths.tasks" ;;
-    sda-dev-task-verifier) KEYS="scripts.unitFileSize devTaskUnitSizeLimit paths.specs paths.design" ;;
+    sda-dev-task)          KEYS="scripts.taskState scripts.unitFileSize devTaskUnitSizeLimit designOwnership standardsSkill paths.specs paths.tasks" ;;
+    sda-dev-task-verifier) KEYS="scripts.unitFileSize devTaskUnitSizeLimit paths.specs" ;;
     sda-qa)            KEYS="paths.issues scripts.qaSessionInit scripts.loadQaSecrets scripts.invokeHttp scripts.readProjectTools" ;;
     sda-qa-task)       KEYS="designOwnership paths.tasks paths.issues paths.specs scripts.listQaSecrets scripts.readProjectTools" ;;
     sda-design)        KEYS="designOwnership paths.design paths.specs" ;;

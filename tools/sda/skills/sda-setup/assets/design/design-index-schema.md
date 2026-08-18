@@ -2,8 +2,8 @@
 
 An `index.md` routes readers to the files and subfolders of a docs folder.
 References only — no design content. Two docs folders use it: global
-`docs/index.md` (routes to architecture, vocabulary, diagrams) and
-`<layer>/docs/index.md` (routes to vocabulary, decisions).
+`docs/index.md` (routes to architecture, vocabulary, diagrams, decisions) and
+`<layer>/docs/index.md` (routes to architecture, vocabulary, diagrams, decisions).
 
 ---
 
@@ -19,6 +19,7 @@ Global `docs/index.md`:
 | Architecture | system layout, layers, storage | [architecture](architecture.md) |
 | Vocabulary | shared terminology | [vocabulary](vocabulary.md) |
 | Diagrams | visual flows | [diagrams](diagrams/) |
+| Decisions | why a design choice was made | [decisions](decisions/index.md) |
 ```
 
 `<layer>/docs/index.md`:
@@ -28,7 +29,9 @@ Global `docs/index.md`:
 
 | Concern | When to read | Document |
 |---|---|---|
+| Architecture | this layer's modules, ownership, communication, storage | [architecture](architecture.md) |
 | Vocabulary | this layer's terms | [vocabulary](vocabulary.md) |
+| Diagrams | this layer's visual flows | [diagrams](diagrams/) |
 | Decisions | why a design choice was made | [decisions](decisions/index.md) |
 ```
 

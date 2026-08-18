@@ -10,8 +10,9 @@ per file, short and observable. The two global files are `architecture.md` and
 
 | File | Sections |
 |---|---|
-| `architecture.md` | Repo structure + layer list · Services / modules · Communication · Storage · Integration points · Cross-cutting concerns · Feature boundaries |
-| `vocabulary.md` | Global term table — ubiquitous-language terms, each linking to the owning layer's `vocabulary.md` |
+| `docs/architecture.md` | Repo structure + layer list · Services / modules · Communication · Storage · Integration points · Cross-cutting concerns · Feature boundaries |
+| `<layer>/docs/architecture.md` | That layer's modules · Communication · Storage · Cross-cutting concerns |
+| `docs/vocabulary.md` | Global term table — ubiquitous-language terms, each linking to the owning layer's `vocabulary.md` |
 | `<layer>/docs/vocabulary.md` | That layer's terms only — one table, no cross-layer detail |
 
 ---

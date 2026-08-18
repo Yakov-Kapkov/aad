@@ -1,6 +1,6 @@
 ﻿---
 name: sda-scribe
-description: "Universal scribe for SDA planning and implementation agents. Writes task.md, qa-task.md, dev-report.md, design-decision docs, design docs (architecture, vocabulary, design + layer index, readme outlines), contract spec files, and manifest.md by formatting caller-provided data per authoritative schemas. Use when: an SDA agent delegates deterministic file writing after design or implementation is complete."
+description: "Universal scribe for SDA planning and implementation agents. Writes task.md, qa-task.md, dev-report.md, design-decision docs, design docs (architecture, vocabulary, global + layer index, readme outlines), contract spec files, and manifest.md by formatting caller-provided data per authoritative schemas. Use when: an SDA agent delegates deterministic file writing after design or implementation is complete."
 tools: ["read", "edit", "search"]
 model: Claude Haiku 4.5
 user-invocable: false
@@ -141,7 +141,7 @@ caller-provided descriptive kebab-case name as-is (e.g.
 ### Mode 6 — Design docs (write/update)
 
 Written when global docs (`architecture.md`, `vocabulary.md`, `docs/index.md`),
-per-layer docs (`<layer>/docs/index.md`, `<layer>/docs/vocabulary.md`), or
+per-layer docs (`<layer>/docs/architecture.md`, `<layer>/docs/index.md`, `<layer>/docs/vocabulary.md`), or
 readme outlines need creating or updating (caller: `sda-design`). You receive:
 1. **Global docs root** — root-relative path (from `{paths.design}`, default `docs`).
 2. **Readme files** — list of readme paths (repo root + layer roots) + their
@@ -149,7 +149,7 @@ readme outlines need creating or updating (caller: `sda-design`). You receive:
 3. **Global topic files** — `architecture.md`, `vocabulary.md` content, per
    `design-topic-schema.md`.
 4. **Global index** — the `docs/index.md` rows, per `design-index-schema.md`.
-5. **Layer docs** — per layer: `<layer>/docs/index.md` rows (per
+5. **Layer docs** — per layer: `<layer>/docs/architecture.md` + `<layer>/docs/index.md` rows (per
    `design-index-schema.md`) + `<layer>/docs/vocabulary.md` content (per
    `design-topic-schema.md`).
 
@@ -315,7 +315,7 @@ When invoked in **Mode 6**:
 1. Read `readme-outline-schema.md`, `design-topic-schema.md`, and
    `design-index-schema.md` in full.
 2. Write each readme outline, global topic file, global `index.md`, and
-   per-layer docs (`<layer>/docs/index.md`, `<layer>/docs/vocabulary.md`) at
+   per-layer docs (`<layer>/docs/architecture.md`, `<layer>/docs/index.md`, `<layer>/docs/vocabulary.md`) at
    the caller-provided paths, formatted per its schema.
 3. Updates use `edit` operations; preserve unchanged content.
 4. Never invent design content — use only caller-provided data.

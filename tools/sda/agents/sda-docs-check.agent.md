@@ -38,27 +38,27 @@ Verify the docs tree against the convention:
 
 | Check | Rule |
 |---|---|
-| Global docs | `{paths.design}/index.md`, `architecture.md`, `vocabulary.md` exist |
-| Global index | `{paths.design}/index.md` routes to architecture, vocabulary, diagrams |
-| Per-layer docs | Each layer has `<layer>/docs/index.md` + `vocabulary.md` |
-| Layer index | Each `<layer>/docs/index.md` routes to `vocabulary.md` + `decisions/index.md` |
+| Global docs | `{paths.design}/index.md`, `architecture.md`, `vocabulary.md` + `decisions/` exist |
+| Global index | `{paths.design}/index.md` routes to architecture, vocabulary, diagrams, decisions |
+| Per-layer docs | Each layer has `<layer>/docs/architecture.md` + `index.md` + `vocabulary.md` |
+| Layer index | Each `<layer>/docs/index.md` routes to `architecture.md`, `vocabulary.md`, `diagrams/`, `decisions/index.md` |
 | Decisions root | Each layer's `docs/decisions/index.md` routes to its feature folders |
 | Feature folders | Each feature folder (e.g. `shared/`, `Users/`, `Game/`) has `index.md` + decision files |
 | Feature folder naming | Feature folders use descriptive names; decision files use descriptive kebab-case names |
 
 ## Stage 2 — Integrity (script)
 
-Run the integrity script on **each layer's** decisions root:
+Run the integrity script on **each** decisions root (global `docs/decisions` + every layer's `<layer>/docs/decisions`):
 
-`{scripts.docsIntegrity} <layer>/docs/decisions`
+`{scripts.docsIntegrity} <docs-root>/decisions`
 
 - Exit 0 → report `clean`.
 - Exit non-zero → report the script output verbatim; proceed to Stage 3 anyway.
-- Layer with no `docs/decisions/` → report `no decisions — skip`.
+- Docs root with no `decisions/` → report `no decisions — skip`.
 
 ## Stage 3 — Drift (semantic)
 
-For each decision file (`.md` in a feature folder under every layer's `docs/decisions/`) that
+For each decision file (`.md` in a feature folder under any `docs/decisions/`) that
 has an `**Applies to:**` block:
 
 1. Read the decision — the *should* (`**Decision:**`, `**Application:**`).
@@ -78,7 +78,7 @@ Check each routing section against what actually exists:
 
 | Section | Check |
 |---|---|
-| §3 Architecture | Readme links `docs/index.md`; that index exists and routes to architecture, vocabulary, diagrams |
+| §3 Architecture | Readme links `docs/index.md`; that index exists and routes to architecture, vocabulary, diagrams, decisions |
 | §3 Layers | Readme lists every layer and links each `<layer>/docs/index.md`; those indexes exist |
 | §4 Features | Each entry's link resolves; every feature decisions folder on disk appears in §4 |
 | §5 Decisions | Readme links every layer's `docs/decisions/index.md`; those indexes exist |

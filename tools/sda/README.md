@@ -104,7 +104,7 @@ One agent, two altitudes — detect from the request:
   Design the architecture for the notification subsystem.
   ```
   Discovers the repo's layers via `sda-code-explore`, then delegates the global
-  `docs/` (architecture, vocabulary, index) + one `docs/` per layer, and the
+  `docs/` (architecture, vocabulary, index, decisions, diagrams) + one `docs/` per layer, and the
   readme outlines (AI readme + human README each) — to `sda-scribe`.
 - **Feature mode** — a specific feature or bounded context:
   ```
@@ -298,8 +298,8 @@ All resources are read from a `.sda/` folder in the project root (may be git-ign
 | Design topic schema | `.sda/resources/design/design-topic-schema.md` |
 | Design index schema | `.sda/resources/design/design-index-schema.md` |
 | Docs integrity script | `.sda/scripts/decisions/docs-integrity.ps1` or `.sda/scripts/decisions/docs-integrity.sh` |
-| Design docs (global) | `docs/` — `architecture.md`, `vocabulary.md`, `index.md`, `diagrams/` (from `paths.design`) |
-| Design docs (per-layer) | `<layer>/docs/` — `index.md`, `vocabulary.md`, `decisions/` |
+| Design docs (global) | `docs/` — `architecture.md`, `vocabulary.md`, `index.md`, `decisions/`, `diagrams/` (from `paths.design`) |
+| Design docs (per-layer) | `<layer>/docs/` — `architecture.md`, `index.md`, `vocabulary.md`, `decisions/`, `diagrams/` |
 | Decision docs (per-layer) | `<layer>/docs/decisions/<feature>/` — `index.md` + descriptive kebab-case `.md` files (`shared/` for cross-cutting) |
 
 `{language}` values are inferred from project markers — one or more per project (`package.json` → `typescript`, `pyproject.toml` / `requirements.txt` → `python`, etc.). Multi-language projects (e.g. TypeScript frontend + Python backend) load all matching discovery specs and produce a single `project-tools.md` with sections for each area.
@@ -358,7 +358,7 @@ Written by the `sda-setup` skill. Stores project-level settings injected into ea
 |---|---|---|---|
 | `designOwnership` | `string` | `user` | Who owns the design decision in `sda-design` and `sda-dev-task`. When `user` (default), the agent never volunteers an approach — it pressure-tests the approach **you** propose and hands the decision back to you; it only proposes options when your message explicitly asks for them. When `ai`, the agent may propose the design itself (legacy behaviour). |
 | `standardsSkill` | `string` | `standards-compliance` | Name of the skill carrying coding standards. `sda-dev`, `sda-coder`, `sda-refactor`, `sda-test-writer`, and `sda-dev-task` load it before generating code. |
-| `paths.design` | `string` | `docs` | Global docs root — sda-design writes `docs/index.md`, `architecture.md`, `vocabulary.md`, and `diagrams/` here. Per-layer docs live under each layer's own `docs/`. |
+| `paths.design` | `string` | `docs` | Global docs root — sda-design writes `docs/index.md`, `architecture.md`, `vocabulary.md`, `decisions/`, and `diagrams/` here. Per-layer docs live under each layer's own `docs/`. |
 | `paths.specs` | `string` | `.sda/specs` | Root folder for specification files (OpenAPI, JSON Schema, etc.). Written by sda-scribe; read by sda-dev-task and sda-dev-task-verifier. |
 | `paths.issues` | `string` | `.sda/issues` | Root folder for standalone QA work (no task): each `<NNN>-<slug>/` holds a `qa-task.md` authored by sda-qa-task and the `qa-report.md` written by sda-qa. |
 | `paths.secrets` | `string` | `.sda/secrets` | Git-ignored folder holding `qa.secrets.env` credentials used by sda-qa. |

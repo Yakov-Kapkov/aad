@@ -52,8 +52,8 @@ standardsSkill: standards-compliance
 
 paths:
   # Global docs root — sda-design writes docs/index.md, architecture.md,
-  # vocabulary.md, and diagrams/ here. Per-layer docs live under each
-  # layer's own docs/ folder, discovered from the repo layout.
+  # vocabulary.md, decisions/, and diagrams/ here. Per-layer docs live
+  # under each layer's own docs/ folder, discovered from the repo layout.
   # Defaults to docs if omitted.
   design: docs
 

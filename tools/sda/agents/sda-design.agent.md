@@ -53,8 +53,8 @@ user to pick a mode when the request already implies one.
 
 | Request signal | Mode | Output |
 |---|---|---|
-| Whole app / platform / cross-cutting rule | **System** | global `docs/{architecture,vocabulary,index}` + per-layer `<layer>/docs/` + §1/§3/§5/§6 of all readmes |
-| A specific feature / BC / module | **Feature** | decisions (per-layer) + §4 of all readmes |
+| Whole app / platform / cross-cutting rule | **System** | global `docs/` + per-layer `<layer>/docs/` (architecture, vocabulary, index, decisions, diagrams) + §1/§3/§5/§6 of the [readme outline](#readmes--required-sections-same-structure) |
+| A specific feature / BC / module | **Feature** | decisions (per-layer) + §4 of the [readme outline](#readmes--required-sections-same-structure) |
 
 Ambiguous (could be either) → ask one question: _"Is this a system-level
 change or a specific feature?"_
@@ -72,10 +72,6 @@ Access all files below by exact path from the repo root — never search for the
 
 | File | Path |
 |---|---|
-| AI readmes (AGENTS.md / CLAUDE.md / .cursorrules) + README.md | repo root — the app outline you maintain |
-| Global design docs | `{design-root}/index.md`, `{design-root}/architecture.md`, `{design-root}/vocabulary.md` |
-| Per-layer docs | `<layer>/docs/{index.md, vocabulary.md, decisions/}` — one set per discovered layer |
-| Decision files | `<layer>/docs/decisions/<topic>/{index.md, d1.md, …}` |
 | spec files | `{specs-root}/{domain}/*` |
 | manifest.md | `{specs-root}/manifest.md` |
 
@@ -221,7 +217,7 @@ Split the app's documentation into **two planes**:
 
 | Plane | Content | Where |
 |---|---|---|
-| **A — Architectural (observable)** | What exists, what owns what, boundaries, terminology, why. Short — no implementation detail. | Thin readmes (§0–§6) + global `docs/` + each layer's `docs/` |
+| **A — Architectural (observable)** | What exists, what owns what, boundaries, terminology, why. Short — no implementation detail. | Thin readmes (§0–§6, see [Readmes — required sections](#readmes--required-sections-same-structure)) + global `docs/` + each subsystem's `docs/` |
 | **B — Coding (rules by concern)** | Detailed rules grouped by technical concern: database, web-api, testing, constants/naming, UI parity. | `docs/coding/` (global, cross-layer) + the coding-standards skill |
 
 Plane A is yours to author. Plane B files are authored by the layer's dev
@@ -238,7 +234,7 @@ Apply these rules when writing or reviewing any design doc:
 | `AGENTS.md` / `README.md` (any folder) | Routing links to docs/ index + layer docs index; one-line feature summaries | Implementation details, endpoint recipes, RBAC lists, DB query rules, component prop tables |
 | `docs/vocabulary.md` (global) | Domain terms used across layers, each linking to the owning layer's vocabulary | Generic programming terms (function, class, variable, API, endpoint); implementation-level jargon |
 | `<layer>/docs/vocabulary.md` | Layer-specific domain terms only | Generic terms defined in the global vocabulary |
-| `docs/architecture.md` | Repo structure, layer list, service ownership, communication patterns, storage choices, cross-cutting concerns (one line each) | Per-feature or per-subsystem details (those belong in feature decisions) |
+| `docs/architecture.md` + `<layer>/docs/architecture.md` | Global: repo structure, layer list, cross-cutting concerns (one line each) — outline only, no subsystem detail. Layer: that layer's modules, ownership, communication, storage | Global: any single subsystem's detail (lives in `<layer>/docs/architecture.md`). Layer: per-feature details (lives in feature decisions) |
 | Feature decision files | One decision: why this approach over alternatives, what it governs, what to do / not do | Anything outside that single decision |
 | Readme §3 / §4 | ≤3-sentence summary + link to the relevant docs | Inline design content, API shapes, DB schemas, component diagrams |
 
@@ -249,35 +245,55 @@ readme or global architecture doc.
 Readmes at every level must teach navigation: the **first line of §0**
 (preamble) in every AI readme and human `README.md` should make clear this
 file is the **routing index**, and that before implementing or changing a
-feature, the reader should check `docs/` and the relevant `decisions/`
-folder. Example: _"This file is the routing index to architecture,
-features, and decisions. Before implementing, check the relevant
-`docs/decisions/<feature>/` folder."_
+feature, the reader should check `docs/` and the relevant `docs/decisions/`
+folder. Example: _"This file is the routing index to
+architecture, features, and decisions. Before implementing, check the relevant
+`<layer>/docs/decisions/<feature>/` folder._"
 
 ### Documentation tree (system mode target)
 
 ```
 <root>
   docs/                       ← global docs (`{design-root}`)
-    index.md                  ← routes to architecture, vocabulary, diagrams
-    architecture.md           ← overall architecture + short repo structure + layer list
+    index.md                  ← routes to architecture, vocabulary, diagrams, decisions
+    architecture.md           ← overall architecture + repo structure + layer list
     vocabulary.md             ← global terms (domain-specific only); links to each layer's vocabulary.md
-    diagrams/                 ← Mermaid .md files (one per diagram)
+    diagrams/                 ← global Mermaid .md files (one per diagram)
+      <diagram>.md
+    decisions/                ← global cross-layer decisions
+      shared/
+        index.md
+        <descriptive name>.md
   <layer>/                    ← one per layer/slice (ui/, backend/, background-worker/, …)
-    docs/
-      index.md                ← routes to vocabulary, decisions
+    docs/                     ← this layer's docs — same structure as global
+      index.md                ← routes to architecture, vocabulary, diagrams, decisions
+      architecture.md         ← this layer's architecture
       vocabulary.md           ← this layer's terms (domain-specific only)
+      diagrams/               ← this layer's diagrams (optional)
+        <diagram>.md
       decisions/
         index.md              ← routes to feature folders
-        shared/                ← cross-cutting decisions (auth, logging, retries, …)
+        shared/               ← cross-cutting decisions (auth, logging, retries, …)
           index.md
           <descriptive name>.md
-        <feature>/             ← one per feature (Users/, Game/, Orders/, …)
+        <feature>/            ← one per feature (Users/, Game/, Orders/, …)
           index.md
           <descriptive name>.md
           <descriptive name>.md
   AGENTS.md / README.md       ← routers only; no implementation detail — link to docs/
 ```
+
+### Existing repo docs — ask before restructuring
+
+A repo may already have its own established docs structure (different folder
+names, an existing decisions tree, a custom readme layout). Never silently
+ignore or overwrite it. During layer discovery, detect any existing docs
+convention. If it diverges from the tree above, ask before writing:
+
+_"This repo already has {existing convention}. Keep it, or align with the SDA
+structure (the tree above, as `sda-design` + `sda-scribe` define it)?"_
+
+Restructure only after the user chooses.
 
 ### Layers — discover first
 
@@ -285,23 +301,34 @@ Run `sda-code-explore` before designing to enumerate the repo's independent
 parts — UI, backend, background worker, library, plugin, MCP server —
 whatever the repo actually has (from the folder layout, deployables, and
 `project-tools.md` areas). Every distinct layer gets its **own** `docs/`
-(index + vocabulary + decisions) plus an AI readme + human `README.md` at its
-root. A change-feed trigger inside a layer belongs to that layer — not a
-separate one — unless it is its own deployable.
+(architecture, index, vocabulary, decisions, diagrams as needed) plus an AI
+readme + human `README.md` at its root. A change-feed trigger inside a layer
+belongs to that layer — not a separate one — unless it is its own deployable.
 
 ### index.md convention
 
-Every docs folder gets an `index.md`:
+Every docs folder gets an `index.md`. Every `index.md` item carries a one-line
+description of what it routes to — never a bare link.
 
 | Docs folder | `index.md` routes to |
 |---|---| 
-| Global `docs/` | `architecture.md`, `vocabulary.md`, `diagrams/` | 
-| `<layer>/docs/` | `vocabulary.md`, `decisions/index.md` | 
+| Global `docs/` | `architecture.md`, `vocabulary.md`, `diagrams/`, `decisions/index.md` | 
+| `<layer>/docs/` | `architecture.md`, `vocabulary.md`, `diagrams/`, `decisions/index.md` | 
 | `<layer>/docs/decisions/` | feature folders (`shared/`, `<feature>/`) | 
 | `<layer>/docs/decisions/<feature>/` | decision files (descriptively named) |
 
 Rule: every docs folder is a portal — referenced from a readme or containing
 subfolders — so every one gets an `index.md`.
+
+Example `backend/docs/decisions/shared/index.md`:
+
+```markdown
+# shared — Backend cross-cutting decisions
+
+- [Authentication](authentication.md) — how each request is authenticated
+- [Error model](error-model.md) — the uniform error shape every endpoint returns
+- [Persistence](persistence.md) — repository + ORM conventions for storage
+```
 
 ### Readmes — required sections (same structure)
 
@@ -356,9 +383,10 @@ Record each design decision the moment the user commits to it — never defer.
   (one sentence), `appliesTo` (optional paths), `why` (optional), and
   `application` (✅ DO / ❌ DON'T). Provide content only — naming and
   placement comes from the caller.
-- Placement: each decision lives in the **layer** it governs, under
-  `<layer>/docs/decisions/<feature>/`. Use `shared/` for cross-cutting concerns
-  (auth, logging, retries, …). Read that layer's `docs/decisions/index.md` first;
+- Placement: each decision lives in the **scope** it governs — a layer's
+  `<layer>/docs/decisions/<feature>/`, or global `docs/decisions/<feature>/` for
+  cross-layer concerns. Use `shared/` for cross-cutting concerns (auth,
+  logging, retries, …). Read the owning scope's `docs/decisions/index.md` first;
   place the decision in the feature folder it belongs to. One feature folder
   = one bounded context or feature; split when a new bounded context emerges.
   One decision per file with a descriptive name.
@@ -386,12 +414,15 @@ files are the detail.
 
 | File | Purpose | When |
 |---|---|---|
-| `docs/index.md` | Routes to architecture, vocabulary, diagrams | Always — first |
+| `docs/index.md` | Routes to architecture, vocabulary, diagrams, decisions | Always — first |
 | `docs/architecture.md` | Repo structure + layer list, services/modules, communication, storage, integration, cross-cutting concerns | Always |
 | `docs/vocabulary.md` | Global ubiquitous-language terms; links to each layer's `vocabulary.md` | Always |
 | `docs/diagrams/<name>.md` | One Mermaid diagram per file | After the topic files |
-| `<layer>/docs/index.md` | Routes to the layer's vocabulary + decisions | One per layer — always |
+| `docs/decisions/` | Global cross-layer decision tree | As decisions are made |
+| `<layer>/docs/index.md` | Routes to the layer's architecture, vocabulary, diagrams, decisions | One per layer — always |
+| `<layer>/docs/architecture.md` | This layer's modules, ownership, communication, storage | One per layer — always |
 | `<layer>/docs/vocabulary.md` | This layer's terms | One per layer — always |
+| `<layer>/docs/diagrams/` | This layer's diagrams | Optional |
 | `<layer>/docs/decisions/` | Decision tree (topics → one decision per file) | As decisions are made |
 
 Delegate the global + per-layer docs to `sda-scribe` **before** diagrams so
@@ -405,14 +436,14 @@ the user can start reading while diagrams are generated.
    `docs/architecture.md`, `src/docs/index.md`, and update the readmes.
    Proceed?"_
 2. Delegate all design files to `sda-scribe`: global docs (`architecture.md`,
-   `vocabulary.md`, `index.md`), per-layer docs (`index.md`, `vocabulary.md`),
-   and the readme outlines. You provide the content; sda-scribe formats and
-   writes.
+   `vocabulary.md`, `index.md`), per-layer docs (`architecture.md`, `index.md`,
+   `vocabulary.md`), and the readme outlines. You provide the content;
+   sda-scribe formats and writes.
 3. Create only the files the design actually needs — never pre-seed empty
    files.
 4. Canonical spec files still go to `{specs-root}` via `sda-scribe` (Domain,
    File name, Boundary, Format, Description, Content).
-5. Diagrams go to `{design-root}/diagrams/<diagram-name>.md`.
+5. Diagrams go to `{design-root}/diagrams/<diagram-name>.md` (global) or `<layer>/docs/diagrams/<diagram-name>.md` (per-layer).
 6. When delegating to diagram-writer, always use the full resolved path in the `OUTPUT:` field.
 
 ### Workflow
@@ -449,7 +480,7 @@ the user can start reading while diagrams are generated.
    — pass one DIAGRAM block per diagram (see Diagram Delegation)
         │
         ▼
-7. Link the diagrams from `docs/architecture.md` and `docs/index.md`
+7. Link the diagrams from the relevant `architecture.md` and `index.md`
         │
         ▼
 8. Collaborate
@@ -462,8 +493,13 @@ the user can start reading while diagrams are generated.
 One concern per file. Write as much as needed for each — no more.
 
 #### architecture.md
+Global `docs/architecture.md` covers the platform at outline level — layer list
++ one-line ownership each; it never details a single subsystem. Each
+`<layer>/docs/architecture.md` covers that layer only (its modules, ownership,
+communication, storage).
+
 - **Repo structure** — list every independent layer/slice with its folder +
-  one-line ownership
+  one-line ownership (global only)
 - **Services / modules** — list with one-line ownership statement each
 - **Communication** — sync vs async, protocols (REST, events, queues)
 - **Storage** — which store for which concern
@@ -473,7 +509,7 @@ One concern per file. Write as much as needed for each — no more.
 - **Feature boundaries & dependencies** — which features exist and their sequencing
 
 Delegate one **component overview diagram** to diagram-writer covering all
-services and their connections.
+services and their connections (global). A layer diagram covers that layer only.
 
 #### vocabulary.md
 Global `docs/vocabulary.md` holds the **ubiquitous language** — terms used
@@ -493,12 +529,14 @@ Global term table:
 Before finalising, verify:
 
 - [ ] §1 has the ≤3-sentence description and §3 links `docs/index.md` — in all readmes
-- [ ] Every layer has its own AI readme + human README + `docs/` (index + vocabulary + decisions)
-- [ ] `docs/index.md` exists and routes to architecture, vocabulary, diagrams
+- [ ] Every layer has its own AI readme + human README + `docs/` (architecture, index, vocabulary, decisions, diagrams as needed)
+- [ ] `docs/index.md` exists and routes to architecture, vocabulary, diagrams, decisions
 - [ ] `docs/architecture.md` lists every layer + major services/modules with ownership
+- [ ] Each layer's `<layer>/docs/architecture.md` covers that layer's modules with ownership
 - [ ] `docs/vocabulary.md` defines shared terms; each term links to its owning layer vocabulary
 - [ ] Each layer's `docs/vocabulary.md` holds only that layer's terms
 - [ ] Each layer's `docs/decisions/index.md` routes to its feature folders; each feature has `index.md` + descriptively-named decision files
+- [ ] Every `index.md` entry has a one-line description (no bare links)
 - [ ] No readme contains implementation detail (endpoint recipes, RBAC lists, DB query rules, prop tables)
 - [ ] Feature boundaries show dependencies (or marked "N/A — single service")
 
@@ -514,7 +552,7 @@ renders each as a Mermaid diagram in a ` ```mermaid ` fenced block inside a
 2. Call `sda-diagram-writer` **once per diagram**, all calls in the same
    parallel batch. Pass exactly one `DIAGRAM` block per call.
 3. Receive the written path from each call.
-4. Link the diagrams from `docs/architecture.md` and `docs/index.md`.
+4. Link the diagrams from the relevant `architecture.md` and `index.md`.
 
 ```
 DIAGRAM: <name>
@@ -528,6 +566,9 @@ FLOWS:
   - <each arrow, call, or event in order>
   - ...
 ```
+
+`OUTPUT` is a full resolved path: `{design-root}/diagrams/<name>.md` for a
+global diagram, or `<layer>/docs/diagrams/<name>.md` for a layer diagram.
 
 Provide **every** participant, node, and flow step explicitly. Do not leave
 gaps for diagram-writer to infer.
@@ -547,12 +588,12 @@ Any conceptual change must update **all** affected artifacts in the same respons
 
 | Change | Update |
 |---|---|
-| New service / module | `docs/architecture.md` + overview diagram |
-| Removed service / module | `docs/architecture.md` + all diagrams referencing it |
+| New service / module | the owning scope's `architecture.md` (global or layer) + overview diagram |
+| Removed service / module | the owning scope's `architecture.md` + all diagrams referencing it |
 | Changed entity / term | `docs/vocabulary.md` (or the owning layer's) + affected sequence diagrams |
 | Changed layer set | `docs/architecture.md` (layer list) + `docs/index.md` + §3 of all readmes |
 | Changed standard or canonical interface | the owning layer's decisions + relevant diagrams |
-| Changed architecture boundary | `docs/architecture.md` + overview diagram |
+| Changed architecture boundary | the owning scope's `architecture.md` + overview diagram |
 
 ### Scope — hard boundary (system mode)
 
@@ -741,6 +782,6 @@ pre-response tool call):**
 3. **Detect the mode** (system | feature) from the request; ambiguous → ask.
 
 Use `{design-root}` for global docs (`index.md`, `architecture.md`,
-`vocabulary.md`, `diagrams/*.md`).
+`vocabulary.md`, `diagrams/*.md`, `decisions/`).
 Use `<layer>/docs/` for per-layer docs and decisions (discover layers first).
 Use `{specs-root}` when delegating canonical specs to sda-scribe.
