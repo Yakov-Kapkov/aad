@@ -14,15 +14,15 @@ REPO_ROOT="$(pwd)"
 
 # Agent → config keys (space-separated)
 case "$AGENT" in
-    sda-dev)           KEYS="scripts.taskState scripts.readProjectTools standardsSkill paths.design paths.specs tests.coverage.enabled" ;;
+    sda-dev)           KEYS="scripts.taskState scripts.readProjectTools standardsSkill paths.specs tests.coverage.enabled" ;;
     sda-dev-quality)   KEYS="scripts.readProjectTools tests.coverage.enabled" ;;
     sda-dev-task)          KEYS="scripts.taskState scripts.unitFileSize devTaskUnitSizeLimit designOwnership standardsSkill paths.specs paths.tasks" ;;
     sda-dev-task-verifier) KEYS="scripts.unitFileSize devTaskUnitSizeLimit paths.specs" ;;
     sda-qa)            KEYS="paths.issues scripts.qaSessionInit scripts.loadQaSecrets scripts.invokeHttp scripts.readProjectTools" ;;
     sda-qa-task)       KEYS="designOwnership paths.tasks paths.issues paths.specs scripts.listQaSecrets scripts.readProjectTools" ;;
-    sda-design)        KEYS="designOwnership paths.design paths.specs" ;;
+    sda-design)        KEYS="designOwnership paths.specs" ;;
     sda-scribe)        KEYS="paths.specs paths.issues" ;;
-    sda-docs-check)    KEYS="paths.design scripts.docsIntegrity" ;;
+    sda-docs-check)    KEYS="scripts.docsIntegrity" ;;
     *)                 KEYS="" ;;
 esac
 
@@ -45,7 +45,6 @@ get_default() {
         devTaskUnitSizeLimit)   echo "1000" ;;
         designOwnership)        echo "user" ;;
         standardsSkill)         echo "standards-compliance" ;;
-        paths.design)           echo "docs" ;;
         paths.specs)            echo ".sda/specs" ;;
         paths.tasks)            echo ".sda/tasks" ;;
         paths.issues)           echo ".sda/issues" ;;

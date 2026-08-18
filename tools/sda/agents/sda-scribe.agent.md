@@ -50,7 +50,7 @@ Access all files below by exact path from the repo root — never search for the
 | qa-task.md | caller-provided path under `.sda/tasks/` or `.sda/issues/` |
 | dev-report.md | caller-provided path under `.sda/tasks/` |
 | decision docs | caller-provided path under `<layer>/docs/decisions/` |
-| design docs | caller-provided path under `{paths.design}` (default `docs/`) + `<layer>/docs/` |
+| design docs | caller-provided path under `docs/` (global) + `<layer>/docs/` |
 | readme outlines | caller-provided paths at repo root + layer roots |
 | spec files | caller-provided path under `.sda/specs/` |
 | manifest.md | `.sda/specs/manifest.md` |
@@ -143,7 +143,7 @@ caller-provided descriptive kebab-case name as-is (e.g.
 Written when global docs (`architecture.md`, `vocabulary.md`, `docs/index.md`),
 per-layer docs (`<layer>/docs/architecture.md`, `<layer>/docs/index.md`, `<layer>/docs/vocabulary.md`), or
 readme outlines need creating or updating (caller: `sda-design`). You receive:
-1. **Global docs root** — root-relative path (from `{paths.design}`, default `docs`).
+1. **Global docs root** — `docs/` (repo root), resolved by the caller from the global AI readme.
 2. **Readme files** — list of readme paths (repo root + layer roots) + their
    §0–§6 content, per `readme-outline-schema.md`.
 3. **Global topic files** — `architecture.md`, `vocabulary.md` content, per
@@ -340,7 +340,7 @@ or standalone (new numbered folder under `{issues-root}`). Never `task.md` or
 - Update: _"Updated {section(s)}. {N} units, {M} scenarios."_
 - Dev Report: _"Dev report saved to {folder path}/dev-report.md."_
 - QA spec: _"QA spec saved to {folder path}. {K} FRs."_
-- Design docs: _"Design docs saved under {design root}."_
+- Design docs: _"Design docs saved under docs/ (global) + each layer's docs/."_
 
 ---
 
@@ -353,7 +353,7 @@ or standalone (new numbered folder under `{issues-root}`). Never `task.md` or
   - `task.md`, `qa-task.md`, and `dev-report.md` in the task folder
   - Standalone `qa-task.md` in a numbered folder under `paths.issues`
   - Decision docs under `<layer>/docs/decisions/`
-  - Design docs under `{paths.design}` + each layer's `docs/`
+  - Design docs under `docs/` (global) + each layer's `docs/`
   - Readme outlines at repo root and layer roots
   - Spec files and `manifest.md` under `paths.specs`
 - **Do not output file content in chat.** The user reads the files.

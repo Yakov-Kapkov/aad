@@ -7,15 +7,15 @@ $ErrorActionPreference = 'Stop'
 
 # Per-agent key manifests — controls what each agent receives
 $agentKeys = @{
-    'sda-dev'           = @('scripts.taskState','scripts.readProjectTools','standardsSkill','paths.design','paths.specs','tests.coverage.enabled')
+    'sda-dev'           = @('scripts.taskState','scripts.readProjectTools','standardsSkill','paths.specs','tests.coverage.enabled')
     'sda-dev-quality'   = @('scripts.readProjectTools','tests.coverage.enabled')
     'sda-dev-task'          = @('scripts.taskState','scripts.unitFileSize','devTaskUnitSizeLimit','designOwnership','standardsSkill','paths.specs','paths.tasks')
     'sda-dev-task-verifier' = @('scripts.unitFileSize','devTaskUnitSizeLimit','paths.specs')
     'sda-qa'            = @('paths.issues','scripts.qaSessionInit','scripts.loadQaSecrets','scripts.invokeHttp','scripts.readProjectTools')
     'sda-qa-task'       = @('designOwnership','paths.tasks','paths.issues','paths.specs','scripts.listQaSecrets','scripts.readProjectTools')
-    'sda-design'        = @('designOwnership','paths.design','paths.specs')
+    'sda-design'        = @('designOwnership','paths.specs')
     'sda-scribe'        = @('paths.specs','paths.issues')
-    'sda-docs-check'    = @('paths.design','scripts.docsIntegrity')
+    'sda-docs-check'    = @('scripts.docsIntegrity')
 }
 
 $keys = $agentKeys[$Agent]
@@ -36,7 +36,6 @@ $defaults = @{
     'devTaskUnitSizeLimit'   = '1000'
     'designOwnership'        = 'user'
     'standardsSkill'         = 'standards-compliance'
-    'paths.design'           = 'docs'
     'paths.specs'            = '.sda/specs'
     'paths.tasks'            = '.sda/tasks'
     'paths.issues'           = '.sda/issues'

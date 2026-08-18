@@ -254,7 +254,7 @@ architecture, features, and decisions. Before implementing, check the relevant
 
 ```
 <root>
-  docs/                       ← global docs (`{design-root}`)
+  docs/                       ← global docs (repo root)
     index.md                  ← routes to architecture, vocabulary, diagrams, decisions
     architecture.md           ← overall architecture + repo structure + layer list
     vocabulary.md             ← global terms (domain-specific only); links to each layer's vocabulary.md
@@ -443,7 +443,7 @@ the user can start reading while diagrams are generated.
    files.
 4. Canonical spec files still go to `{specs-root}` via `sda-scribe` (Domain,
    File name, Boundary, Format, Description, Content).
-5. Diagrams go to `{design-root}/diagrams/<diagram-name>.md` (global) or `<layer>/docs/diagrams/<diagram-name>.md` (per-layer).
+5. Diagrams go to `docs/diagrams/<diagram-name>.md` (global) or `<layer>/docs/diagrams/<diagram-name>.md` (per-layer).
 6. When delegating to diagram-writer, always use the full resolved path in the `OUTPUT:` field.
 
 ### Workflow
@@ -557,7 +557,7 @@ renders each as a Mermaid diagram in a ` ```mermaid ` fenced block inside a
 ```
 DIAGRAM: <name>
 TYPE: <sequence | component | class | activity | state>
-OUTPUT: {design-root}/diagrams/<name>.md
+OUTPUT: docs/diagrams/<name>.md
 ABSTRACTION: <application | domain | infrastructure | full>
 COMPONENTS:
   - <ComponentName>: <one-sentence role>
@@ -567,7 +567,7 @@ FLOWS:
   - ...
 ```
 
-`OUTPUT` is a full resolved path: `{design-root}/diagrams/<name>.md` for a
+`OUTPUT` is a full resolved path: `docs/diagrams/<name>.md` for a
 global diagram, or `<layer>/docs/diagrams/<name>.md` for a layer diagram.
 
 Provide **every** participant, node, and flow step explicitly. Do not leave
@@ -638,7 +638,7 @@ pre-response tool call):**
 2. Confirm `designOwnership` is `user` or `ai` before composing any reply.
 3. Read the AI readmes (repo root) — §3 architecture, §4 features, §5 decisions —
    and the human `README.md`.
-4. Read `{design-root}/architecture.md`, `{design-root}/vocabulary.md`, and the
+4. Read `docs/architecture.md`, `docs/vocabulary.md`, and the
    owning layer's `docs/`; extract what's relevant to this feature.
 
 **Then respond** — informed by what you just read:
@@ -775,13 +775,14 @@ pre-response tool call):**
    session context; use defaults for any absent value:
    - `repoRoot` → `{repo-root}`
    - `designOwnership` — **who leads design** (values: `user` | `ai`)
-   - `paths.design` → `{design-root}` (global docs root)
    - `paths.specs` → `{specs-root}`
 2. **Confirm whether `designOwnership` is `user` or `ai` before composing
    any reply** — every branch above depends on it.
 3. **Detect the mode** (system | feature) from the request; ambiguous → ask.
 
-Use `{design-root}` for global docs (`index.md`, `architecture.md`,
+Docs paths come from the AI readmes, not config: read the global AI readme
+(repo root) first, then each layer's readme, to locate the docs tree.
+Use `docs/` (repo root) for global docs (`index.md`, `architecture.md`,
 `vocabulary.md`, `diagrams/*.md`, `decisions/`).
 Use `<layer>/docs/` for per-layer docs and decisions (discover layers first).
 Use `{specs-root}` when delegating canonical specs to sda-scribe.

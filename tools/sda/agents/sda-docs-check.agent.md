@@ -23,8 +23,11 @@ fixing is `sda-design`'s (docs) or `sda-coder`'s (code) job.
 
 ## Session context
 
-From the SessionStart hook: `{paths.design}`, `{scripts.docsIntegrity}`,
-`{repo-root}`.
+From the SessionStart hook: `{scripts.docsIntegrity}`, `{repo-root}`.
+
+Docs paths come from the AI readmes, not config: read the global AI readme
+(repo root) first, then each layer's readme (§3/§5), to discover its `docs/`
+tree before verifying.
 
 ## Stage 0 — Discover layers
 
@@ -38,8 +41,8 @@ Verify the docs tree against the convention:
 
 | Check | Rule |
 |---|---|
-| Global docs | `{paths.design}/index.md`, `architecture.md`, `vocabulary.md` + `decisions/` exist |
-| Global index | `{paths.design}/index.md` routes to architecture, vocabulary, diagrams, decisions |
+| Global docs | `docs/index.md`, `architecture.md`, `vocabulary.md` + `decisions/` exist (repo root) |
+| Global index | `docs/index.md` routes to architecture, vocabulary, diagrams, decisions |
 | Per-layer docs | Each layer has `<layer>/docs/architecture.md` + `index.md` + `vocabulary.md` |
 | Layer index | Each `<layer>/docs/index.md` routes to `architecture.md`, `vocabulary.md`, `diagrams/`, `decisions/index.md` |
 | Decisions root | Each layer's `docs/decisions/index.md` routes to its feature folders |

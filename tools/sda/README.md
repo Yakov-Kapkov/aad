@@ -298,7 +298,7 @@ All resources are read from a `.sda/` folder in the project root (may be git-ign
 | Design topic schema | `.sda/resources/design/design-topic-schema.md` |
 | Design index schema | `.sda/resources/design/design-index-schema.md` |
 | Docs integrity script | `.sda/scripts/decisions/docs-integrity.ps1` or `.sda/scripts/decisions/docs-integrity.sh` |
-| Design docs (global) | `docs/` — `architecture.md`, `vocabulary.md`, `index.md`, `decisions/`, `diagrams/` (from `paths.design`) |
+| Design docs (global) | `docs/` — `architecture.md`, `vocabulary.md`, `index.md`, `decisions/`, `diagrams/` |
 | Design docs (per-layer) | `<layer>/docs/` — `architecture.md`, `index.md`, `vocabulary.md`, `decisions/`, `diagrams/` |
 | Decision docs (per-layer) | `<layer>/docs/decisions/<feature>/` — `index.md` + descriptive kebab-case `.md` files (`shared/` for cross-cutting) |
 
@@ -358,7 +358,6 @@ Written by the `sda-setup` skill. Stores project-level settings injected into ea
 |---|---|---|---|
 | `designOwnership` | `string` | `user` | Who owns the design decision in `sda-design` and `sda-dev-task`. When `user` (default), the agent never volunteers an approach — it pressure-tests the approach **you** propose and hands the decision back to you; it only proposes options when your message explicitly asks for them. When `ai`, the agent may propose the design itself (legacy behaviour). |
 | `standardsSkill` | `string` | `standards-compliance` | Name of the skill carrying coding standards. `sda-dev`, `sda-coder`, `sda-refactor`, `sda-test-writer`, and `sda-dev-task` load it before generating code. |
-| `paths.design` | `string` | `docs` | Global docs root — sda-design writes `docs/index.md`, `architecture.md`, `vocabulary.md`, `decisions/`, and `diagrams/` here. Per-layer docs live under each layer's own `docs/`. |
 | `paths.specs` | `string` | `.sda/specs` | Root folder for specification files (OpenAPI, JSON Schema, etc.). Written by sda-scribe; read by sda-dev-task and sda-dev-task-verifier. |
 | `paths.issues` | `string` | `.sda/issues` | Root folder for standalone QA work (no task): each `<NNN>-<slug>/` holds a `qa-task.md` authored by sda-qa-task and the `qa-report.md` written by sda-qa. |
 | `paths.secrets` | `string` | `.sda/secrets` | Git-ignored folder holding `qa.secrets.env` credentials used by sda-qa. |
@@ -382,7 +381,6 @@ Example:
   "designOwnership": "user",
   "standardsSkill": "standards-compliance",
   "paths": {
-    "design": "docs",
     "specs": ".sda/specs",
     "issues": ".sda/issues",
     "secrets": ".sda/secrets"
