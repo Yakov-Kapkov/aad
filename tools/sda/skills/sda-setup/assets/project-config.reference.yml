@@ -51,11 +51,11 @@ designOwnership: user
 standardsSkill: standards-compliance
 
 paths:
-  # Root folder for sda-design output (design topic files + decisions/).
-  # Defaults to docs/design if omitted.
-  # Design detail is split by concern; decisions live in decisions/
-  # (derived: <design>/decisions — no separate config field).
-  design: docs/design
+  # Global docs root — sda-design writes docs/index.md, architecture.md,
+  # vocabulary.md, and diagrams/ here. Per-layer docs live under each
+  # layer's own docs/ folder, discovered from the repo layout.
+  # Defaults to docs if omitted.
+  design: docs
 
   # Root folder for specification files (OpenAPI, JSON Schema, etc.).
   # Defaults to .sda/specs if omitted.

@@ -13,9 +13,9 @@ $agentKeys = @{
     'sda-dev-task-verifier' = @('scripts.unitFileSize','devTaskUnitSizeLimit','paths.specs','paths.design')
     'sda-qa'            = @('paths.issues','scripts.qaSessionInit','scripts.loadQaSecrets','scripts.invokeHttp','scripts.readProjectTools')
     'sda-qa-task'       = @('designOwnership','paths.tasks','paths.issues','paths.specs','scripts.listQaSecrets','scripts.readProjectTools')
-    'sda-design'        = @('designOwnership','paths.design','paths.specs','paths.decisions')
+    'sda-design'        = @('designOwnership','paths.design','paths.specs')
     'sda-scribe'        = @('paths.specs','paths.issues')
-    'sda-docs-check'    = @('paths.decisions','paths.design','scripts.docsIntegrity')
+    'sda-docs-check'    = @('paths.design','scripts.docsIntegrity')
 }
 
 $keys = $agentKeys[$Agent]
@@ -36,7 +36,7 @@ $defaults = @{
     'devTaskUnitSizeLimit'   = '1000'
     'designOwnership'        = 'user'
     'standardsSkill'         = 'standards-compliance'
-    'paths.design'           = 'docs/design'
+    'paths.design'           = 'docs'
     'paths.specs'            = '.sda/specs'
     'paths.tasks'            = '.sda/tasks'
     'paths.issues'           = '.sda/issues'
@@ -83,15 +83,6 @@ if (Test-Path $configPath) {
             $lines.Add("$key=$($defaults[$key])")
         }
     }
-}
-
-# Derive paths.decisions from paths.design (always {design-root}/decisions).
-if ($keys -contains 'paths.decisions') {
-    $designVal = $null
-    if (Test-Path $configPath) { $designVal = Get-NestedValue $config 'paths.design' }
-    if ($null -eq $designVal -and $defaults.ContainsKey('paths.design')) { $designVal = $defaults['paths.design'] }
-    if ($null -eq $designVal) { $designVal = 'docs/design' }
-    $lines.Add(('paths.decisions=' + $designVal.TrimEnd('/') + '/decisions'))
 }
 
 # $lines.Add('')

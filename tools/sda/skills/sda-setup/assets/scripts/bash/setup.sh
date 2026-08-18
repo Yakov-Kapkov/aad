@@ -37,6 +37,10 @@ cp "$ASSETS_DIR/toolscan/project-tools-schema.md"    "$TARGET_DIR/resources/tool
 mkdir -p "$TARGET_DIR/resources/decisions"
 cp "$ASSETS_DIR/decisions/decision-topic-schema.md"  "$TARGET_DIR/resources/decisions/decision-topic-schema.md"
 cp "$ASSETS_DIR/decisions/decision-index-schema.md"  "$TARGET_DIR/resources/decisions/decision-index-schema.md"
+mkdir -p "$TARGET_DIR/resources/design"
+cp "$ASSETS_DIR/design/readme-outline-schema.md" "$TARGET_DIR/resources/design/readme-outline-schema.md"
+cp "$ASSETS_DIR/design/design-topic-schema.md"   "$TARGET_DIR/resources/design/design-topic-schema.md"
+cp "$ASSETS_DIR/design/design-index-schema.md"   "$TARGET_DIR/resources/design/design-index-schema.md"
 
 TC_SOURCE="$ASSETS_DIR/tool-catalog/$LANGUAGE/tool-catalog.md"
 if [ -f "$TC_SOURCE" ]; then

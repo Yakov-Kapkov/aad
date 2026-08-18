@@ -20,7 +20,7 @@ tools/sda/
 │   ├── sda-design.agent.md            ← system + feature design
 │   ├── sda-dev-task.agent.md              ← task specification design
 │   ├── sda-qa-task.agent.md           ← qa-task.md authoring (coupled + standalone)
-│   ├── sda-scribe.agent.md             ← subagent: universal scribe (task.md, qa-task.md, dev-report.md, specs, manifest.md)
+│   ├── sda-scribe.agent.md             ← subagent: universal scribe (task.md, qa-task.md, dev-report.md, decision + design docs, specs, manifest.md)
 │   ├── sda-dev-task-verifier.agent.md      ← subagent: consistency + regression + contract compliance checks
 │   ├── sda-code-explore.agent.md       ← subagent: fast read-only codebase exploration
 │   ├── sda-web-explore.agent.md        ← subagent: web research for up-to-date API docs and library specs
@@ -29,9 +29,9 @@ tools/sda/
 │   ├── sda-coder.agent.md             ← subagent: writes production code (GREEN phase)
 │   ├── sda-refactor.agent.md          ← subagent: refactoring pass (REFACTOR phase)
 │   ├── sda-dev-quality.agent.md       ← subagent: per-area quality gates (Phase 5); check-and-report only
-│   ├── sda-docs-check.agent.md       ← subagent: verifies decision docs + AI-readme routing against reality; check-and-report only
+│   ├── sda-docs-check.agent.md       ← subagent: verifies docs tree + decision docs + AI-readme routing against reality; check-and-report only
 │   ├── sda-qa.agent.md                 ← runtime acceptance QA (read-only on source; writes qa-report.md)
-│   └── sda-diagram-writer.agent.md   ← subagent: renders ASCII diagrams from DIAGRAM blocks
+│   └── sda-diagram-writer.agent.md   ← subagent: renders Mermaid diagrams from DIAGRAM blocks → `.md` files with ```mermaid fenced blocks
 ├── prompts/
 │   ├── sda.dev.task-verify.prompt.md       ← verify task spec consistency + regression analysis
 │   ├── sda.qa.session-run.prompt.md       ← trigger sda-qa agent (QA verification for a task)
@@ -74,12 +74,16 @@ tools/sda/
             │       ├── get-timestamp.ps1          ← output scan timestamp string
             │       └── probe-validators.ps1       ← probe all format validators; output pipe-delimited table
             ├── decisions/                      ← decision-doc schemas + integrity script
-            │   ├── decision-topic-schema.md    ← decision topic file format → .sda/resources/decisions/
-            │   ├── decision-index-schema.md    ← decision index file format → .sda/resources/decisions/
+            │   ├── decision-topic-schema.md    ← one-decision-per-file format → .sda/resources/decisions/
+            │   ├── decision-index-schema.md    ← decision index format (root + topic) → .sda/resources/decisions/
             │   ├── bash/
             │   │   └── docs-integrity.sh       ← link/orphan/duplicate check → .sda/scripts/decisions/
             │   └── powershell/
             │       └── docs-integrity.ps1      ← link/orphan/duplicate check → .sda/scripts/decisions/
+            ├── design/                       ← design-doc schemas (readme outline, architecture + vocabulary, docs index)
+            │   ├── readme-outline-schema.md  ← readme §0–§6 format → .sda/resources/design/
+            │   ├── design-topic-schema.md    ← architecture.md + vocabulary.md format → .sda/resources/design/
+            │   └── design-index-schema.md    ← docs index format (global + layer) → .sda/resources/design/
         ├── scripts/
         │   ├── bash/
         │   │   ├── setup.sh               ← scaffold .sda/ folder
@@ -111,9 +115,9 @@ The TDD implementation phase is **orchestrated**: `sda-dev` reads `task.md`, the
 sda-setup skill ──▸ sda-toolscan                          project scaffolding + scanning
 sda-setup skill ──▸ sda-tool-installer                    required tool installation (Step 7)
 sda-design ─delegates─▸ sda-diagram-writer            diagram generation (system mode)
-sda-design ─delegates─▸ sda-scribe                    canonical specs, decision docs
-sda-design ─delegates─▸ sda-code-explore              structure discovery (decision tree / readmes)
-sda-design ─delegates─▸ sda-docs-check                decision-doc integrity + drift + AI-readme routing verification
+sda-design ─delegates─▸ sda-scribe                    canonical specs, decision + design docs
+sda-design ─delegates─▸ sda-code-explore              layer discovery + structure
+sda-design ─delegates─▸ sda-docs-check                docs structure + decision integrity + drift + readme routing
 sda-design ────handoff──▸ sda-dev-task               design pipeline (feature → tasks)
 sda-dev-task ─delegates─▸ sda-code-explore              task design pipeline (research)
 sda-dev-task ─delegates─▸ sda-web-explore               task design pipeline (web/API research)
@@ -169,9 +173,10 @@ sda-dev ─delegates─▸ sda-qa                      runtime acceptance QA (ta
 | `sda-dev-task-verifier` delegation to `sda-code-explore` | `sda-code-explore` input contract | Verifier sends file lists for structural + regression fact-gathering; explorer returns raw findings |
 | Consistency/regression check rules | `sda-dev-task-verifier` | All verification logic lives in the verifier |
 | Contract spec file format or storage conventions | `sda-design` (defines policy, writes canonical specs via sda-scribe), `sda-dev-task` (designs content), `sda-scribe` (writes files), `sda-dev-task-verifier` (reads for verification) | All planning agents share spec conventions |
-| App readme outline (`AGENTS.md` §0–§6) | `sda-design` (owns + maintains), `sda-dev-task` (reads §4 for task scope), `sda-docs-check` (verifies routing against reality) | AGENTS.md is the single routing index; features are listed in §4 |
-| Design topic files (`architecture.md`, `domain-model.md`, `standards.md`, `cross-cutting.md`, `interfaces.md`) | `sda-design` (writes + maintains), `sda-dev-task` (reads `interfaces.md` during contract trace) | Design detail is split by concern; the AI readme §3 links to the files |
-| `paths.design` in `project-config.json` | `sda-design` (from session context) | sda-design uses this for all design output paths; default `docs/design` |
+| App readme outline (`AGENTS.md` §0–§6) | `sda-design` (owns content), `sda-scribe` (Mode 6 writes), `sda-dev-task` (reads §4 for task scope), `sda-docs-check` (verifies routing against reality) | Readmes are the routing index (global + per-layer); thin — no implementation detail; §3 links `docs/index.md` + every `<layer>/docs/index.md`; features listed in §4 |
+| Doc tree & per-layer readmes (Plane A/B, `index.md` convention) | `sda-design` (owns), `sda-scribe` (Mode 6 writes), `sda-docs-check` (verifies) | Every layer gets AI readme + human README + `docs/` (index + vocabulary + decisions); every docs folder gets an `index.md` |
+| Design topic files (`architecture.md`, `vocabulary.md`) | `sda-design` (dictates content), `sda-scribe` (Mode 6 writes), `sda-dev-task` (reads `architecture.md` during contract trace) | Global design detail lives in `docs/architecture.md` + `docs/vocabulary.md`; `docs/index.md` routes to them |
+| `paths.design` in `project-config.json` | `sda-design` (from session context) | Global docs root — sda-design writes `index.md`, `architecture.md`, `vocabulary.md`, `diagrams/` here; default `docs` |
 | `paths.specs` in `project-config.json` | `sda-design` (writes canonical specs, reads manifest for affected specs), `sda-dev-task` (reads specs during contract trace), `sda-scribe` (writes spec files), `sda-dev-task-verifier` (reads specs for verification) | All planning agents receive this from session context; default `.sda/specs` |
 | `manifest.md` format | `sda-design` (adds canonical specs, reads for affected specs), `sda-dev-task` (reads for spec discovery), `sda-scribe` (writes/updates rows), `sda-dev-task-verifier` (reads for verification) | Entry point for spec discovery; scribe maintains it |
 | `sda-design` diagram delegation format (`DIAGRAM` block) | `sda-diagram-writer` input contract | Subagent parses the exact DIAGRAM block format the orchestrator sends |
@@ -186,8 +191,9 @@ sda-dev ─delegates─▸ sda-qa                      runtime acceptance QA (ta
 | Init output format (`project-tools.md`) | `sda-toolscan`, `sda-dev`, **sda-setup skill** | The orchestrator, the toolscan agent, and the setup skill depend on project-tools output |
 | `models` in `project-config.json` | `sda-setup` skill (asks user, normalizes, resolves, applies to agent frontmatter) | sda-setup resolves family names to versioned models and writes `model:` into `sda-toolscan`, `sda-dev-task`, `sda-qa-task`, `sda-scribe`, `sda-dev-task-verifier`, `sda-code-explore`, `sda-dev`, `sda-dev-quality`, `sda-qa`, `sda-test-writer`, `sda-coder`, `sda-refactor`, `sda-docs-check` |
 | `unit-file-size` script (parameters or output format) | `sda-dev-task` (Phase 6 Step 1), `sda-dev-task-verifier` (Check 1) | Both agents invoke the script; interface changes break invocations |
-| Decision-docs root (`{paths.design}/decisions`) | Derived by the read-config hook from `paths.design` — no separate config field. `sda-design` (records + structures via sda-scribe Mode 5), `sda-scribe` (Mode 5 writes), `sda-docs-check` (verifies) | Decision docs live under `docs/design/decisions`, nested under `paths.design` |
-| Decision-doc schemas (`decision-topic-schema.md`, `decision-index-schema.md`) | `sda-scribe` (Mode 5 reads them), **sda-setup skill** (copies assets to `.sda/resources/decisions/`) | Scribe formats decision docs per these schemas |
+| Decision docs (`<layer>/docs/decisions/`) | No config field — derived per layer from the repo layout. `sda-design` (records + structures via sda-scribe Mode 5), `sda-scribe` (Mode 5 writes), `sda-docs-check` (verifies) | Decision docs live per layer under `<layer>/docs/decisions/` — feature-grouped (`shared/`, `<feature>/`) with descriptively-named files; one decision per file, routed by feature `index.md` |
+| Decision-doc schemas (`decision-topic-schema.md`, `decision-index-schema.md`) | `sda-scribe` (Mode 5 reads them), **sda-setup skill** (copies assets to `.sda/resources/decisions/`) | Scribe formats decision docs per these schemas — feature-grouped folders; descriptively-named files (no `d{N}` numbering); the index routes by file name |
+| Design schemas (`readme-outline-schema.md`, `design-topic-schema.md`, `design-index-schema.md`) | `sda-scribe` (Mode 6 reads them), **sda-setup skill** (copies assets to `.sda/resources/design/`) | Scribe formats readmes + design docs per these schemas |
 | `scripts.docsIntegrity` in `project-config.json` | `sda-docs-check` (runs it) | Integrity script for links/orphans/duplicate index rows |
 | `README.md` | Keep consistent with all agent descriptions and workflow phases | User-facing docs must match agent behavior |
 

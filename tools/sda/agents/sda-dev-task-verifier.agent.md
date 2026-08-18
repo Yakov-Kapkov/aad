@@ -31,7 +31,7 @@ Access all files below by exact path from the repo root — never search for the
 | state.json | task folder path (provided by caller) |
 | manifest.md | `{specs-root}/manifest.md` |
 | spec files | `{specs-root}/{domain}/*` |
-| design topic files | `{design-root}/architecture.md`, `domain-model.md`, `standards.md`, `cross-cutting.md`, `interfaces.md` |
+| design topic files | `{design-root}/architecture.md`, `{design-root}/vocabulary.md` |
 
 **⛔ Never search, glob, or use `file_search` / `grep_search` to find any `.sda/` file.**
 

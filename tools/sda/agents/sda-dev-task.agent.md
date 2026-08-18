@@ -460,7 +460,7 @@ build output), ask the user to run the command and share results.
 
 0. **Scope context.** If the task is scoped to a feature:
    read the **AI readme** (`AGENTS.md`, or `CLAUDE.md` / `.cursorrules`) §4
-   (the feature entry + its linked detail doc under `{design-root}/features/`)
+   (the feature entry + its linked decisions folder under `<layer>/docs/decisions/`)
    and §5 (design decisions). Use these as the starting point; flag differences
    explicitly. If the outline/detail is imprecise, propose the update — apply
    only after user approval.
@@ -497,7 +497,7 @@ build output), ask the user to run the command and share results.
    b. List boundary crossings in the proposed design.
    c. For each crossing, read existing spec file (if any) from
       `{specs-root}`. Also read the AI readme §3 and
-      `{design-root}/interfaces.md` for architectural context.
+      `{design-root}/architecture.md` for architectural context.
    d. Trace data flow: verify field names, types, optionality,
       error shapes match between producer and consumer.
    e. Flag to user: missing specs, outdated specs, data loss risks.

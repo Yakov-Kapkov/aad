@@ -20,9 +20,9 @@ case "$AGENT" in
     sda-dev-task-verifier) KEYS="scripts.unitFileSize devTaskUnitSizeLimit paths.specs paths.design" ;;
     sda-qa)            KEYS="paths.issues scripts.qaSessionInit scripts.loadQaSecrets scripts.invokeHttp scripts.readProjectTools" ;;
     sda-qa-task)       KEYS="designOwnership paths.tasks paths.issues paths.specs scripts.listQaSecrets scripts.readProjectTools" ;;
-    sda-design)        KEYS="designOwnership paths.design paths.specs paths.decisions" ;;
+    sda-design)        KEYS="designOwnership paths.design paths.specs" ;;
     sda-scribe)        KEYS="paths.specs paths.issues" ;;
-    sda-docs-check)    KEYS="paths.decisions paths.design scripts.docsIntegrity" ;;
+    sda-docs-check)    KEYS="paths.design scripts.docsIntegrity" ;;
     *)                 KEYS="" ;;
 esac
 
@@ -45,7 +45,7 @@ get_default() {
         devTaskUnitSizeLimit)   echo "1000" ;;
         designOwnership)        echo "user" ;;
         standardsSkill)         echo "standards-compliance" ;;
-        paths.design)           echo "docs/design" ;;
+        paths.design)           echo "docs" ;;
         paths.specs)            echo ".sda/specs" ;;
         paths.tasks)            echo ".sda/tasks" ;;
         paths.issues)           echo ".sda/issues" ;;
@@ -183,16 +183,6 @@ else
         [ -n "$default" ] && lines="${lines}"$'\n'"${key}=${default}"
     done
 fi
-
-# Derive paths.decisions from paths.design (always {design-root}/decisions).
-case " $KEYS " in
-    *" paths.decisions "*)
-        design=""
-        [ -f "$CONFIG_FILE" ] && design=$(json_get "$CONFIG_FILE" "paths.design")
-        [ -n "$design" ] || design="docs/design"
-        lines="${lines}"$'\n'"paths.decisions=${design%/}/decisions"
-        ;;
-esac
 
 ctx=$(json_escape "$lines")
 

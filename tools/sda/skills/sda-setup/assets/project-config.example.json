@@ -13,7 +13,7 @@
   "designOwnership": "user",
   "standardsSkill": "standards-compliance",
   "paths": {
-    "design": "docs/design",
+    "design": "docs",
     "specs": ".sda/specs",
     "issues": ".sda/issues",
     "secrets": ".sda/secrets"
