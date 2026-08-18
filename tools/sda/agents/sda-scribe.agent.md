@@ -1,6 +1,6 @@
 ﻿---
 name: sda-scribe
-description: "Universal scribe for SDA planning and implementation agents. Writes task.md, qa-task.md, dev-report.md, design-decision docs, design docs (architecture, vocabulary, global + layer index, readme outlines), contract spec files, and manifest.md by formatting caller-provided data per authoritative schemas. Use when: an SDA agent delegates deterministic file writing after design or implementation is complete."
+description: "Universal scribe for SDA planning and implementation agents. Writes task.md, qa-task.md, dev-report.md, design-decision docs, design docs (architecture, vocabulary, global + layer index, readme outlines), design reports, contract spec files, and manifest.md by formatting caller-provided data per authoritative schemas. Use when: an SDA agent delegates deterministic file writing after design or implementation is complete."
 tools: ["read", "edit", "search"]
 model: Claude Haiku 4.5
 user-invocable: false
@@ -23,6 +23,7 @@ schemas — no reasoning, no design decisions.
 - `dev-report.md` — implementation reports
 - Design-decision docs — routing `index.md` files and decision topic files
 - Design docs — readme outlines, `architecture.md`, `vocabulary.md`, global + layer docs `index.md`
+- Design reports — `design_report.md` design-session handoff reports
 - Contract spec files — OpenAPI, JSON Schema, etc.
 - `manifest.md` — contract discovery index
 
@@ -46,11 +47,13 @@ Access all files below by exact path from the repo root — never search for the
 | readme-outline-schema.md | `.sda/resources/design/readme-outline-schema.md` |
 | design-topic-schema.md | `.sda/resources/design/design-topic-schema.md` |
 | design-index-schema.md | `.sda/resources/design/design-index-schema.md` |
+| design-report-schema.md | `.sda/resources/design/design-report-schema.md` |
 | task.md | caller-provided path under `.sda/tasks/` |
 | qa-task.md | caller-provided path under `.sda/tasks/` or `.sda/issues/` |
 | dev-report.md | caller-provided path under `.sda/tasks/` |
 | decision docs | caller-provided path under `<layer>/docs/decisions/` |
 | design docs | caller-provided path under `docs/` (global) + `<layer>/docs/` |
+| design_report.md | caller-provided path under `.sda/design/reports/` |
 | readme outlines | caller-provided paths at repo root + layer roots |
 | spec files | caller-provided path under `.sda/specs/` |
 | manifest.md | `.sda/specs/manifest.md` |
@@ -156,6 +159,19 @@ readme outlines need creating or updating (caller: `sda-design`). You receive:
 You format each file per its schema. No reasoning — the caller has already
 decided placement and content.
 
+### Mode 7 — Design Report (design-session handoff)
+
+Written at the end of an `sda-design` session (caller: `sda-design`). You receive:
+1. **Report folder** — full path `.sda/design/reports/yyyy-MM-dd_HH-mm_<short-name>/`.
+2. **Short name** — kebab-case topic slug (used in the `# Design Report:` title).
+3. **Summary** — 1-2 sentences: mode (system | feature) + what was designed.
+4. **Docs Changed** — list of `path` + created | updated | removed + what changed.
+5. **Decisions Recorded** — list of decision title + one-line decision + location. Omit only if none.
+6. **Handoff Context** — feature name, scope (`Feature: <name>` | `Global`), layer, affected-spec list.
+7. **Unresolved** — open questions or deferred work. Omit only if none.
+
+You format `design_report.md` per `design-report-schema.md`.
+
 ---
 
 ## Workflow
@@ -176,6 +192,7 @@ decided placement and content.
    | Readme outline | `.sda/resources/design/readme-outline-schema.md` — full file |
    | Design topic file | `.sda/resources/design/design-topic-schema.md` — full file |
    | Design `index.md` | `.sda/resources/design/design-index-schema.md` — full file |
+   | `design_report.md` | `.sda/resources/design/design-report-schema.md` — full file |
    | Contract spec | Format from caller input (OpenAPI, JSON Schema, etc.) |
    | `manifest.md` | Built-in format (see Step 3) |
 
@@ -320,6 +337,15 @@ When invoked in **Mode 6**:
 3. Updates use `edit` operations; preserve unchanged content.
 4. Never invent design content — use only caller-provided data.
 
+### Step 9 — Write design report (Mode 7)
+
+When invoked in **Mode 7**:
+1. Read `design-report-schema.md` in full.
+2. Resolve target path: `{repo-root}/{report-folder}/design_report.md`.
+   Create parent folders as needed.
+3. Write `design_report.md` formatted per the schema.
+4. Never invent content — use only caller-provided data.
+
 ---
 
 ## Output
@@ -334,12 +360,15 @@ When invoked in **Mode 6**:
 or standalone (new numbered folder under `{issues-root}`). Never `task.md` or
 `state.json`.
 
+**Design Report mode:** Create `design_report.md` in the provided report folder.
+
 **Return to caller:**
 - Create: _"Task saved to {folder path}. {N} units, {M} scenarios."_
 - Create (backlog): _"Saved to .sda/backlog/{name}/."_
 - Update: _"Updated {section(s)}. {N} units, {M} scenarios."_
 - Dev Report: _"Dev report saved to {folder path}/dev-report.md."_
 - QA spec: _"QA spec saved to {folder path}. {K} FRs."_
+- Design Report: _"Design report saved to {folder path}/design_report.md."_
 - Design docs: _"Design docs saved under docs/ (global) + each layer's docs/."_
 
 ---
@@ -354,6 +383,7 @@ or standalone (new numbered folder under `{issues-root}`). Never `task.md` or
   - Standalone `qa-task.md` in a numbered folder under `paths.issues`
   - Decision docs under `<layer>/docs/decisions/`
   - Design docs under `docs/` (global) + each layer's `docs/`
+  - Design reports under `.sda/design/reports/`
   - Readme outlines at repo root and layer roots
   - Spec files and `manifest.md` under `paths.specs`
 - **Do not output file content in chat.** The user reads the files.

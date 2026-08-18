@@ -110,10 +110,10 @@ One agent, two altitudes — detect from the request:
   ```
   Design a feature for paginated order listing filtered by status.
   ```
-  Records design decisions and updates §4 of all readmes, then hands off
-  to `sda-dev-task` to split into tasks.
+  Records design decisions and updates §4 of all readmes, writes a
+  `design_report.md`.
 
-`sda-design` is conversational. By default it pressure-tests the design **you** propose rather than authoring it — describe the area you're tackling, defend your direction against its push-back on complexity and risk, and iterate together before committing. (Configurable via `designOwnership` — see [project-config.json](#project-configjson).)
+`sda-design` is conversational. By default it pressure-tests the design **you** propose rather than authoring it — describe the area you're tackling, defend your direction against its push-back on complexity and risk, and iterate together before committing. (Configurable via `designOwnership` — see [project-config.json](#project-configjson).) At the end of every session it writes a `design_report.md` (`.sda/design/reports/<yyyy-MM-dd_HH-mm_<name>>/design_report.md`) so the next agent reads a compact summary instead of the full conversation.
 
 ### Author the QA acceptance spec — `sda-qa-task`
 
@@ -174,7 +174,7 @@ finds — it reports, and leaves routing (sda-dev-task vs ad-hoc sda-dev) to you
 
 | Agent | Role | Model | Tools |
 |---|---|---|---|
-| `sda-scribe` | Universal scribe: writes task.md, qa-task.md, dev-report.md, design-decision docs, design docs, contract specs, and manifest.md | Claude Haiku 4.5 | read, edit, search |
+| `sda-scribe` | Universal scribe: writes task.md, qa-task.md, dev-report.md, design-decision docs, design docs, design reports, contract specs, and manifest.md | Claude Haiku 4.5 | read, edit, search |
 | `sda-dev-task-verifier` | Consistency checks + regression analysis on task.md. Delegates file-gathering to sda-code-explore for tasks with >3 files. Runs `unit-file-size` for unit size verification. | Claude Sonnet 4.6 | read, search, agent, execute |
 | `sda-code-explore` | Fast read-only codebase exploration (invoked by sda-dev-task, sda-dev-task-verifier, sda-qa-task, sda-dev, sda-design) | Claude Haiku 4.5 | read, search |
 | `sda-web-explore` | Web research — fetches live API docs and library specs (invoked by sda-dev-task, sda-design) | Claude Haiku 4.5 | web |
@@ -189,7 +189,7 @@ finds — it reports, and leaves routing (sda-dev-task vs ad-hoc sda-dev) to you
 
 `sda-dev` runs the TDD loop and quality gates, delegating test writing and coding to subagents to keep each context small.
 
-`sda-scribe` is the universal scribe for SDA planning and implementation agents — it writes task.md, qa-task.md, dev-report.md, design-decision docs, design docs, contract spec files, and manifest.md. It uses Haiku for cost efficiency since it performs no reasoning — only schema formatting and file I/O. `sda-code-explore` is invoked by `sda-dev-task`, `sda-dev-task-verifier`, `sda-qa-task`, and `sda-dev` for codebase research — also Haiku, since it only reads and reports. `sda-web-explore` is invoked by `sda-dev-task` and `sda-design` for live web/API research when documentation may have changed. `sda-dev-task-verifier` handles Phase 7 (consistency + regression checks) — it can be invoked directly by the user or delegated to by `sda-dev-task`.
+`sda-scribe` is the universal scribe for SDA planning and implementation agents — it writes task.md, qa-task.md, dev-report.md, design-decision docs, design docs, design reports, contract spec files, and manifest.md. It uses Haiku for cost efficiency since it performs no reasoning — only schema formatting and file I/O. `sda-code-explore` is invoked by `sda-dev-task`, `sda-dev-task-verifier`, `sda-qa-task`, and `sda-dev` for codebase research — also Haiku, since it only reads and reports. `sda-web-explore` is invoked by `sda-dev-task` and `sda-design` for live web/API research when documentation may have changed. `sda-dev-task-verifier` handles Phase 7 (consistency + regression checks) — it can be invoked directly by the user or delegated to by `sda-dev-task`.
 
 All pipeline agents are user-invokable and used as needed.
 
@@ -225,6 +225,8 @@ PHASE 1 — TASK DESIGN  (sda-dev-task)
   sda-dev-task brainstorms the task with the user.
   Researches the codebase (read-only).
   Verifies consistency with the existing design and assesses regression risks.
+  When handed off from sda-design, reads the design_report.md first
+  (most recent under .sda/design/reports/) instead of the full conversation.
   Produces .sda/tasks/<NN>-<task-name>/task.md with test scenarios,
   implementation plan, and state.json for tracking.
 
@@ -297,6 +299,8 @@ All resources are read from a `.sda/` folder in the project root (may be git-ign
 | Readme outline schema | `.sda/resources/design/readme-outline-schema.md` |
 | Design topic schema | `.sda/resources/design/design-topic-schema.md` |
 | Design index schema | `.sda/resources/design/design-index-schema.md` |
+| Design report schema | `.sda/resources/design/design-report-schema.md` |
+| Design report | `.sda/design/reports/<yyyy-MM-dd_HH-mm_<short-name>>/design_report.md` |
 | Docs integrity script | `.sda/scripts/decisions/docs-integrity.ps1` or `.sda/scripts/decisions/docs-integrity.sh` |
 | Design docs (global) | `docs/` — `architecture.md`, `vocabulary.md`, `index.md`, `decisions/`, `diagrams/` |
 | Design docs (per-layer) | `<layer>/docs/` — `architecture.md`, `index.md`, `vocabulary.md`, `decisions/`, `diagrams/` |

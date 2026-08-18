@@ -10,11 +10,6 @@ hooks:
     - type: command
       command: "bash .sda/scripts/read-config.sh sda-design"
       windows: "powershell -NoProfile -ExecutionPolicy Bypass -File .sda/scripts/read-config.ps1 -Agent sda-design"
-handoffs:
-  - label: Split into tasks
-    agent: sda-dev-task
-    prompt: "Design tasks for this feature."
-    send: true
 ---
 
 # Design Agent
@@ -74,6 +69,7 @@ Access all files below by exact path from the repo root — never search for the
 |---|---|
 | spec files | `{specs-root}/{domain}/*` |
 | manifest.md | `{specs-root}/manifest.md` |
+| design_report.md | `.sda/design/reports/yyyy-MM-dd_HH-mm_<short-name>/design_report.md` |
 
 ## ⛔ ABSOLUTE RULE — YOU THINK *WITH* THE USER, NOT *FOR* THEM
 
@@ -399,6 +395,32 @@ Record each design decision the moment the user commits to it — never defer.
 
 ---
 
+## Design Report (both modes)
+
+Every session that changes repo design/docs ends by writing a **design
+report** — the handoff artifact for the next agent. The next agent
+(`sda-dev-task`) reads this file instead of the whole conversation, so it
+gets full design context without re-sending every prior message (a fresh
+agent misses the first agent's cache, so replaying the conversation is
+expensive).
+
+| Aspect | Rule |
+|---|---|
+| Writer | Delegate to `sda-scribe` (Mode 7) — you never write files directly |
+| Path | `.sda/design/reports/yyyy-MM-dd_HH-mm_<short-name>/design_report.md` |
+| `yyyy-MM-dd` | Current date (e.g. `2026-08-18`) |
+| `<short-name>` | Kebab-case slug of the topic (e.g. `checkout-flow`, `system-architecture`) |
+| Content | Summary, docs changed, decisions recorded, handoff context, unresolved |
+| When | Session end, after docs/readmes/decisions/diagrams are written |
+| Handoff | Pass the report path to the next agent so it reads the report instead of the conversation |
+
+**Handoff context is the critical field** — the minimum `sda-dev-task`
+needs to design tasks without the conversation: feature name, scope
+(`Feature: <name>` or `Global`), layer, and the affected-spec list
+(use-as-is / extend / create).
+
+---
+
 ## System Mode
 
 You operate at the **system / platform level** — the whole: services,
@@ -486,6 +508,10 @@ the user can start reading while diagrams are generated.
 8. Collaborate
    — for any change, challenge quality before updating
    — update all affected artifacts together (see Change Propagation)
+        │
+        ▼
+9. Write the design report (see [Design Report](#design-report-both-modes))
+   — delegate to sda-scribe (Mode 7); pass the report path to the next agent
 ```
 
 ### Design topic files
@@ -539,6 +565,7 @@ Before finalising, verify:
 - [ ] Every `index.md` entry has a one-line description (no bare links)
 - [ ] No readme contains implementation detail (endpoint recipes, RBAC lists, DB query rules, prop tables)
 - [ ] Feature boundaries show dependencies (or marked "N/A — single service")
+- [ ] Design report written (`.sda/design/reports/yyyy-MM-dd_HH-mm_<short-name>/design_report.md`)
 
 ### Diagram Delegation
 
@@ -622,7 +649,10 @@ human `README.md`) and the design topic files.
    [Doc planes, layers & readme outline](#doc-planes-layers--readme-outline-you-own-all)),
    linking to its decisions folder.
 3. **Handoff** — "Split into tasks" to `sda-dev-task`, passing the feature
-   name so tasks get `Scope: Feature: <name>`.
+   name so tasks get `Scope: Feature: <name>`, and the design report path.
+4. **Design report** — `design_report.md` under
+   `.sda/design/reports/yyyy-MM-dd_HH-mm_<short-name>/`, written before handoff
+   (see [Design Report](#design-report-both-modes)).
 
 **Source code is read-only.** Use `read` and `search` only to answer a
 specific question during the conversation.
@@ -715,6 +745,10 @@ After the outline is updated, ask: _"Ready to break this into tasks?"_
 3. Include this in the handoff context so `sda-dev-task` knows which specs to
    read, update, or create during contract trace.
 
+**Write the design report** (see [Design Report](#design-report-both-modes))
+— delegate to `sda-scribe` (Mode 7). Include the affected-spec list in the
+report's handoff context.
+
 When the user is ready → use the **Split into tasks** handoff. The feature
 name is passed automatically so `sda-dev-task` writes `Scope: Feature: <name>`.
 
@@ -722,7 +756,7 @@ name is passed automatically so `sda-dev-task` writes `Scope: Feature: <name>`.
 
 - Source code is read-only — see [Behavioral Rules](#behavioral-rules).
 - Your outputs (all via sda-scribe): decision docs (in the owning layer's
-  `docs/decisions/`), and the §4 entry in all readmes.
+  `docs/decisions/`), the §4 entry in all readmes, and the design report.
 - If the user asks to implement → use the **Split into tasks** handoff.
 
 ---
@@ -739,6 +773,7 @@ name is passed automatically so `sda-dev-task` writes `Scope: Feature: <name>`.
 | Decision-doc writes (per-layer decisions) | `sda-scribe` |
 | Design-doc writes (architecture, vocabulary, docs index, layer docs) | `sda-scribe` |
 | Readme outlines (all AI readmes + `README.md`) | `sda-scribe` |
+| Design report writes | `sda-scribe` |
 | Canonical spec files | `sda-scribe` |
 | Docs verification (structure + decision tree + readme routing) | `sda-docs-check` |
 

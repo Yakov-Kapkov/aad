@@ -80,10 +80,11 @@ tools/sda/
             │   │   └── docs-integrity.sh       ← link/orphan/duplicate check → .sda/scripts/decisions/
             │   └── powershell/
             │       └── docs-integrity.ps1      ← link/orphan/duplicate check → .sda/scripts/decisions/
-            ├── design/                       ← design-doc schemas (readme outline, architecture + vocabulary, docs index)
+            ├── design/                       ← design-doc schemas (readme outline, architecture + vocabulary, docs index, design report)
             │   ├── readme-outline-schema.md  ← readme §0–§6 format → .sda/resources/design/
             │   ├── design-topic-schema.md    ← architecture.md + vocabulary.md format → .sda/resources/design/
-            │   └── design-index-schema.md    ← docs index format (global + layer) → .sda/resources/design/
+            │   ├── design-index-schema.md    ← docs index format (global + layer) → .sda/resources/design/
+            │   └── design-report-schema.md   ← design_report.md format → .sda/resources/design/
         ├── scripts/
         │   ├── bash/
         │   │   ├── setup.sh               ← scaffold .sda/ folder
@@ -115,10 +116,10 @@ The TDD implementation phase is **orchestrated**: `sda-dev` reads `task.md`, the
 sda-setup skill ──▸ sda-toolscan                          project scaffolding + scanning
 sda-setup skill ──▸ sda-tool-installer                    required tool installation (Step 7)
 sda-design ─delegates─▸ sda-diagram-writer            diagram generation (system mode)
-sda-design ─delegates─▸ sda-scribe                    canonical specs, decision + design docs
+sda-design ─delegates─▸ sda-scribe                    canonical specs, decision + design docs, design report (Mode 7)
 sda-design ─delegates─▸ sda-code-explore              layer discovery + structure
 sda-design ─delegates─▸ sda-docs-check                docs structure + decision integrity + drift + readme routing
-sda-design ────handoff──▸ sda-dev-task               design pipeline (feature → tasks)
+sda-design ────handoff──▸ sda-dev-task               design pipeline (feature → tasks); passes design_report.md path
 sda-dev-task ─delegates─▸ sda-code-explore              task design pipeline (research)
 sda-dev-task ─delegates─▸ sda-web-explore               task design pipeline (web/API research)
 sda-dev-task ─delegates─▸ sda-scribe                     task design pipeline (Phase 6: task.md + specs)
@@ -193,6 +194,7 @@ sda-dev ─delegates─▸ sda-qa                      runtime acceptance QA (ta
 | Decision docs (`<layer>/docs/decisions/`) | No config field — derived per layer from the repo layout. `sda-design` (records + structures via sda-scribe Mode 5), `sda-scribe` (Mode 5 writes), `sda-docs-check` (verifies) | Decision docs live per layer under `<layer>/docs/decisions/` — feature-grouped (`shared/`, `<feature>/`) with descriptively-named files; one decision per file, routed by feature `index.md` |
 | Decision-doc schemas (`decision-topic-schema.md`, `decision-index-schema.md`) | `sda-scribe` (Mode 5 reads them), **sda-setup skill** (copies assets to `.sda/resources/decisions/`) | Scribe formats decision docs per these schemas — feature-grouped folders; descriptively-named files (no `d{N}` numbering); the index routes by file name |
 | Design schemas (`readme-outline-schema.md`, `design-topic-schema.md`, `design-index-schema.md`) | `sda-scribe` (Mode 6 reads them), **sda-setup skill** (copies assets to `.sda/resources/design/`) | Scribe formats readmes + design docs per these schemas |
+| Design report schema (`design-report-schema.md`) | `sda-design` (provides content), `sda-scribe` (Mode 7 writes), `sda-dev-task` (reads as handoff context), **sda-setup skill** (copies asset to `.sda/resources/design/`) | sda-design ends each design session with `design_report.md`; sda-dev-task reads it instead of the full conversation |
 | `scripts.docsIntegrity` in `project-config.json` | `sda-docs-check` (runs it) | Integrity script for links/orphans/duplicate index rows |
 | `README.md` | Keep consistent with all agent descriptions and workflow phases | User-facing docs must match agent behavior |
 
