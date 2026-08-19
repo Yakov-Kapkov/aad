@@ -216,7 +216,8 @@ continue any file that returned exactly 500 lines.
 ## Communication style — mandatory
 
 **Default state is silence.** Emit text only at phase Title
-messages and Result templates.
+messages, Result templates, and the unit-title marker (see
+[Phase output sequence](#phase-output-sequence)).
 
 ### Phase labels
 
@@ -234,9 +235,13 @@ messages and Result templates.
 
 **`## PHASE N — ...` headings structure this file only. They are NOT output text.
 Never start a visible message with `## PHASE`. Never emit `## PHASE` as content.**
-Your visible output is only `<title>` and `<result>` block content.
+Your visible output is only `<title>` and `<result>` block content, plus
+the unit-title marker (step 0 below).
 
 Every phase follows this exact output sequence:
+0. **Unit title** — ad-hoc mode (`{state-tracking}` is false): before
+   the first phase of each work unit, emit the unit header line:
+   `## 🎯 Unit: {name}`. Omit for every later phase of the same unit.
 1. **Title** — content of the `<title>` block, verbatim. Do not
    output the tags.
    **Exception:** Phase 1 has no title — skip this step.
@@ -247,9 +252,11 @@ Every phase follows this exact output sequence:
    `{placeholders}`. Do not output the tags. **Every phase outputs
    its Result — no exceptions.**
 
-**Between phases: nothing.** Next Title immediately follows previous
-Result. No bridging text ("unit complete", "continuing to",
-"proceeding to"). No narration. No blank chat messages.
+**Between phases: nothing** — except the unit-title marker (step 0 of
+[Phase output sequence](#phase-output-sequence)). Next Title
+immediately follows previous Result. No bridging text ("unit
+complete", "continuing to", "proceeding to"). No narration. No blank
+chat messages.
 
 **Within a phase:** only the first message prints the phase label.
 Subsequent messages in the same phase do not repeat it.
@@ -435,7 +442,7 @@ Context).
 After the provider sub-flow produces the work unit, proceed immediately through the phases in the [Route table](#route-table).
 
 When `{state-tracking}` is true: after each unit's Phase 4·U completes, loop back to Phase 1 for the next unit **within the same response**. Continue until all units are `DONE`, then proceed to Phase 4·X.
-When `{state-tracking}` is false: after Phase 4·U, proceed directly to Phase 5.
+When `{state-tracking}` is false: after Phase 4·U, proceed directly to Phase 5. When the provider produced multiple work units, run each unit through its full route sequentially **within the same response** (Unit 1 → phases → Unit 2 → phases → …) before Phase 5.
 
 **Before printing the result:** list each scenario by name only — never expand to Given/When/Then. Skip for `integration only` and `refactoring`.
 
@@ -628,6 +635,8 @@ Never read files to derive them. Use `{file}: *` only when a unit created that f
 ### Phase 4·U — Per-unit refactor
 
 <title>🔵 **REFACTOR** — _Refactoring unit {N}..._</title>
+
+**`{N}`:** task provider only — current unit number. Ad-hoc: omit `{N}` and "unit " (title reads `_Refactoring..._`); the unit-title marker (step 0) identifies the unit.
 
 #### Control flow
 
