@@ -337,6 +337,15 @@ agent picks the docs its task needs — or explores the codebase when the map
 doesn't answer. Same rule as the [index.md convention](#indexmd-convention):
 no bare links.
 
+**An AI readme routes to documentation.** Each
+reference points to the docs that answer the reader's question — recorded
+architecture, vocabulary, design decisions, standards, etc.:
+- an **index file** when present — `index.md` or similar routes to the folder's files;
+- otherwise the **docs files directly**, each with a one-line description of
+  what it covers.
+Concrete paths like `<layer>/docs/index.md` and `<layer>/docs/` are examples —
+follow the repo's actual docs structure.
+
 Reference entry forms (each includes the path/link):
 - `{Doc}` — read when you need {X}
 - `{Doc}` — mandatory for {scope} (e.g. coding standards for coding tasks)
@@ -349,12 +358,14 @@ Reference entry forms (each includes the path/link):
 2. **How to run locally** — plain step-by-step (layer readme: this layer only).
 3. **Architecture outline** — 3–5 sentences + a link to `docs/index.md`
    (global readme) or this layer's `docs/index.md` (layer readme). The global
-   readme also lists every layer with a link to its `docs/index.md`.
+   readme also lists every layer with a link to its docs index (or docs folder).
 4. **Implemented features** — one entry per feature: ≤3 sentences + a link to
-   its decisions folder (`<layer>/docs/decisions/<feature>/index.md`).
-5. **Design decisions** — routing line to each layer's
-   `docs/decisions/index.md` (global readme: link every layer's; layer
-   readme: link its own).
+   the owning layer's docs index (or docs folder) — read when changing
+   {feature}. The global readme never links the feature's decisions folder
+   directly.
+5. **Design decisions** — global readme: routing line to every layer's docs
+   index (or docs folder). Layer readme: routing line to its own
+   `docs/decisions/index.md`.
 6. **Coding standards** — link the coding-standards skill + `docs/coding/`
    (when present).
 
@@ -574,6 +585,7 @@ Before finalising, verify:
 - [ ] Each layer's `docs/decisions/index.md` routes to its feature folders; each feature has `index.md` + descriptively-named decision files
 - [ ] Every `index.md` entry has a one-line description (no bare links)
 - [ ] Every AI readme is a routing map: reference entries carry "read when you need X" triggers or "covers" notes; no bare links; §0 states the file is the routing index
+- [ ] The global readme links layer docs only — never a decision file or `<layer>/docs/decisions/<feature>/` directly
 - [ ] No readme contains implementation detail (endpoint recipes, RBAC lists, DB query rules, prop tables)
 - [ ] Feature boundaries show dependencies (or marked "N/A — single service")
 - [ ] Design report written (`.sda/design/reports/yyyy-MM-dd_HH-mm_<short-name>/design_report.md`)
@@ -658,7 +670,8 @@ human `README.md`) and the design topic files.
    the feature belongs to (`<layer>/docs/decisions/<feature>/`).
 2. **§4 entry in all readmes** — a ≤3-sentence summary of the feature (see
    [Doc planes, layers & readme outline](#doc-planes-layers--readme-outline-you-own-all)),
-   linking to its decisions folder.
+   global readme: link the owning layer's docs index (or docs folder); layer
+   readme: link the feature's decisions folder.
 3. **Handoff** — "Split into tasks" to `sda-dev-task`, passing the feature
    name so tasks get `Scope: Feature: <name>`, and the design report path.
 4. **Design report** — `design_report.md` under
@@ -733,9 +746,10 @@ When you have alignment:
    coin-reward.md, and replay-detection.md. Proceed?"_
 2. Do targeted code reads if needed.
 3. **Record decisions immediately** (delegate to sda-scribe) and
-   **update the readme outline** — §4 entry in all readmes linking to the
-   feature's decisions folder — via sda-scribe. Present a concise summary.
-   Flag unresolved concerns inline.
+   **update the readme outline** — §4 entry in all readmes (global: link the
+   owning layer's docs index or docs folder; layer: link the feature's
+   decisions folder) — via sda-scribe. Present a concise summary. Flag
+   unresolved concerns inline.
 
    Under **`designOwnership: user`**, you record **only the design the user
    committed to** — you transcribe the agreed result, never a design you

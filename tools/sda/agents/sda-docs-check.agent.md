@@ -1,6 +1,6 @@
 ---
 name: sda-docs-check
-description: "Read-only verifier of docs vs reality: the global + per-layer docs tree, decision-doc integrity + drift, and AI-readme routing (AGENTS.md/CLAUDE.md §3–§6 links, feature list). Use when: checking the docs, auditing the AI readme, or after a design update. Check-and-report only; never fixes."
+description: "Read-only verifier of docs vs reality: the global + per-layer docs tree, decision-doc integrity + drift, and AI-readme routing (AGENTS.md/CLAUDE.md §0–§6 links, feature list). Use when: checking the docs, auditing the AI readme, or after a design update. Check-and-report only; never fixes."
 argument-hint: Say "check the docs", or point at a decision-docs tree.
 tools: ["read", "search", "execute", "agent"]
 agents: ["sda-code-explore"]
@@ -84,9 +84,9 @@ Check each routing section against what actually exists:
 | §0 Preamble | Readme states it is the routing index agents use to find task-relevant docs |
 | All references | Each reference entry carries a trigger — "read when you need {X}", "mandatory for {scope}", or "covers {topic}" — no bare links |
 | §3 Architecture | Readme links `docs/index.md`; that index exists and routes to architecture, vocabulary, diagrams, decisions |
-| §3 Layers | Readme lists every layer and links each `<layer>/docs/index.md`; those indexes exist |
-| §4 Features | Each entry's link resolves; every feature decisions folder on disk appears in §4 |
-| §5 Decisions | Readme links every layer's `docs/decisions/index.md`; those indexes exist |
+| §3 Layers | Readme lists every layer and links each layer's docs index (or docs folder); those resolve |
+| §4 Features | Each entry links the owning layer's docs index (or docs folder) — not a decision file directly; every feature decisions folder on disk appears in §4 |
+| §5 Decisions | Global readme links every layer's docs index (or docs folder); those resolve |
 | §6 Standards | Each standards/coding link resolves |
 | Human README | Agrees with the AI readme on description, run steps, features, standards |
 

@@ -26,11 +26,11 @@ layer root. It applies identically to every AI readme (`AGENTS.md`, `CLAUDE.md`,
 {3–5 sentences + a link to docs/index.md (global readme) or this layer's docs/index.md (layer readme).}
 
 ## {Implemented features}
-- **{Feature}** — {≤3 sentences} → its decisions folder: <layer>/docs/decisions/<feature>/index.md
+- **{Feature}** — {≤3 sentences} → the owning layer's docs index (or docs folder) — read when changing {feature}
 
 ## {Design decisions}
-{Global readme: routing line to every layer's docs/decisions/index.md.
- Layer readme: routing line to this layer's docs/decisions/index.md.}
+{Global readme: routing line to every layer's docs index (or docs folder).
+ Layer readme: routing line to this layer's decisions index.}
 
 ## {Coding standards}
 {Link the coding-standards skill + docs/coding/ (when present).}
@@ -49,6 +49,11 @@ layer root. It applies identically to every AI readme (`AGENTS.md`, `CLAUDE.md`,
 - **No implementation detail** — no endpoint-registration recipes, RBAC
   role-check lists, DB query rules, component prop tables, or code snippets.
 - AI readme and human `README.md` carry the same sections; tone differs only.
-- The global readme references `docs/index.md` and every `<layer>/docs/index.md`.
+- An AI readme routes to documentation, never to another AI readme. Each
+  reference points to the docs that answer the reader's question — recorded
+  architecture, vocabulary, design decisions: an index file when present,
+  otherwise the docs files directly — each with a one-line description of
+  what it covers. Concrete paths like `<layer>/docs/index.md` and
+  `<layer>/docs/` are examples — follow the repo's actual structure.
 - When updating an existing readme, preserve its existing section headings and
   wording; apply the content rules above.
