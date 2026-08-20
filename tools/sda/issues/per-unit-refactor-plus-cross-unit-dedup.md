@@ -69,7 +69,7 @@ Phase 1 (Plan) → Phase 2 (RED) → Phase 3 (GREEN) → Phase 4·U (per-unit re
 - After the **last** unit's 4·U → run **Phase 4·X** once → Phase 5.
 - 4·U runs for **every** unit type (tests-required, tests-only, code-only),
   scoped to that unit's Source + Test files.
-- Ad-hoc mode: single derived unit → run **4·U only**, skip 4·X.
+- Ad-hoc mode: run **4·U** per unit; run **4·X** after the last unit when ≥ 2 units (same trigger as task mode).
 
 ---
 
@@ -83,8 +83,9 @@ Phase 1 (Plan) → Phase 2 (RED) → Phase 3 (GREEN) → Phase 4·U (per-unit re
 
 ## Phase 4·X — Cross-unit dedup (thin global)
 
-- Runs once, only when the task had **≥ 2 units** (single-unit tasks and
-  ad-hoc mode skip it — no inter-unit duplication possible).
+- Runs once, only when the session had **≥ 2 units** (task mode and
+  ad-hoc mode alike); single-unit sessions skip it — no inter-unit
+  duplication possible.
 - Delegation passes **all task files grouped by unit** so the agent knows unit
   boundaries.
 - Pass `Scope: cross-unit`.

@@ -134,10 +134,10 @@ sda-qa-task ─delegates─▸ sda-scribe                  qa-task.md write (Mod
 sda-dev ─delegates─▸ sda-test-writer             RED phase
 sda-dev ─delegates─▸ sda-coder                   GREEN phase
 sda-dev ─delegates─▸ sda-refactor                REFACTOR phase
-sda-dev ─delegates─▸ sda-code-explore            ad-hoc provider: codebase exploration
+sda-dev ─delegates─▸ sda-code-explore            ad-hoc mode: codebase exploration
 sda-dev ─delegates─▸ sda-scribe                  dev-report.md (Mode 3, at completion)
 sda-dev ─delegates─▸ sda-dev-quality             per-area quality gates (Phase 5)
-sda-dev ─delegates─▸ sda-qa                      runtime acceptance QA (task provider)
+sda-dev ─delegates─▸ sda-qa                      runtime acceptance QA (task mode)
 ```
 
 ### Detailed dependency matrix
@@ -185,7 +185,7 @@ sda-dev ─delegates─▸ sda-qa                      runtime acceptance QA (ta
 | Unexpected-failure / troubleshooting handling | `sda-dev` | Troubleshooting is a workflow decision — subagents stop and report; the orchestrator diagnoses and recovers |
 | Coding standards skill references | `sda-dev` | References coding standards for output |
 | Quality check gates (Phase 5) | `sda-dev-quality` | Phase 5 is a thin delegation; quality agent owns per-area gate execution, reporting, and flagging |
-| `sda-dev-quality` report format | `sda-dev` (Phase 5 result relay, Phase 6 verification commands) | Orchestrator relays the quality report verbatim; uses its verification commands in Phase 6 |
+| `sda-dev-quality` report format | `sda-dev` (Phase 5 result relay) | Orchestrator relays the quality report verbatim as the Phase 5 result |
 | `sda-dev` Flags processing (Phase 5) | `sda-coder`, `sda-test-writer` | Orchestrator routes quality flags to the correct subagent for fixes |
 | `task.md` Area field + Area Index in `project-tools.md` | `sda-dev-task` (derives area per unit), `sda-scribe` (writes), `sda-dev` (reads per-unit areas), `sda-dev-quality` (discovers areas) | Area connects task design → implementation → quality gates |
 | Init output format (`project-tools.md`) | `sda-toolscan`, `sda-dev`, **sda-setup skill** | The orchestrator, the toolscan agent, and the setup skill depend on project-tools output |

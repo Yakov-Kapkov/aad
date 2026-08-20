@@ -100,7 +100,7 @@ Route every failure by its kind.
 
 **Troubleshootable failures** — the orchestrator's own unexpected failures
 (e.g. a command it runs directly) and any subagent that returns
-`⚠️ UNRESOLVED` or `🛑 HARD STOP`. Do not fix from scratch: first look up
+`⚠️ UNRESOLVED` or `🚨 HARD STOP`. Do not fix from scratch: first look up
 the symptom in any available troubleshooting guidance from the current
 system context. If a known fix is found, apply it and retry once — re-run
 the command (own failure) or re-delegate to the subagent (escalation).
@@ -135,7 +135,7 @@ list above.
 
 ### CLI scripts
 
-**Use the raw relative path — no `&`, no quotes, no absolute paths.** On `error=...` → **🛑 HARD STOP**: print the exact message, end your response.
+**Use the raw relative path — no `&`, no quotes, no absolute paths.** On `error=...` → **🚨 HARD STOP**: print the exact message, end your response.
 
 **Example — PowerShell:**
 - ✅ `.sda/scripts/some-script.ps1 -Folder . -Commands "shell"`
@@ -240,8 +240,10 @@ the unit-title marker (step 0 below).
 
 Every phase follows this exact output sequence:
 0. **Unit title** — ad-hoc mode (`{state-tracking}` is false): before
-   the first phase of each work unit, emit the unit header line:
-   `## 🎯 Unit: {name}`. Omit for every later phase of the same unit.
+   the first phase of each work unit — including the first unit,
+   whose title was just shown in the plan — emit a single title line,
+   nothing else: `## 💻 Unit: {name}`. Omit for every later phase of
+   the same unit.
 1. **Title** — content of the `<title>` block, verbatim. Do not
    output the tags.
    **Exception:** Phase 1 has no title — skip this step.
@@ -285,17 +287,17 @@ Subsequent messages in the same phase do not repeat it.
    Retain `{shell}` from the script output for the whole session.
    Retain the `Project configuration:` block from session context as `{project-configuration}` — **all `key=value` lines, verbatim, in the original order. No filtering, no reformatting, no summarizing.**
 
-2. **Select input provider** — see [Provider registry](#provider-registry):
+2. **Select mode** — see [Mode registry](#mode-registry):
    - **Task** — the user wants to execute the unit loop
      (e.g., "implement this task", "continue", "next unit").
      Merely referencing a task name or attaching `task.md` for
-     context does NOT select the task provider.
+     context does NOT select task mode.
    - **Ad-hoc** — everything else. Default.
 
 3. Both → proceed to Phase 1 (PLAN).
 
 **Constraints — Phase 0 only:**
-- **Mandatory first phase for every request, both providers.** Output title and result before any Phase 1 work.
+- **Mandatory first phase for every request, both modes.** Output title and result before any Phase 1 work.
 - No italic fragments in this phase.
 - No first-person narration of any kind: ❌ ~~"Now let me read the state for this task."~~
 - Do not read source or test files.
@@ -310,7 +312,7 @@ Subsequent messages in the same phase do not repeat it.
 **Shell:** {shell}
 
 ### Invocation context
-**Input provider:** {task / ad-hoc}
+**Mode:** {task / ad-hoc}
 
 ---
 </result>
@@ -320,7 +322,7 @@ Proceed to Phase 1.
 ## PHASE 1 — Plan
 <title>📝 **PLAN** — _Preparing work unit..._</title>
 
-This phase resolves the work unit via the selected input provider. Follow the [Task input provider](#task-input-provider) or [Ad-hoc input provider](#ad-hoc-input-provider) sub-flow.
+This phase resolves the work unit via the selected mode. Follow the [Task mode](#task-mode) or [Ad-hoc mode](#ad-hoc-mode) sub-flow.
 
 ### Route table
 
@@ -331,23 +333,23 @@ This phase resolves the work unit via the selected input provider. Follow the [T
 | `integration only` | Phase 3 (GREEN, integration) → Phase 4·U |
 | `refactoring` | Phase 4·U |
 
-### Provider registry
+### Mode registry
 
-| | Task provider | Ad-hoc provider |
+| | Task mode | Ad-hoc mode |
 |---|---|---|
 | **Trigger** | "implement this task", "continue", "next unit". Merely referencing a task name or attaching `task.md` for context does NOT trigger. | Everything else. Default. |
 | **Input source** | `task.md` (attached or open in editor) | User conversation |
 | **Key subagent** | `sda-scribe` (Phase 6) | `sda-code-explore` (Phase 1) |
 | `{state-tracking}` | true | false |
 | `{dev-report}` | true | false |
-| `{multi-unit}` | true when ≥ 2 units | false |
+| `{multi-unit}` | true when ≥ 2 units | true when ≥ 2 units |
 
-Phases 2–6 check the flags above instead of referencing the provider directly.
+Phases 2–6 check the flags above instead of referencing the mode directly.
 
-### Task input provider
+### Task mode
 
 **STATE ANCHOR — re-read this every time you enter Phase 1 in task
-provider:** You are preparing unit inputs from `task.md`. Do NOT read
+mode:** You are preparing unit inputs from `task.md`. Do NOT read
 source or test files at this stage. Do NOT delegate exploration to a
 subagent at this moment. Do NOT search the codebase. Extract all
 available unit inputs directly from `task.md`: for `tests required` /
@@ -369,13 +371,13 @@ Context).
 
    **Then check `## Prerequisites`.** If present and non-empty, inspect each checkbox. **Checking means reading checkbox states in `task.md` only — do not run commands or explore the codebase to verify them.**
    - All `- [x]` → proceed.
-   - Any `- [ ]` → display the unchecked items and **🛑 HARD STOP:**
+   - Any `- [ ]` → display the unchecked items and **🚨 HARD STOP:**
      _"The following prerequisites are not yet marked complete. Tick
      them in `task.md` when ready, then restart."_ Do not proceed.
 
    **Then check `## Regression Risks`.** If present, scan for ❌ entries:
    - Zero ❌ → proceed.
-   - Any ❌ → display the unresolved risks and **🛑 HARD STOP:**
+   - Any ❌ → display the unresolved risks and **🚨 HARD STOP:**
      _"The following regression risks are unresolved. Resolve them
      in `task.md` (via `sda-dev-task`) before implementation can start."_
      Do not proceed.
@@ -399,7 +401,7 @@ Context).
    (the `**Area:**` line).
 5. **Determine route** — see [Route table](#route-table).
 
-### Ad-hoc input provider
+### Ad-hoc mode
 
 1. **Explore** — delegate codebase exploration to `sda-code-explore`.
    Never search, grep, or read source/test files yourself — all code
@@ -421,7 +423,7 @@ Context).
      (`tests required` / `tests only` only — omit for `integration only` and `refactoring`.)
    - **Source / Test files** — paths for production and test code.
    - **Per-file language** — annotate each Source/Test path with the
-     language(s) it contains, inferred from the file type (no task.md in ad-hoc provider).
+     language(s) it contains, inferred from the file type (no task.md in ad-hoc mode).
    - **Area** — resolve via `{read-project-tools} {file-directory}` for each file;
      the `working-dir=` key maps to the area. If all files map to the same
      area → that area. If files span multiple areas → comma-separated list.
@@ -439,33 +441,41 @@ Context).
 
 ### Dispatch
 
-After the provider sub-flow produces the work unit, proceed immediately through the phases in the [Route table](#route-table).
+Run each unit through its full route (per the [Route table](#route-table)) sequentially **within the same response** (Unit 1 → phases → Unit 2 → phases → …).
 
-When `{state-tracking}` is true: after each unit's Phase 4·U completes, loop back to Phase 1 for the next unit **within the same response**. Continue until all units are `DONE`, then proceed to Phase 4·X.
-When `{state-tracking}` is false: after Phase 4·U, proceed directly to Phase 5. When the provider produced multiple work units, run each unit through its full route sequentially **within the same response** (Unit 1 → phases → Unit 2 → phases → …) before Phase 5.
+- **Task mode** (`{state-tracking}` true): units come from `task.md` via `{task-state}` — Phase 1 reads the current unit and prints its plan block; after each unit's phases, loop back to Phase 1 for the next unit.
+- **Ad-hoc mode** (`{state-tracking}` false): units are derived from exploration and printed up front in the plan; before each unit's first phase, show the unit title again (step 0) — a single `## 💻 Unit: {name}` line, never a plan re-print.
 
-**Before printing the result:** list each scenario by name only — never expand to Given/When/Then. Skip for `integration only` and `refactoring`.
+When all units are `DONE`: run Phase 4·X if `{multi-unit}` is true, then Phase 5.
+
+**Before printing the result:** 
+- **Task mode** — list each scenario by name only (task.md holds the full text). 
+- **Ad-hoc mode** — list each scenario in full: `Given: … / When: … / Then: …` beneath the scenario name. Skip scenarios entirely for `integration only` and `refactoring` units.
 
 <result>
-### Pre-existing failures     ← always shown; task provider: first unit only — omit on subsequent units
-All tests pass ✅
+---
+
+## 🔍 Pre-existing failures     ← always shown; task mode: first unit only — omit on subsequent units
+✅ all tests pass 
 or:
-{N} pre-existing failure(s):
+⚠️ {N} pre-existing failure(s):
 - `{test name}`
 ...
 
-## 🎯 Unit {N}: {name}    ← task provider: include {N}; ad-hoc: omit {N}
+---
+
+## 💻 Unit {N}: {name}    ← task mode: include {N}; ad-hoc: omit {N}
 **Type:** {type}
 **Area:** {area}
 **Language:** {languages}
 **Route:** {e.g. RED → GREEN → REFACTOR}
 {if type == integration only or type == refactoring:}
 **Steps:**
-- {step heading}
+{N}. {step heading}
 ...
 {else:}
 **Scenarios:**
-{N}. {scenario name}
+{N}. {scenario name}    ← task mode: name only. Ad-hoc mode: add `Given: … / When: … / Then: …` lines beneath each scenario.
 ...
 {/if}
 </result>
@@ -476,7 +486,7 @@ or:
 
 ---
 
-🔴 **RED** — _Writing tests..._</title>
+🟥 **RED** — _Writing tests..._</title>
 
 → Delegate to `sda-test-writer` now. No text before the call.
 
@@ -525,7 +535,7 @@ wait.
    ```
 
 2. **When `sda-test-writer` returns** — route by result:
-   - Any failure (`⚠️ UNRESOLVED`, `🛑 HARD STOP`, or any `❌ ... gate`) → apply [Failure handling & escalation](#failure-handling--escalation). Do NOT output the result block or update state until a clean result is returned.
+   - Any failure (`⚠️ UNRESOLVED`, `🚨 HARD STOP`, or any `❌ ... gate`) → apply [Failure handling & escalation](#failure-handling--escalation). Do NOT output the result block or update state until a clean result is returned.
    - Clean result → output the result block below. Copy `RED gate` and `Verification commands` verbatim. 
 
 ### State update
@@ -552,7 +562,7 @@ Proceed to Phase 3 (GREEN) immediately. For tests-only units, proceed to Phase 4
 
 ---
 
-🟢 **GREEN** — _Implementing..._</title>
+🟩 **GREEN** — _Implementing..._</title>
 
 → Delegate to `sda-coder` now. No text before the call.
 
@@ -599,7 +609,7 @@ or changes from other units. Delegate and wait.
    ```
 
 2. **When `sda-coder` returns** — route by result:
-   - Any failure (`⚠️ UNRESOLVED`, `🛑 HARD STOP`, or any `❌ ... gate`) → apply [Failure handling & escalation](#failure-handling--escalation). Do NOT output the result block or update state until a clean result is returned.
+   - Any failure (`⚠️ UNRESOLVED`, `🚨 HARD STOP`, or any `❌ ... gate`) → apply [Failure handling & escalation](#failure-handling--escalation). Do NOT output the result block or update state until a clean result is returned.
    - Clean result → output the result block below. Copy `GREEN gate` and `Verification commands` verbatim.
 
 ### State update
@@ -634,9 +644,13 @@ Never read files to derive them. Use `{file}: *` only when a unit created that f
 
 ### Phase 4·U — Per-unit refactor
 
-<title>🔵 **REFACTOR** — _Refactoring unit {N}..._</title>
+<title>
 
-**`{N}`:** task provider only — current unit number. Ad-hoc: omit `{N}` and "unit " (title reads `_Refactoring..._`); the unit-title marker (step 0) identifies the unit.
+---
+
+🟦 **REFACTOR** — _Refactoring unit {N}..._</title>
+
+**`{N}`:** task mode only — current unit number. Ad-hoc: omit `{N}` and "unit " (title reads `_Refactoring..._`); the unit-title marker (step 0) identifies the unit.
 
 #### Control flow
 
@@ -678,14 +692,14 @@ Changes:
 ```
 
 When `sda-refactor` returns — route by result:
-- Any failure (`⚠️ UNRESOLVED`, `🛑 HARD STOP`, or any `❌ ... gate`) → apply [Failure handling & escalation](#failure-handling--escalation). Do NOT output the result block until a clean result is returned.
+- Any failure (`⚠️ UNRESOLVED`, `🚨 HARD STOP`, or any `❌ ... gate`) → apply [Failure handling & escalation](#failure-handling--escalation). Do NOT output the result block until a clean result is returned.
 - Clean result → output the result block below.
 
 <result>
 ### Refactoring
 {None needed. | Done.}
 
-### Pre-existing issues (not fixed)
+### ⚠️ Pre-existing issues (not fixed)
 - {file} `{symbol}`: {violation} → carried forward to Follow-up Opportunities
 
 (Omit "Pre-existing issues" if none found.)
@@ -693,14 +707,18 @@ When `sda-refactor` returns — route by result:
 
 #### Next step
 
-When `{state-tracking}`: return to Phase 1 for the next unit, or proceed to Phase 4·X when all units are `DONE` and `{multi-unit}` is true.
-When `{state-tracking}` is false or `{multi-unit}` is false: proceed to Phase 5.
+Task mode: return to Phase 1 for the next unit, or — when all units are `DONE` — run Phase 4·X if `{multi-unit}` is true, then Phase 5.
+Ad-hoc mode: proceed to the next unit — its unit-title marker (step 0) precedes its first phase — or, when all units are `DONE`, run Phase 4·X if `{multi-unit}` is true, then Phase 5.
 
 ### Phase 4·X — Cross-unit dedup
 
 Runs once after the last unit. Skip to Phase 5 when `{multi-unit}` is false.
 
-<title>🔵 **CROSS-UNIT REFACTOR** — _Checking inter-unit duplication..._</title>
+<title>
+
+---
+
+🟦 **CROSS-UNIT REFACTOR** — _Checking inter-unit duplication..._</title>
 
 #### Control flow
 
@@ -727,7 +745,7 @@ Repo root: {repo-root}
 ```
 
 When `sda-refactor` returns — route by result:
-- Any failure (`⚠️ UNRESOLVED`, `🛑 HARD STOP`, or any `❌ ... gate`) → apply [Failure handling & escalation](#failure-handling--escalation). Do NOT output the result block until a clean result is returned.
+- Any failure (`⚠️ UNRESOLVED`, `🚨 HARD STOP`, or any `❌ ... gate`) → apply [Failure handling & escalation](#failure-handling--escalation). Do NOT output the result block until a clean result is returned.
 - Clean result → output the result block below.
 
 <result>
@@ -772,7 +790,7 @@ source or test files. Delegate and wait.
    ```
 
 3. **When `sda-dev-quality` returns** — route by result:
-   - Any failure (`⚠️ UNRESOLVED`, `🛑 HARD STOP`) → apply [Failure handling & escalation](#failure-handling--escalation). Do NOT output the result block.
+   - Any failure (`⚠️ UNRESOLVED`, `🚨 HARD STOP`) → apply [Failure handling & escalation](#failure-handling--escalation). Do NOT output the result block.
    - Clean report with no flags → output the report verbatim as Phase 5 result. Proceed to Phase 6.
    - Clean report with flags → process each flag (see below), then re-delegate to `sda-dev-quality`.
 
@@ -806,26 +824,35 @@ Triggered when `sda-dev-quality` flags a regression (test failure not in baselin
 5. Record modified files alongside the task's changed files.
 
 <result>
-{output sda-dev-quality's report verbatim — Quality gates tables, Verification commands, and any pre-existing issues noted under Flags}
+
+### Flags
+{copy verbatim from the last sda-dev-quality report}
+
+### Quality gates
+{copy verbatim from last sda-dev-quality report}
+
+### Verification commands
+{copy verbatim from last sda-dev-quality report}
+
 </result>
 
 ## PHASE 6 — Finalize
 
-<title>✅ **DONE**</title>
+<title>
+
+---
+
+✅ **Task completed**</title>
 
 ### Control flow
 
 1. **When `{state-tracking}`:** Run `task-state` `-Command get`
    and verify every unit is `DONE` and task status is `DONE`.
    If any unit is not `DONE`, report it before proceeding.
-2. **Self-check (both providers):** Confirm that per-unit refactoring
+2. **Self-check (both modes):** Confirm that per-unit refactoring
    (Phase 4·U) ran for every unit, and that cross-unit dedup
    (Phase 4·X) ran when `{multi-unit}` is true. Report pass/fail.
-3. **Collect quality results** — from `sda-dev-quality`'s report:
-   `### Quality gates` (per-area Local + Global tables) and
-   `### Verification commands` (Local then Global, with `#` labels).
-   Reproduce both verbatim — do not re-derive or summarize.
-4. **Dev report (when `{dev-report}`).** Delegate to `sda-scribe` by name
+3. **Dev report (when `{dev-report}`).** Delegate to `sda-scribe` by name
    (Mode 3 — Dev Report), passing the task folder path and:
    - **Summary** — what the task was, what was done.
    - **Files Changed** — every file created/modified across all units.
@@ -842,32 +869,33 @@ Triggered when `sda-dev-quality` flags a regression (test failure not in baselin
 
    You pass facts; `sda-scribe` formats and writes `dev-report.md`. Do not
    write the file yourself.
-5. **Follow-up opportunities** — if any were collected (from Phase 4·U/4·X
+4. **Follow-up opportunities** — if any were collected (from Phase 4·U/4·X
    or Phase 5), output the Result, then:
    Ask (title: _"Follow-up opportunities"_):
    > _Follow-up opportunities found — how to address?_
    > - `task` — delegate to `sda-dev-task`
-   > - `ad-hoc` — re-enter Phase 1 (ad-hoc provider); do NOT write code directly
+   > - `ad-hoc` — re-enter Phase 1 (ad-hoc mode); do NOT write code directly
    > - `skip` — end task
 
 <result>
+
 ### Summary
+
+#### Files changed
 - {file}: {one-line summary}
-- Standards self-check: {pass/fail}
-- Refactoring: {from Phase 4·U/4·X}
 
-### Quality gates
-{reproduce sda-dev-quality's `### Quality gates` verbatim — per-area Local and Global tables}
+#### Standards self-check
+{pass/fail}
 
-### Verification commands
-{reproduce sda-dev-quality's `### Verification commands` verbatim — per-area, Local then Global, with `#` command labels}
+#### Refactoring
+{from Phase 4·U/4·X}
 
-Dev report: {dev-report.md link}
+📋 Dev report: {dev-report.md link}
 
 Done.
 ---
 
-## Follow-up opportunities
+## 💡 Follow-up opportunities
 - {file} `{symbol}`: {violation}
 
 (Omit this section if neither the refactor phases nor Phase 5 found pre-existing issues.)

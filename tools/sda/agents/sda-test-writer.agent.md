@@ -166,7 +166,7 @@ Always use absolute paths for `cd` — never relative.
 
 Read the **Source** and **Test** files from the unit specification.
 
-For each path in **Source** and **Test**: if it does not exist on disk and is not explicitly marked **new** in the unit specification → **🛑 HARD STOP.** Report:
+For each path in **Source** and **Test**: if it does not exist on disk and is not explicitly marked **new** in the unit specification → **🚨 HARD STOP.** Report:
 _"`{path}` not found. `task.md` may be out of sync. Update the path and retry."_
 Do not search for the file. Do not create it.
 

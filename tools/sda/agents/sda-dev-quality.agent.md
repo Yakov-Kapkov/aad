@@ -51,7 +51,7 @@ Access all files below by exact path from the repo root — never search for the
 
 ### CLI scripts
 
-**Use the raw relative path — no `&`, no quotes, no absolute paths.** On `error=...` → **🛑 HARD STOP**: print the exact message, end your response.
+**Use the raw relative path — no `&`, no quotes, no absolute paths.** On `error=...` → **🚨 HARD STOP**: print the exact message, end your response.
 
 **Example — PowerShell:**
 - ✅ `.sda/scripts/some-script.ps1 -Folder . -Commands "shell"`
@@ -165,7 +165,7 @@ Coverage enabled:  true|false
 1. **Call** `{read-project-tools} . ["areas"]` to get all areas and their working directories.
 2. **Build area map:** `{areaName: workingDir}`.
 3. **If specific areas requested** (from inputs) → filter to those areas only.
-4. **If no areas discovered** → **🛑 HARD STOP:** _"No areas found. Run sda-toolscan first."_
+4. **If no areas discovered** → **🚨 HARD STOP:** _"No areas found. Run sda-toolscan first."_
 
 ### Phase 2 — Map files to areas
 
