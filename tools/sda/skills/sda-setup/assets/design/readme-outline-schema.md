@@ -33,7 +33,8 @@ layer root. It applies identically to every AI readme (`AGENTS.md`, `CLAUDE.md`,
  Layer readme: routing line to this layer's decisions index.}
 
 ## {Coding standards}
-{Link the coding-standards skill + docs/coding/ (when present).}
+{Global readme: link docs/coding-standards/. Layer readme: link <layer>/docs/coding-standards/.
+ When present.}
 ```
 
 ---

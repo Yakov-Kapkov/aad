@@ -75,7 +75,7 @@ Per-layer `<layer>/docs/vocabulary.md`:
 
 - One concern per file. Write as much as needed, no more.
 - Short and observable — no implementation detail. That lives in Plane B
-  (`docs/coding/` and coding-standards), not here.
+  (`docs/coding-standards/`), not here.
 - Only create the files the design actually needs — never pre-seed empty files.
 - Vocabulary: a term lives in exactly one layer's file (or the global file);
   the global table links to the owning layer instead of duplicating the term.

@@ -214,11 +214,14 @@ Split the app's documentation into **two planes**:
 | Plane | Content | Where |
 |---|---|---|
 | **A — Architectural (observable)** | What exists, what owns what, boundaries, terminology, why. Short — no implementation detail. | Thin readmes (§0–§6, see [Readmes — required sections](#readmes--required-sections-same-structure)) + global `docs/` + each subsystem's `docs/` |
-| **B — Coding (rules by concern)** | Detailed rules grouped by technical concern: database, web-api, testing, constants/naming, UI parity. | `docs/coding/` (global, cross-layer) + the coding-standards skill |
+| **B — Coding (rules by concern)** | Detailed rules grouped by technical concern: database, web-api, testing, constants/naming, UI parity. | Global `docs/coding-standards/` holds cross-layer rules only; each layer's rules live in `<layer>/docs/coding-standards/`. |
 
 Plane A is yours to author. Plane B files are authored by the layer's dev
 agents; you own their *convention* (folder layout, routing) and, during
 reconciliation, move misplaced detail out of readmes into the right plane.
+Global docs hold only global concerns — never write subsystem-specific detail
+into global `docs/coding-standards/`. Subsystem coding rules live in
+`<layer>/docs/coding-standards/`, authored by that layer's dev agents.
 
 ### Content boundaries — what belongs where
 
@@ -366,8 +369,8 @@ Reference entry forms (each includes the path/link):
 5. **Design decisions** — global readme: routing line to every layer's docs
    index (or docs folder). Layer readme: routing line to its own
    `docs/decisions/index.md`.
-6. **Coding standards** — link the coding-standards skill + `docs/coding/`
-   (when present).
+6. **Coding standards** — link `docs/coding-standards/` (global readme) or
+   `<layer>/docs/coding-standards/` (layer readme), when present.
 
 Rules: outline only; ≤3 sentences per entry; link, never inline detail.
 **A readme must never carry implementation detail** — no endpoint-registration
