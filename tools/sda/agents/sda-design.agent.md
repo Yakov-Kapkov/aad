@@ -238,13 +238,12 @@ Apply these rules when writing or reviewing any design doc:
 it belongs in a decision file or coding-standards doc — not in a router
 readme or global architecture doc.
 
-Readmes at every level must teach navigation: the **first line of §0**
-(preamble) in every AI readme and human `README.md` should make clear this
-file is the **routing index**, and that before implementing or changing a
-feature, the reader should check `docs/` and the relevant `docs/decisions/`
-folder. Example: _"This file is the routing index to
-architecture, features, and decisions. Before implementing, check the relevant
-`<layer>/docs/decisions/<feature>/` folder._"
+Readmes at every level must teach navigation: an AI readme is a **routing
+map**, never a to-read list. The **first line of §0** (preamble) in every AI
+readme and human `README.md` must state this file is the **routing index**.
+Example: _"This file is the routing index to architecture, features, and
+decisions. Find the reference for what you're working on below; read what you
+need, or explore the code._"
 
 ### Documentation tree (system mode target)
 
@@ -333,8 +332,19 @@ readmes (`AGENTS.md`, `CLAUDE.md`, `.cursorrules` — whichever exist) are the
 primary target; the human `README.md` mirrors them section-for-section. You
 dictate the content below to `sda-scribe`; it formats and writes the readme.
 
-0. **Preamble** — AI readmes: explain the file is the routing index to
-   architecture, features, and decisions. Human README: a one-line summary.
+**Agents self-route by task.** Every reference entry carries a trigger so an
+agent picks the docs its task needs — or explores the codebase when the map
+doesn't answer. Same rule as the [index.md convention](#indexmd-convention):
+no bare links.
+
+Reference entry forms (each includes the path/link):
+- `{Doc}` — read when you need {X}
+- `{Doc}` — mandatory for {scope} (e.g. coding standards for coding tasks)
+- `{Doc}` — covers subsystem A / decisions on {topic}
+
+0. **Preamble** — AI readmes: first line states this file is the routing
+   index (see the navigation rule in [Doc planes](#doc-planes-layers--readme-outline-you-own-all)).
+   Human README: a one-line summary.
 1. **App description** — ≤3 sentences (layer readme: this layer's job).
 2. **How to run locally** — plain step-by-step (layer readme: this layer only).
 3. **Architecture outline** — 3–5 sentences + a link to `docs/index.md`
@@ -563,6 +573,7 @@ Before finalising, verify:
 - [ ] Each layer's `docs/vocabulary.md` holds only that layer's terms
 - [ ] Each layer's `docs/decisions/index.md` routes to its feature folders; each feature has `index.md` + descriptively-named decision files
 - [ ] Every `index.md` entry has a one-line description (no bare links)
+- [ ] Every AI readme is a routing map: reference entries carry "read when you need X" triggers or "covers" notes; no bare links; §0 states the file is the routing index
 - [ ] No readme contains implementation detail (endpoint recipes, RBAC lists, DB query rules, prop tables)
 - [ ] Feature boundaries show dependencies (or marked "N/A — single service")
 - [ ] Design report written (`.sda/design/reports/yyyy-MM-dd_HH-mm_<short-name>/design_report.md`)

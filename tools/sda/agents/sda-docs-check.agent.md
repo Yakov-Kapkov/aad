@@ -81,6 +81,8 @@ Check each routing section against what actually exists:
 
 | Section | Check |
 |---|---|
+| §0 Preamble | Readme states it is the routing index agents use to find task-relevant docs |
+| All references | Each reference entry carries a trigger — "read when you need {X}", "mandatory for {scope}", or "covers {topic}" — no bare links |
 | §3 Architecture | Readme links `docs/index.md`; that index exists and routes to architecture, vocabulary, diagrams, decisions |
 | §3 Layers | Readme lists every layer and links each `<layer>/docs/index.md`; those indexes exist |
 | §4 Features | Each entry's link resolves; every feature decisions folder on disk appears in §4 |
