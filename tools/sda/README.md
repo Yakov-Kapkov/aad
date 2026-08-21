@@ -297,8 +297,8 @@ All resources are read from a `.sda/` folder in the project root (may be git-ign
 | Decision topic schema | `.sda/resources/decisions/decision-topic-schema.md` |
 | Decision index schema | `.sda/resources/decisions/decision-index-schema.md` |
 | Readme outline schema | `.sda/resources/design/readme-outline-schema.md` |
-| Design topic schema | `.sda/resources/design/design-topic-schema.md` |
-| Design index schema | `.sda/resources/design/design-index-schema.md` |
+| Design topic schema | `.sda/resources/design/docs-topic-schema.md` |
+| Design index schema | `.sda/resources/design/docs-index-schema.md` |
 | Design report schema | `.sda/resources/design/design-report-schema.md` |
 | Design report | `.sda/design/reports/<yyyy-MM-dd_HH-mm_<short-name>>/design_report.md` |
 | Docs integrity script | `.sda/scripts/decisions/docs-integrity.ps1` or `.sda/scripts/decisions/docs-integrity.sh` |

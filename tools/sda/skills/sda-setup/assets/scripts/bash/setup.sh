@@ -39,8 +39,8 @@ cp "$ASSETS_DIR/decisions/decision-topic-schema.md"  "$TARGET_DIR/resources/deci
 cp "$ASSETS_DIR/decisions/decision-index-schema.md"  "$TARGET_DIR/resources/decisions/decision-index-schema.md"
 mkdir -p "$TARGET_DIR/resources/design"
 cp "$ASSETS_DIR/design/readme-outline-schema.md" "$TARGET_DIR/resources/design/readme-outline-schema.md"
-cp "$ASSETS_DIR/design/design-topic-schema.md"   "$TARGET_DIR/resources/design/design-topic-schema.md"
-cp "$ASSETS_DIR/design/design-index-schema.md"   "$TARGET_DIR/resources/design/design-index-schema.md"
+cp "$ASSETS_DIR/design/docs-topic-schema.md"   "$TARGET_DIR/resources/design/docs-topic-schema.md"
+cp "$ASSETS_DIR/design/docs-index-schema.md"   "$TARGET_DIR/resources/design/docs-index-schema.md"
 cp "$ASSETS_DIR/design/design-report-schema.md"  "$TARGET_DIR/resources/design/design-report-schema.md"
 
 TC_SOURCE="$ASSETS_DIR/tool-catalog/$LANGUAGE/tool-catalog.md"

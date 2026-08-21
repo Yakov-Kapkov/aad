@@ -45,8 +45,8 @@ Access all files below by exact path from the repo root — never search for the
 | decision-topic-schema.md | `.sda/resources/decisions/decision-topic-schema.md` |
 | decision-index-schema.md | `.sda/resources/decisions/decision-index-schema.md` |
 | readme-outline-schema.md | `.sda/resources/design/readme-outline-schema.md` |
-| design-topic-schema.md | `.sda/resources/design/design-topic-schema.md` |
-| design-index-schema.md | `.sda/resources/design/design-index-schema.md` |
+| docs-topic-schema.md | `.sda/resources/design/docs-topic-schema.md` |
+| docs-index-schema.md | `.sda/resources/design/docs-index-schema.md` |
 | design-report-schema.md | `.sda/resources/design/design-report-schema.md` |
 | task.md | caller-provided path under `.sda/tasks/` |
 | qa-task.md | caller-provided path under `.sda/tasks/` or `.sda/issues/` |
@@ -150,11 +150,11 @@ readme outlines need creating or updating (caller: `sda-design`). You receive:
 2. **Readme files** — list of readme paths (repo root + layer roots) + their
    §0–§6 content, per `readme-outline-schema.md`.
 3. **Global topic files** — `architecture.md`, `vocabulary.md` content, per
-   `design-topic-schema.md`.
-4. **Global index** — the `docs/index.md` rows, per `design-index-schema.md`.
+   `docs-topic-schema.md`.
+4. **Global index** — the `docs/index.md` rows, per `docs-index-schema.md`.
 5. **Layer docs** — per layer: `<layer>/docs/architecture.md` + `<layer>/docs/index.md` rows (per
-   `design-index-schema.md`) + `<layer>/docs/vocabulary.md` content (per
-   `design-topic-schema.md`).
+   `docs-index-schema.md`) + `<layer>/docs/vocabulary.md` content (per
+   `docs-topic-schema.md`).
 
 You format each file per its schema. No reasoning — the caller has already
 decided placement and content.
@@ -190,8 +190,8 @@ You format `design_report.md` per `design-report-schema.md`.
    | Decision `index.md` | `.sda/resources/decisions/decision-index-schema.md` — full file |
    | Decision file | `.sda/resources/decisions/decision-topic-schema.md` — full file |
    | Readme outline | `.sda/resources/design/readme-outline-schema.md` — full file |
-   | Design topic file | `.sda/resources/design/design-topic-schema.md` — full file |
-   | Design `index.md` | `.sda/resources/design/design-index-schema.md` — full file |
+   | Design topic file | `.sda/resources/design/docs-topic-schema.md` — full file |
+   | Design `index.md` | `.sda/resources/design/docs-index-schema.md` — full file |
    | `design_report.md` | `.sda/resources/design/design-report-schema.md` — full file |
    | Contract spec | Format from caller input (OpenAPI, JSON Schema, etc.) |
    | `manifest.md` | Built-in format (see Step 3) |
@@ -329,8 +329,8 @@ When invoked in **Mode 5**:
 ### Step 8 — Write design docs (Mode 6)
 
 When invoked in **Mode 6**:
-1. Read `readme-outline-schema.md`, `design-topic-schema.md`, and
-   `design-index-schema.md` in full.
+1. Read `readme-outline-schema.md`, `docs-topic-schema.md`, and
+   `docs-index-schema.md` in full.
 2. Write each readme outline, global topic file, global `index.md`, and
    per-layer docs (`<layer>/docs/architecture.md`, `<layer>/docs/index.md`, `<layer>/docs/vocabulary.md`) at
    the caller-provided paths, formatted per its schema.

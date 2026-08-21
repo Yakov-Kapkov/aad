@@ -82,8 +82,8 @@ tools/sda/
             │       └── docs-integrity.ps1      ← link/orphan/duplicate check → .sda/scripts/decisions/
             ├── design/                       ← design-doc schemas (readme outline, architecture + vocabulary, docs index, design report)
             │   ├── readme-outline-schema.md  ← readme §0–§6 format → .sda/resources/design/
-            │   ├── design-topic-schema.md    ← architecture.md + vocabulary.md format → .sda/resources/design/
-            │   ├── design-index-schema.md    ← docs index format (global + layer) → .sda/resources/design/
+            │   ├── docs-topic-schema.md    ← architecture.md + vocabulary.md format → .sda/resources/design/
+            │   ├── docs-index-schema.md    ← docs index format (global + layer) → .sda/resources/design/
             │   └── design-report-schema.md   ← design_report.md format → .sda/resources/design/
         ├── scripts/
         │   ├── bash/
@@ -193,7 +193,7 @@ sda-dev ─delegates─▸ sda-qa                      runtime acceptance QA (ta
 | `unit-file-size` script (parameters or output format) | `sda-dev-task` (Phase 6 Step 1), `sda-dev-task-verifier` (Check 1) | Both agents invoke the script; interface changes break invocations |
 | Decision docs (`<layer>/docs/decisions/`) | No config field — derived per layer from the repo layout. `sda-design` (records + structures via sda-scribe Mode 5), `sda-scribe` (Mode 5 writes), `sda-docs-check` (verifies) | Decision docs live per layer under `<layer>/docs/decisions/` — feature-grouped (`shared/`, `<feature>/`) with descriptively-named files; one decision per file, routed by feature `index.md` |
 | Decision-doc schemas (`decision-topic-schema.md`, `decision-index-schema.md`) | `sda-scribe` (Mode 5 reads them), **sda-setup skill** (copies assets to `.sda/resources/decisions/`) | Scribe formats decision docs per these schemas — feature-grouped folders; descriptively-named files (no `d{N}` numbering); the index routes by file name |
-| Design schemas (`readme-outline-schema.md`, `design-topic-schema.md`, `design-index-schema.md`) | `sda-scribe` (Mode 6 reads them), **sda-setup skill** (copies assets to `.sda/resources/design/`) | Scribe formats readmes + design docs per these schemas |
+| Design schemas (`readme-outline-schema.md`, `docs-topic-schema.md`, `docs-index-schema.md`) | `sda-scribe` (Mode 6 reads them), **sda-setup skill** (copies assets to `.sda/resources/design/`) | Scribe formats readmes + design docs per these schemas |
 | Design report schema (`design-report-schema.md`) | `sda-design` (provides content), `sda-scribe` (Mode 7 writes), `sda-dev-task` (reads as handoff context), **sda-setup skill** (copies asset to `.sda/resources/design/`) | sda-design ends each design session with `design_report.md`; sda-dev-task reads it instead of the full conversation |
 | `scripts.docsIntegrity` in `project-config.json` | `sda-docs-check` (runs it) | Integrity script for links/orphans/duplicate index rows |
 | `README.md` | Keep consistent with all agent descriptions and workflow phases | User-facing docs must match agent behavior |
