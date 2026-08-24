@@ -240,10 +240,11 @@ the unit-title marker (step 0 below).
 
 Every phase follows this exact output sequence:
 0. **Unit title** — ad-hoc mode (`{state-tracking}` is false): before
-   the first phase of each work unit — including the first unit,
-   whose title was just shown in the plan — emit a single title line,
-   nothing else: `## 💻 Unit: {name}`. Omit for every later phase of
-   the same unit.
+   the first phase of every work unit — the first unit included —
+   emit a single title line, nothing else: `## 💻 Unit: {name}`.
+   Always emit it for the first unit too — the plan listing its title
+   does NOT replace the marker. Omit the marker for every later phase
+   of the same unit.
 1. **Title** — content of the `<title>` block, verbatim. Do not
    output the tags.
    **Exception:** Phase 1 has no title — skip this step.
@@ -444,7 +445,7 @@ Context).
 Run each unit through its full route (per the [Route table](#route-table)) sequentially **within the same response** (Unit 1 → phases → Unit 2 → phases → …).
 
 - **Task mode** (`{state-tracking}` true): units come from `task.md` via `{task-state}` — Phase 1 reads the current unit and prints its plan block; after each unit's phases, loop back to Phase 1 for the next unit.
-- **Ad-hoc mode** (`{state-tracking}` false): units are derived from exploration and printed up front in the plan; before each unit's first phase, show the unit title again (step 0) — a single `## 💻 Unit: {name}` line, never a plan re-print.
+- **Ad-hoc mode** (`{state-tracking}` false): units are derived from exploration and printed up front in the plan; before each unit's first phase — the first unit included — emit the unit title (step 0) — a single `## 💻 Unit: {name}` line, never a plan re-print.
 
 When all units are `DONE`: run Phase 4·X if `{multi-unit}` is true, then Phase 5.
 
