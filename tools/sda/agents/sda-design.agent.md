@@ -231,8 +231,8 @@ Apply these rules when writing or reviewing any design doc:
 | Artifact | May contain | Must NOT contain |
 |---|---|---|
 | `AGENTS.md` / `README.md` (any folder) | Routing links to docs/ index + layer docs index; one-line feature summaries | Implementation details, endpoint recipes, RBAC lists, DB query rules, component prop tables |
-| `docs/vocabulary.md` (global) | Domain terms used across layers, each linking to the owning layer's vocabulary | Generic programming terms (function, class, variable, API, endpoint); implementation-level jargon |
-| `<layer>/docs/vocabulary.md` | Layer-specific domain terms only | Generic terms defined in the global vocabulary |
+| `docs/vocabulary.md` (global) | Domain terms used across layers; each links to every layer that specialises the term, or is defined inline when no layer does | Generic programming terms (function, class, variable, API, endpoint); implementation-level jargon |
+| `<layer>/docs/vocabulary.md` | Layer-specific specialisations of global terms + layer-only terms | Global terms restated with an identical meaning (duplicates) |
 | `docs/architecture.md` + `<layer>/docs/architecture.md` | Global: repo structure, layer list, cross-cutting concerns (one line each) — outline only, no subsystem detail. Layer: that layer's modules, ownership, communication, storage | Global: any single subsystem's detail (lives in `<layer>/docs/architecture.md`). Layer: per-feature details (lives in feature decisions) |
 | Feature decision files | One decision: why this approach over alternatives, what it governs, what to do / not do | Anything outside that single decision |
 | Readme §3 / §4 | ≤3-sentence summary + link to the relevant docs | Inline design content, API shapes, DB schemas, component diagrams |
@@ -255,7 +255,7 @@ need, or explore the code._"
   docs/                       ← global docs (repo root)
     index.md                  ← routes to architecture, vocabulary, diagrams, decisions
     architecture.md           ← overall architecture + repo structure + layer list
-    vocabulary.md             ← global terms (domain-specific only); links to each layer's vocabulary.md
+    vocabulary.md             ← global terms; links to every layer's specialised vocabulary.md
     diagrams/                 ← global Mermaid .md files (one per diagram)
       <diagram>.md
     decisions/                ← global cross-layer decisions
@@ -462,7 +462,7 @@ files are the detail.
 |---|---|---|
 | `docs/index.md` | Routes to architecture, vocabulary, diagrams, decisions | Always — first |
 | `docs/architecture.md` | Repo structure + layer list, services/modules, communication, storage, integration, cross-cutting concerns | Always |
-| `docs/vocabulary.md` | Global ubiquitous-language terms; links to each layer's `vocabulary.md` | Always |
+| `docs/vocabulary.md` | Global ubiquitous-language terms; each links to every layer that specialises it | Always |
 | `docs/diagrams/<name>.md` | One Mermaid diagram per file | After the topic files |
 | `docs/decisions/` | Global cross-layer decision tree | As decisions are made |
 | `<layer>/docs/index.md` | Routes to the layer's architecture, vocabulary, diagrams, decisions | One per layer — always |
@@ -563,15 +563,20 @@ services and their connections (global). A layer diagram covers that layer only.
 
 #### vocabulary.md
 Global `docs/vocabulary.md` holds the **ubiquitous language** — terms used
-across layers. Each term links to the layer `vocabulary.md` that owns the
-detail, so no term is duplicated. Per-layer `<layer>/docs/vocabulary.md` holds
-that layer's terms only:
+across layers. A term may apply to several layers (e.g. `user` or `balance`
+— used in both frontend and backend). Link it to **every** layer's
+`vocabulary.md` that specialises it; each per-layer entry is a
+**specialisation**, never a duplicate — it clarifies how that layer sees the
+term (shape, constraints, role). A term defined identically in every layer
+stays global-only. Per-layer `<layer>/docs/vocabulary.md` holds that layer's
+terms only:
 
 ```
 Global term table:
-| Term | Definition | Layer |
+| Term | Definition | Layers |
 |---|---|---|
-| {Term} | {one-line definition} | [backend](backend/docs/vocabulary.md) or global |
+| {Term} | {one-line global definition} | [frontend](frontend/docs/vocabulary.md), [backend](backend/docs/vocabulary.md) |
+| {Term} | {one-line definition} | global |
 ```
 
 ### Completeness Checklist
@@ -583,7 +588,7 @@ Before finalising, verify:
 - [ ] `docs/index.md` exists and routes to architecture, vocabulary, diagrams, decisions
 - [ ] `docs/architecture.md` lists every layer + major services/modules with ownership
 - [ ] Each layer's `<layer>/docs/architecture.md` covers that layer's modules with ownership
-- [ ] `docs/vocabulary.md` defines shared terms; each term links to its owning layer vocabulary
+- [ ] `docs/vocabulary.md` defines shared terms; each links to every layer that specialises it (or is defined inline when none does)
 - [ ] Each layer's `docs/vocabulary.md` holds only that layer's terms
 - [ ] Each layer's `docs/decisions/index.md` routes to its feature folders; each feature has `index.md` + descriptively-named decision files
 - [ ] Every `index.md` entry has a one-line description (no bare links)
@@ -643,7 +648,7 @@ Any conceptual change must update **all** affected artifacts in the same respons
 |---|---|
 | New service / module | the owning scope's `architecture.md` (global or layer) + overview diagram |
 | Removed service / module | the owning scope's `architecture.md` + all diagrams referencing it |
-| Changed entity / term | `docs/vocabulary.md` (or the owning layer's) + affected sequence diagrams |
+| Changed entity / term | `docs/vocabulary.md` + every layer's `vocabulary.md` that specialises it + affected sequence diagrams |
 | Changed layer set | `docs/architecture.md` (layer list) + `docs/index.md` + §3 of all readmes |
 | Changed standard or canonical interface | the owning layer's decisions + relevant diagrams |
 | Changed architecture boundary | the owning scope's `architecture.md` + overview diagram |
