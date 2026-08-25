@@ -27,6 +27,7 @@ setup required.
 | Folder | Description |
 |---|---|
 | [`prompts/commit/`](prompts/commit/) | Two prompts for the commit agent: `/commit` and `/commit-staged` — both infer session context from the conversation to produce richer commit message bodies |
+| [`anything-else`](.github/prompts/anything-else.prompt.md) | End-of-task completeness review — prompts the agent to catch anything forgotten (dependents, docs, cleanup) before finishing |
 
 ---
 
