@@ -13,9 +13,9 @@ $agentKeys = @{
     'sda-dev-task-verifier' = @('scripts.unitFileSize','devTaskUnitSizeLimit','paths.specs')
     'sda-qa'            = @('paths.issues','scripts.qaSessionInit','scripts.loadQaSecrets','scripts.invokeHttp','scripts.readProjectTools')
     'sda-qa-task'       = @('designOwnership','paths.tasks','paths.issues','paths.specs','scripts.listQaSecrets','scripts.readProjectTools')
-    'sda-design'        = @('designOwnership','paths.specs')
-    'sda-scribe'        = @('paths.specs','paths.issues')
-    'sda-docs-check'    = @('scripts.docsIntegrity')
+    'sda-design'        = @('designOwnership','paths.specs','docsSkill')
+    'sda-scribe'        = @('paths.specs','paths.issues','docsSkill')
+    'sda-docs-check'    = @('scripts.docsIntegrity','docsSkill')
 }
 
 $keys = $agentKeys[$Agent]
@@ -36,6 +36,7 @@ $defaults = @{
     'devTaskUnitSizeLimit'   = '1000'
     'designOwnership'        = 'user'
     'standardsSkill'         = 'standards-compliance'
+    'docsSkill'              = 'repo-ai-friendly'
     'paths.specs'            = '.sda/specs'
     'paths.tasks'            = '.sda/tasks'
     'paths.issues'           = '.sda/issues'

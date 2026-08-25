@@ -229,10 +229,11 @@ File: `{file-path}`
 
 ### Scope
 - Required. First line: `Feature: {name}` (exact match to a feature listed in
-  the repo's `AGENTS.md` §4) or `Global` (cross-cutting / maintenance work not
-  tied to a feature).
+  the repo's `AGENTS.md` features section) or `Global` (cross-cutting /
+  maintenance work not tied to a feature).
 - Second line: `Layer: {layer}` — the architectural layer the task primarily
-  touches (from the AI readme §3 / `architecture.md`), e.g. `Backend`, `Persistence`.
+  touches (from the AI readme's architecture section / `architecture.md`),
+  e.g. `Backend`, `Persistence`.
 
 ### QA
 - **`State:`** required — `required` | `declined`. Default `required`.

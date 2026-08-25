@@ -13,7 +13,7 @@ sda-setup skill  →  sda-toolscan  →  sda-dev-task  →  sda-dev  →  sda-qa
 
 ### 1. Run install script
 
-Installs the **sda-setup** skill, SDA agents, and the [**Standards Compliance**](../../skills/standards-compliance/) skill into your `.copilot` user folder.
+Installs the **sda-setup** skill, SDA agents, and the [**Standards Compliance**](../../skills/standards-compliance/) and [**Repo AI-Friendly**](../../skills/repo-ai-friendly/) skills into your `.copilot` user folder.
 
 | OS | Default install location |
 |---|---|
@@ -110,7 +110,7 @@ One agent, two altitudes — detect from the request:
   ```
   Design a feature for paginated order listing filtered by status.
   ```
-  Records design decisions and updates §4 of all readmes, writes a
+  Records design decisions and updates the features section of all readmes, writes a
   `design_report.md`.
 
 `sda-design` is conversational. By default it pressure-tests the design **you** propose rather than authoring it — describe the area you're tackling, defend your direction against its push-back on complexity and risk, and iterate together before committing. (Configurable via `designOwnership` — see [project-config.json](#project-configjson).) At the end of every session it writes a `design_report.md` (`.sda/design/reports/<yyyy-MM-dd_HH-mm_<name>>/design_report.md`) so the next agent reads a compact summary instead of the full conversation.
@@ -182,7 +182,7 @@ finds — it reports, and leaves routing (sda-dev-task vs ad-hoc sda-dev) to you
 | `sda-coder` | Implements production code (GREEN) and integration slices. Mechanical worker: makes domain decisions within the assigned unit; stops and reports anything outside scope. | project config | read, edit, search, execute |
 | `sda-refactor` | Runs the REFACTOR pass without changing behaviour: per-unit (refactors the code each unit added or modified) plus a final cross-unit duplication pass; reverts any change that breaks a test. | project config | read, edit, search, execute |
 | `sda-dev-quality` | Runs per-area quality gates (types, lint, tests, coverage, build, pre-merge). Check-and-report only — never fixes. Invoked by sda-dev (Phase 5) or standalone. | Claude Haiku 4.5 | read, search, execute |
-| `sda-docs-check` | Verifies the docs tree (global + per-layer) + decision-doc integrity + drift and AI-readme routing (AGENTS.md/CLAUDE.md §0–§6 links, feature list) against reality. Check-and-report only — never fixes. Invoked by sda-design. | Claude Sonnet 4.6 | read, search, execute, agent |
+| `sda-docs-check` | Verifies the docs tree (global + per-layer) + decision-doc integrity + drift and AI-readme routing (AGENTS.md/CLAUDE.md links, feature list) against reality. Check-and-report only — never fixes. Invoked by sda-design. | Claude Sonnet 4.6 | read, search, execute, agent |
 | `sda-tool-installer` | Installs required development tools — reads tool-catalog.md, runs install commands, handles git-hooks init, reports pass/fail per tool. Invoked by sda-setup skill (Step 7). | Claude Haiku 4.5 | read, execute |
 
 **Model configuration:** Implementation agents use models from `project-config.json`. Default: Claude Sonnet. Run sda-setup (or say "update sda") to resolve family names and apply to agent files. See [Model configuration](#model-configuration).
@@ -294,11 +294,7 @@ All resources are read from a `.sda/` folder in the project root (may be git-ign
 | Config injection script | `.sda/scripts/read-config.ps1` or `.sda/scripts/read-config.sh` |
 | Project-tools command lookup | `.sda/scripts/read-project-tools.ps1` or `.sda/scripts/read-project-tools.sh` |
 | Toolchain scan scripts | `.sda/scripts/toolscan/` (cleanup, timestamp, probe-validators) |
-| Decision topic schema | `.sda/resources/decisions/decision-topic-schema.md` |
-| Decision index schema | `.sda/resources/decisions/decision-index-schema.md` |
-| Readme outline schema | `.sda/resources/design/readme-outline-schema.md` |
-| Design topic schema | `.sda/resources/design/docs-topic-schema.md` |
-| Design index schema | `.sda/resources/design/docs-index-schema.md` |
+| Design + decision schemas | `{docsSkill}` skill (`repo-ai-friendly`) — `assets/readme-outline-schema.md`, `docs-index-schema.md`, `architecture-schema.md`, `vocabulary-schema.md`, `decision-schema.md`, `coding-standards-schema.md` |
 | Design report schema | `.sda/resources/design/design-report-schema.md` |
 | Design report | `.sda/design/reports/<yyyy-MM-dd_HH-mm_<short-name>>/design_report.md` |
 | Docs integrity script | `.sda/scripts/decisions/docs-integrity.ps1` or `.sda/scripts/decisions/docs-integrity.sh` |

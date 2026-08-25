@@ -67,7 +67,7 @@ if ($Action -eq 'uninstall') {
 
     # Skills
     $SkillsDst = Join-Path $TargetBase 'skills'
-    foreach ($Skill in @('sda-setup', 'standards-compliance', 'troubleshooting', 'software-design-best-practices')) {
+    foreach ($Skill in @('sda-setup', 'standards-compliance', 'troubleshooting', 'software-design-best-practices', 'repo-ai-friendly')) {
         $Dir = Join-Path $SkillsDst $Skill
         if (Test-Path $Dir) { Remove-Item $Dir -Recurse -Force; Write-Host "  Removed skills\$Skill\" }
     }
@@ -125,5 +125,9 @@ Write-Host "`n== Installing troubleshooting skill ==" -ForegroundColor Yellow
 # ── software-design-best-practices skill ─────────────────────────────────────
 Write-Host "`n== Installing software-design-best-practices skill ==" -ForegroundColor Yellow
 & (Join-Path $PSScriptRoot 'install-skill.ps1') -TargetBase $TargetBase -Name 'software-design-best-practices'
+
+# ── repo-ai-friendly skill ───────────────────────────────────────────────────
+Write-Host "`n== Installing repo-ai-friendly skill ==" -ForegroundColor Yellow
+& (Join-Path $PSScriptRoot 'install-skill.ps1') -TargetBase $TargetBase -Name 'repo-ai-friendly'
 
 Write-Host ''

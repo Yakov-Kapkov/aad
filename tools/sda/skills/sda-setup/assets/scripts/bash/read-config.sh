@@ -20,9 +20,9 @@ case "$AGENT" in
     sda-dev-task-verifier) KEYS="scripts.unitFileSize devTaskUnitSizeLimit paths.specs" ;;
     sda-qa)            KEYS="paths.issues scripts.qaSessionInit scripts.loadQaSecrets scripts.invokeHttp scripts.readProjectTools" ;;
     sda-qa-task)       KEYS="designOwnership paths.tasks paths.issues paths.specs scripts.listQaSecrets scripts.readProjectTools" ;;
-    sda-design)        KEYS="designOwnership paths.specs" ;;
-    sda-scribe)        KEYS="paths.specs paths.issues" ;;
-    sda-docs-check)    KEYS="scripts.docsIntegrity" ;;
+    sda-design)        KEYS="designOwnership paths.specs docsSkill" ;;
+    sda-scribe)        KEYS="paths.specs paths.issues docsSkill" ;;
+    sda-docs-check)    KEYS="scripts.docsIntegrity docsSkill" ;;
     *)                 KEYS="" ;;
 esac
 
@@ -45,6 +45,7 @@ get_default() {
         devTaskUnitSizeLimit)   echo "1000" ;;
         designOwnership)        echo "user" ;;
         standardsSkill)         echo "standards-compliance" ;;
+        docsSkill)              echo "repo-ai-friendly" ;;
         paths.specs)            echo ".sda/specs" ;;
         paths.tasks)            echo ".sda/tasks" ;;
         paths.issues)           echo ".sda/issues" ;;

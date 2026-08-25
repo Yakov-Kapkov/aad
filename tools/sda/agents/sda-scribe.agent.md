@@ -21,8 +21,8 @@ schemas — no reasoning, no design decisions.
 - `task.md` — task specifications
 - `qa-task.md` — self-contained QA acceptance specs (functional requirements)
 - `dev-report.md` — implementation reports
-- Design-decision docs — routing `index.md` files and decision topic files
-- Design docs — readme outlines, `architecture.md`, `vocabulary.md`, global + layer docs `index.md`
+- Design-decision docs — decision index + decision files (per the `{docsSkill}` skill)
+- Design docs — readme outlines + the docs the caller directs (per the `{docsSkill}` skill)
 - Design reports — `design_report.md` design-session handoff reports
 - Contract spec files — OpenAPI, JSON Schema, etc.
 - `manifest.md` — contract discovery index
@@ -42,12 +42,8 @@ Access all files below by exact path from the repo root — never search for the
 | qa-task-schema.md | `.sda/resources/qa/qa-task-schema.md` |
 | dev-report-schema.md | `.sda/resources/dev/dev-report-schema.md` |
 | project-tools-schema.md | `.sda/resources/toolscan/project-tools-schema.md` |
-| decision-topic-schema.md | `.sda/resources/decisions/decision-topic-schema.md` |
-| decision-index-schema.md | `.sda/resources/decisions/decision-index-schema.md` |
-| readme-outline-schema.md | `.sda/resources/design/readme-outline-schema.md` |
-| docs-topic-schema.md | `.sda/resources/design/docs-topic-schema.md` |
-| docs-index-schema.md | `.sda/resources/design/docs-index-schema.md` |
 | design-report-schema.md | `.sda/resources/design/design-report-schema.md` |
+| design + decision schemas | `{docsSkill}` skill — load it by name; its `SKILL.md` Assets table routes each file type to its schema |
 | task.md | caller-provided path under `.sda/tasks/` |
 | qa-task.md | caller-provided path under `.sda/tasks/` or `.sda/issues/` |
 | dev-report.md | caller-provided path under `.sda/tasks/` |
@@ -143,18 +139,12 @@ caller-provided descriptive kebab-case name as-is (e.g.
 
 ### Mode 6 — Design docs (write/update)
 
-Written when global docs (`architecture.md`, `vocabulary.md`, `docs/index.md`),
-per-layer docs (`<layer>/docs/architecture.md`, `<layer>/docs/index.md`, `<layer>/docs/vocabulary.md`), or
-readme outlines need creating or updating (caller: `sda-design`). You receive:
-1. **Global docs root** — `docs/` (repo root), resolved by the caller from the global AI readme.
-2. **Readme files** — list of readme paths (repo root + layer roots) + their
-   §0–§6 content, per `readme-outline-schema.md`.
-3. **Global topic files** — `architecture.md`, `vocabulary.md` content, per
-   `docs-topic-schema.md`.
-4. **Global index** — the `docs/index.md` rows, per `docs-index-schema.md`.
-5. **Layer docs** — per layer: `<layer>/docs/architecture.md` + `<layer>/docs/index.md` rows (per
-   `docs-index-schema.md`) + `<layer>/docs/vocabulary.md` content (per
-   `docs-topic-schema.md`).
+Written when the caller's design docs or readmes need creating or updating
+(caller: `sda-design`). You receive:
+1. **Files** — the complete list of files to create or update, each with:
+   - `kind` — one of the file types in the `{docsSkill}` skill's Assets table.
+   - `path` — root-relative target path (repo root, layer root, or docs folder).
+   - `content` — fully-specified content for that file.
 
 You format each file per its schema. No reasoning — the caller has already
 decided placement and content.
@@ -187,14 +177,16 @@ You format `design_report.md` per `design-report-schema.md`.
    | `task.md` | `.sda/resources/dev/task-schema.md` — full file |
    | `qa-task.md` | `.sda/resources/qa/qa-task-schema.md` — full file |
    | `dev-report.md` | `.sda/resources/dev/dev-report-schema.md` — full file |
-   | Decision `index.md` | `.sda/resources/decisions/decision-index-schema.md` — full file |
-   | Decision file | `.sda/resources/decisions/decision-topic-schema.md` — full file |
-   | Readme outline | `.sda/resources/design/readme-outline-schema.md` — full file |
-   | Design topic file | `.sda/resources/design/docs-topic-schema.md` — full file |
-   | Design `index.md` | `.sda/resources/design/docs-index-schema.md` — full file |
+   | Design / decision docs (any `kind`) | `{docsSkill}` skill — look up the `kind` in its Assets table |
    | `design_report.md` | `.sda/resources/design/design-report-schema.md` — full file |
    | Contract spec | Format from caller input (OpenAPI, JSON Schema, etc.) |
    | `manifest.md` | Built-in format (see Step 3) |
+
+   Load the `{docsSkill}` skill by name — it is in your session context. Its
+   `SKILL.md` has an **Assets** table mapping each file type to its schema
+   asset; follow that table. Do not hardcode schema filenames — the skill owns
+   its asset layout. Design and decision schemas live in that skill, not in
+   `.sda/resources/`.
 
 2. **Read the schema** for every target file before proceeding.
    This step is **mandatory and blocking** — never write `task.md`
@@ -315,25 +307,25 @@ Never write `task.md` or `state.json` in this mode.
 ### Step 7 — Write design-decision docs (Mode 5)
 
 When invoked in **Mode 5**:
-1. Read `decision-index-schema.md` and `decision-topic-schema.md` in full.
+1. Load the `{docsSkill}` skill and read, in full, the decision schema its
+   `SKILL.md` Assets table routes (index + decision file).
 2. For each file in the caller's list:
    - Resolve target path: `{repo-root}/{layer-docs-root}/decisions/{path}`.
    - Create parent folders as needed.
-   - `index` → format per `decision-index-schema.md`.
+   - `index` → format per the decision index format.
    - `decision` → use the caller-provided file name as-is (descriptive
-     kebab-case, e.g. `challenge-validation.md`); format per
-     `decision-topic-schema.md`. **Never** rename to `d{N}`.
+     kebab-case, e.g. `challenge-validation.md`); format per the decision
+     file format. **Never** rename to `d{N}`.
 3. Updates use `edit` operations; preserve unchanged rows in `index` files.
 4. Never invent decisions, topics, or rows — use only caller-provided data.
 
 ### Step 8 — Write design docs (Mode 6)
 
 When invoked in **Mode 6**:
-1. Read `readme-outline-schema.md`, `docs-topic-schema.md`, and
-   `docs-index-schema.md` in full.
-2. Write each readme outline, global topic file, global `index.md`, and
-   per-layer docs (`<layer>/docs/architecture.md`, `<layer>/docs/index.md`, `<layer>/docs/vocabulary.md`) at
-   the caller-provided paths, formatted per its schema.
+1. Load the `{docsSkill}` skill and read, in full, the schemas its `SKILL.md`
+   Assets table routes for each `kind` in the caller's file list.
+2. Write each file at the caller-provided path, formatted per its `kind`'s
+   schema.
 3. Updates use `edit` operations; preserve unchanged content.
 4. Never invent design content — use only caller-provided data.
 

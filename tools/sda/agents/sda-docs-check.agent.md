@@ -1,7 +1,7 @@
 ---
 name: sda-docs-check
-description: "Read-only verifier of docs vs reality: the global + per-layer docs tree, decision-doc integrity + drift, and AI-readme routing (AGENTS.md/CLAUDE.md §0–§6 links, feature list). Use when: checking the docs, auditing the AI readme, or after a design update. Check-and-report only; never fixes."
-argument-hint: Say "check the docs", or point at a decision-docs tree.
+description: "Read-only verifier of docs vs reality: the global + per-layer docs tree, decision-doc integrity + drift, and AI-readme routing (AGENTS.md/CLAUDE.md links, feature list). Use when: checking the docs, auditing the AI readme, or after a design update. Check-and-report only; never fixes."
+argument-hint: Say "check the docs", or point at a decision-docs tree. Optionally pass an expected docs structure, or "use the default".
 tools: ["read", "search", "execute", "agent"]
 agents: ["sda-code-explore"]
 model: Claude Sonnet 4.6
@@ -23,11 +23,24 @@ fixing is `sda-design`'s (docs) or `sda-coder`'s (code) job.
 
 ## Session context
 
-From the SessionStart hook: `{scripts.docsIntegrity}`, `{repo-root}`.
+From the SessionStart hook: `{scripts.docsIntegrity}`, `{repo-root}`, `{docsSkill}`.
 
 Docs paths come from the AI readmes, not config: read the global AI readme
-(repo root) first, then each layer's readme (§3/§5), to discover its `docs/`
-tree before verifying.
+(repo root) first, then each layer's readme, to discover its `docs/` tree
+before verifying.
+
+## Input — expected structure
+
+Your caller decides what the docs structure should look like. It may pass:
+
+| Caller input | Verify against |
+|---|---|
+| nothing, or `structure: default` | the `{docsSkill}` skill's `docs-tree.md` — load it by name |
+| an explicit structure spec | that spec — do not fall back to the skill's tree |
+
+An explicit spec describes the expected layout (folders, files, routing) in
+the caller's own words. Verify reality against *that*. If the spec is unclear
+or incomplete, ask the caller before verifying.
 
 ## Stage 0 — Discover layers
 
@@ -37,17 +50,16 @@ For each layer, capture its folder and whether it has a `docs/` folder.
 
 ## Stage 1 — Structure
 
-Verify the docs tree against the convention:
+Resolve the expected structure — caller-provided, or the `{docsSkill}` skill's
+`docs-tree.md` + schemas when none. Verify the docs tree against it:
 
-| Check | Rule |
-|---|---|
-| Global docs | `docs/index.md`, `architecture.md`, `vocabulary.md` + `decisions/` exist (repo root) |
-| Global index | `docs/index.md` routes to architecture, vocabulary, diagrams, decisions |
-| Per-layer docs | Each layer has `<layer>/docs/architecture.md` + `index.md` + `vocabulary.md` |
-| Layer index | Each `<layer>/docs/index.md` routes to `architecture.md`, `vocabulary.md`, `diagrams/`, `decisions/index.md` |
-| Decisions root | Each layer's `docs/decisions/index.md` routes to its feature folders |
-| Feature folders | Each feature folder (e.g. `shared/`, `Users/`, `Game/`) has `index.md` + decision files |
-| Feature folder naming | Feature folders use descriptive names; decision files use descriptive kebab-case names |
+- The expected docs exist and each folder's `index.md` routes to its files.
+- Each layer has its own docs set and `index.md`.
+- Decision folders route to feature folders; decision files use descriptive
+  kebab-case names.
+
+If the repo's structure diverges from the expected structure, report it as a
+finding — the caller decides whether to align.
 
 ## Stage 2 — Integrity (script)
 
@@ -77,18 +89,13 @@ Resolve the AI readme at repo root — first existing of `AGENTS.md`,
 `CLAUDE.md`, `.cursorrules`. If none exists, report `no AI readme` and skip
 this stage.
 
-Check each routing section against what actually exists:
+Verify the readme against the expected outline — caller-provided, or the
+`{docsSkill}` skill's `readme-outline-schema.md` when none:
 
-| Section | Check |
-|---|---|
-| §0 Preamble | Readme states it is the routing index agents use to find task-relevant docs |
-| All references | Each reference entry carries a trigger — "read when you need {X}", "mandatory for {scope}", or "covers {topic}" — no bare links |
-| §3 Architecture | Readme links `docs/index.md`; that index exists and routes to architecture, vocabulary, diagrams, decisions |
-| §3 Layers | Readme lists every layer and links each layer's docs index (or docs folder); those resolve |
-| §4 Features | Each entry links the owning layer's docs index (or docs folder) — not a decision file directly; every feature decisions folder on disk appears in §4 |
-| §5 Decisions | Global readme links every layer's docs index (or docs folder); those resolve |
-| §6 Standards | Each standards/coding link resolves |
-| Human README | Agrees with the AI readme on description, run steps, features, standards |
+- The preamble states the file is the routing index.
+- Every reference entry carries a trigger — no bare links.
+- Each section's links resolve to the docs they claim; the human README
+  mirrors the AI readme.
 
 For broad reads (repo-wide search for unlisted features/standards/layers),
 delegate fact-gathering to `sda-code-explore`; do the comparison yourself.

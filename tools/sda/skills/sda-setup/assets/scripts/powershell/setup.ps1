@@ -30,13 +30,7 @@ New-Item -ItemType Directory -Force -Path "$targetDir/resources/qa" | Out-Null
 Copy-Item "$scriptDir/qa/qa-task-schema.md"                "$targetDir/resources/qa/qa-task-schema.md"
 New-Item -ItemType Directory -Force -Path "$targetDir/resources/toolscan" | Out-Null
 Copy-Item "$scriptDir/toolscan/project-tools-schema.md"    "$targetDir/resources/toolscan/project-tools-schema.md"
-New-Item -ItemType Directory -Force -Path "$targetDir/resources/decisions" | Out-Null
-Copy-Item "$scriptDir/decisions/decision-topic-schema.md"  "$targetDir/resources/decisions/decision-topic-schema.md"
-Copy-Item "$scriptDir/decisions/decision-index-schema.md"  "$targetDir/resources/decisions/decision-index-schema.md"
 New-Item -ItemType Directory -Force -Path "$targetDir/resources/design" | Out-Null
-Copy-Item "$scriptDir/design/readme-outline-schema.md" "$targetDir/resources/design/readme-outline-schema.md"
-Copy-Item "$scriptDir/design/docs-topic-schema.md"   "$targetDir/resources/design/docs-topic-schema.md"
-Copy-Item "$scriptDir/design/docs-index-schema.md"   "$targetDir/resources/design/docs-index-schema.md"
 Copy-Item "$scriptDir/design/design-report-schema.md"  "$targetDir/resources/design/design-report-schema.md"
 
 $tcSource = "$scriptDir/tool-catalog/$Language/tool-catalog.md"

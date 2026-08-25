@@ -2,8 +2,7 @@
 
 An `index.md` routes readers to the files and subfolders of a docs folder.
 References only — no design content. Two docs folders use it: global
-`docs/index.md` (routes to architecture, vocabulary, diagrams, decisions) and
-`<layer>/docs/index.md` (routes to architecture, vocabulary, diagrams, decisions).
+`docs/index.md` and `<layer>/docs/index.md`.
 
 ---
 
@@ -18,6 +17,7 @@ Global `docs/index.md`:
 |---|---|---|
 | Architecture | system layout, layers, storage | [architecture](architecture.md) |
 | Vocabulary | shared terminology | [vocabulary](vocabulary.md) |
+| Coding standards | repo-wide rules | [coding-standards](coding-standards/index.md) |
 | Diagrams | visual flows | [diagrams](diagrams/) |
 | Decisions | why a design choice was made | [decisions](decisions/index.md) |
 ```
@@ -31,6 +31,8 @@ Global `docs/index.md`:
 |---|---|---|
 | Architecture | this layer's modules, ownership, communication, storage | [architecture](architecture.md) |
 | Vocabulary | this layer's terms | [vocabulary](vocabulary.md) |
+| CLI | commands to run this layer | [cli](cli.md) |
+| Coding standards | this layer's rules | [coding-standards](coding-standards/index.md) |
 | Diagrams | this layer's visual flows | [diagrams](diagrams/) |
 | Decisions | why a design choice was made | [decisions](decisions/index.md) |
 ```
@@ -44,3 +46,6 @@ Global `docs/index.md`:
 - `When to read` = trigger phrases; `Document` targets a file or a child
   `index.md`.
 - References only. No decision or design content in the index.
+- The `CLI` row appears in layer indexes only, and only when `cli.md` exists.
+- The `Coding standards` row appears only when the `coding-standards/` folder
+  exists.
