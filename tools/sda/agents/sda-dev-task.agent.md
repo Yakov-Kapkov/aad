@@ -637,7 +637,7 @@ Apply [Codebase exploration](#codebase-exploration) strategy.
 Source/Test path in a single prompt so the explorer can read them in
 parallel.
 
-After reads, for each unit with more than one file, run `{unit-file-size} -Mode task -Paths '{p1},{p2},...'` for its Source+Test paths. If the output shows any unit's total exceeding `{unit-size-limit}` lines, split its file set before Step 2 — regroup files so each unit stays within the limit. A single-file unit is the minimum granularity and is exempt even if its line count exceeds the limit.
+After reads, for each unit with more than one file, run the resolved `{unit-file-size}` script with `-Mode task -Paths '{p1},{p2},...'` for its Source+Test paths — never compose your own line-count one-liner (`Get-Content`, `Measure-Object`, `wc -l`). If the output shows any unit's total exceeding `{unit-size-limit}` lines, split its file set before Step 2 — regroup files so each unit stays within the limit. A single-file unit is the minimum granularity and is exempt even if its line count exceeds the limit.
 
 **Step 2 — Build Implementation Plan.** Using research findings and
 the approved Design Approach, produce for each unit:
