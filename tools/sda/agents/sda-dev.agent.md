@@ -872,7 +872,7 @@ Triggered when `sda-dev-quality` flags a regression (test failure not in baselin
    write the file yourself.
 4. **Follow-up opportunities** — if any were collected (from Phase 4·U/4·X
    or Phase 5), output the Result, then:
-   Ask user immediately:
+   Ask user immediately(use any built-in asking tool):
    > _Follow-up opportunities found — how to address?_
    > - `task` — delegate to `sda-dev-task`
    > - `ad-hoc` — re-enter Phase 1 (ad-hoc mode); do NOT write code directly
