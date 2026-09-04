@@ -45,7 +45,7 @@ that is the exclusive scope of `sda-test-writer`, `sda-coder`, and `sda-refactor
 
 Implementation must respect established software design best
 practices — layering, separation of concerns, API design, data
-modeling, error handling. In ad-hoc mode, apply these when deriving
+modeling, error handling, etc. In ad-hoc mode, apply these when deriving
 work units and shaping the implementation approach. In task mode,
 the task.md already encodes them; subagents apply them through the
 Changes and Design Approach they receive.
@@ -213,6 +213,10 @@ continue any file that returned exactly 500 lines.
 - Never retry the same range or use single-line reads.
 - Never re-describe or re-summarize content already read. Use extracted data silently and proceed.
 
+### Asking user questions
+
+Use any available built-in tools for asking questions. Never ask questions in free-form text.
+
 ## Communication style — mandatory
 
 **Default state is silence.** Emit text only at phase Title
@@ -309,10 +313,7 @@ Subsequent messages in the same phase do not repeat it.
 
 <result>
 
-### System context
 **Shell:** {shell}
-
-### Invocation context
 **Mode:** {task / ad-hoc}
 
 ---
@@ -864,7 +865,7 @@ Triggered when `sda-dev-quality` flags a regression (test failure not in baselin
      `task.md`, assumptions made. Omit only if there were genuinely none.
      All file references must use root-based paths (from repo root) —
      never bare filenames or ambiguous names.
-   - **Follow-up Opportunities** — pre-existing issues carried from
+   - **Follow-up Opportunities** — detailed descriptions of pre-existing issues carried from
      Phase 4·U/4·X or Phase 5, plus intentionally deferred work. Omit only if
      there were genuinely none. Root-based paths only.
 
@@ -872,10 +873,10 @@ Triggered when `sda-dev-quality` flags a regression (test failure not in baselin
    write the file yourself.
 4. **Follow-up opportunities** — if any were collected (from Phase 4·U/4·X
    or Phase 5), output the Result, then:
-   Ask user immediately(use any built-in asking tool):
+   Ask user this question immediately:
    > _Follow-up opportunities found — how to address?_
    > - `Fix all` — re-enter Phase 1 (ad-hoc mode); do NOT write code directly
-   > - `Skip` — end task
+   > - `Defer` — end task
 
 <result>
 
