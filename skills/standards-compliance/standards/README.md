@@ -86,6 +86,7 @@ What are you doing?
 - SOLID principles
 - Type annotations (MANDATORY, NEVER use `any`)
 - Interfaces/Types vs plain objects
+- Derived/projection types (`Pick`/`Omit` from a base interface)
 - Zod schemas for runtime validation
 - Magic number/string prevention
 - Import organization (ES6 modules)

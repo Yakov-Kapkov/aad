@@ -102,6 +102,34 @@ const context = { llmProvider: "openai", llmModle: "gpt-4" };  // Typo undetecte
 **Use for**: Error contexts, configuration objects, structured log data, API models.
 **Prefer interfaces over types for**: Object shapes. **Prefer types for**: Unions, intersections, mapped types.
 
+### Derived/Projection Types: Use Pick/Omit From a Base Interface (MANDATORY)
+
+**RULE**: Derive subset/projection types from the base model with `Pick`/`Omit`. Never hand-write parallel field lists.
+
+```typescript
+// ✅ CORRECT: projection derived from the canonical model
+export type UserListItem = Pick<
+  UserDoc,
+  'userId' | 'username' | 'role' | 'isActive' | 'isDeleted' | 'createdAt'
+>;
+
+// ❌ WRONG: hand-written fields drift silently
+export interface UserListItem {
+  userId: string;
+  username: string;  // UserDoc.username renamed → stale field, no compile error
+  // ...
+}
+```
+
+**When Pick/Omit cannot express the shape** (re-typed, renamed, or narrowed fields):
+
+| Need | Use |
+|---|---|
+| Re-type a field | `Omit<Pick<UserDoc, 'userId' \| 'role' \| 'createdAt'>, 'createdAt'> & { createdAt: number }` |
+| Rename fields | Manual interface + assertion: `type _Assert = UserListItem extends Pick<UserDoc, 'userId' \| 'role'> ? true : never` |
+
+**Zod**: For projections needing runtime validation, use `schema.pick({ ... })` / `schema.omit({ ... })` to keep the single source of truth.
+
 ## Magic Number/String Prevention (MANDATORY)
 
 **RULES**:
