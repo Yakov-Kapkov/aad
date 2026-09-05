@@ -134,6 +134,10 @@ never ask it to judge.
      identical annotations.
    - No unit exceeds 6 scenarios. Flag oversized units — they must be
      split into sequential units sharing the same Source/Test files.
+   - No unit exceeds 3 source files — exempt: `refactoring` units (renames,
+     moves, extraction, import rewiring) and units that only delete code or
+     edit docs. Flag any other unit over 3 files — split by file group into
+     sequential units.
    - For each multi-file unit: run `{unit-file-size}` with `-Mode verify -Paths '{p1},{p2},...' -Limit {unit-size-limit}` (see [CLI scripts](#cli-scripts)) for its Source+Test paths. `FAIL` → flag oversized unit — split by file group into sequential units. `PASS` → no action. Single-file units are exempt.
 
 ### 2. Structural Consistency (task.md against codebase)

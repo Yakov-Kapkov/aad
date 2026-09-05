@@ -192,9 +192,14 @@ contiguous after splits.
 exceeds the cap, split along behavioural seams (happy path, validation, edge
 cases) — never mid-behaviour.
 
-**Deletion/doc waiver:** the 3-file cap is waived for units that only delete
-code or edit docs — no new production code, no behaviour change. The
-`{unit-file-size}` line-count guard still applies.
+**No-behaviour file-cap waiver:** the 3-file cap is waived for:
+- **Deletion / docs** — units that only delete code or edit docs.
+- **Refactoring / rewiring** — renames, moves, extraction, import-path
+  rewiring. Split by stage, not file count: create the new home while the
+  old location re-exports the moved symbols (repo stays green), rewire
+  consumers in batches, then drop the re-export shim. Never end a unit with
+  the repo failing to compile.
+The `{unit-file-size}` line-count guard still applies.
 
 **Scenarios:** must assert behaviour, never structure (shape checks must also
 verify values). For `tests required` units, every scenario includes
