@@ -68,14 +68,13 @@ For Checks 2 and 3, when the implementation plan references **>3 files**,
 delegate raw file-gathering to `sda-code-explore`. When ≤3 files, read
 directly.
 
-**Query format for `sda-code-explore`:**
-
-- **Check 2** — send the list of file paths. Ask for: current contents
-  (relevant sections only), existing function/class signatures, current
-  import directives.
-- **Check 3** — send the list of file paths. Ask for: consumers of each
-  file's exports (trace imports), existing test files covering each path,
-  pipeline entry points that process values from these files.
+**One merged call — never two.** Checks 2 and 3 share the same file list.
+Send a single `sda-code-explore` delegation covering both question sets:
+- **Structural facts (Check 2):** current contents (relevant sections
+  only), existing function/class signatures, current import directives.
+- **Regression facts (Check 3):** consumers of each file's exports
+  (trace imports), existing test files covering each path, pipeline
+  entry points that process values from these files.
 
 After receiving results, apply verification judgment (mismatch detection,
 regression risk identification). `sda-code-explore` reports facts only —

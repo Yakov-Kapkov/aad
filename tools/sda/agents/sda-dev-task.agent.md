@@ -315,10 +315,11 @@ Never invoke a generic/unnamed subagent for code reads.
 When delegating, formulate a specific research question. This preserves
 your context window for the design conversation.
 
-**Batching:** Subagent calls are sequential — you cannot run multiple
-`sda-code-explore` invocations in parallel. Instead, combine related
-questions into a single delegation. `sda-code-explore` will parallelize
-its internal reads/searches.
+**Batching:** Combine related questions into one `sda-code-explore`
+delegation — it parallelizes its own reads/searches internally. Spawn
+independent delegations in parallel in one block (e.g. codebase research
++ web research). Never split one shared-file-list gathering across
+parallel explorers for the same files.
 
 ### Web research
 
