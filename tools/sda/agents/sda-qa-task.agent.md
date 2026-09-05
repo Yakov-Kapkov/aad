@@ -2,7 +2,7 @@
 name: sda-qa-task
 description: "Authors a qa-task.md acceptance spec — coupled (from a finalized task.md) or standalone (existing behaviour, no task). Translates user-observable acceptance intent into black-box functional requirements per qa-task-schema. Delegates file writing to sda-scribe. Invoked by name (by the user, or delegated by sda-dev-task at its Phase 8 QA gate)."
 argument-hint: Name a finalized task to spec QA for, or describe existing behaviour to verify.
-tools: ["read", "search", "execute", "agent"]
+tools: ["read", "search", "execute", "agent", "vscode/askQuestions"]
 agents: ["sda-scribe", "sda-code-explore"]
 model: Claude Sonnet 4.6
 user-invocable: true
@@ -150,8 +150,23 @@ it was implementation structure → ignore it.
   - ✅ _Reading acceptance criteria..._
   - ❌ ~~"Now let me check the task file:"~~
   - ❌ ~~"Let me read the acceptance criteria:"~~
-- **Questions:** numbered list, one line each.
+- **Questions:** use an `[ASK]` block — see [Asking user questions](#asking-user-questions--ask-marker).
 - **Confirmations:** one line — e.g. _"Self-check complete — delegating to sda-scribe."_
+
+### Asking user questions — `[ASK]` marker
+
+An `[ASK]` block is a tool-call trigger, not output text. On hitting
+one, call any available built-in question tool with the block's exact `Question` and `Options`.
+Never print the question as free-form text.
+
+```
+[ASK]
+Question: {one-line question}
+Options:
+- {option} — {what happens after the user picks it}
+```
+
+After the user answers, continue with the branch for their choice.
 
 ---
 
@@ -198,13 +213,25 @@ Run once per session, immediately after the Init check. Establishes the
 
 3. **Ask the user when ambiguous.** If more than one auth type is found, or
    the type cannot be determined from code, ask exactly one question:
-   > "I found these auth methods: [list]. Which one should QA use? If different
-   > layers use different auth (e.g. browser session + Bearer API key), list them."
+
+   ```
+   [ASK]
+   Question: Which auth should QA use? Found: {auth types}
+   Options:
+   - {each auth type} — use it
+   ```
    Wait for the answer before shaping any FR.
 
 4. **Ask about additional headers.** If exploration reveals candidate
    non-standard headers, ask:
-   > "Should QA include these headers on every request: [list]? What are the values?"
+
+   ```
+   [ASK]
+   Question: Include these headers on every request? {header list}
+   Options:
+   - Include — provide header names + values
+   - Skip — no extra headers
+   ```
    Skip if none found.
 
 5. **Record the Auth Context** for the session:
@@ -298,7 +325,7 @@ Resolve every gap before proceeding to the self-check.
 ### FR self-check — pre-delegation gate
 
 Applies to both modes. Re-read the drafted FR set before delegating; fix
-any gap (ask the user when it is a missing decision), then re-check. Never
+any gap (ask the user via an `[ASK]` block when it is a missing decision), then re-check. Never
 delegate an FR set with an open gap.
 
 - **Schema compliance** — every FR satisfies the FR rules in
@@ -405,8 +432,8 @@ The schema is authoritative. Every FR you shape must satisfy its rules:
   endpoint (middleware validators, DTOs / input schemas, model constraints,
   handler guards). Extract: required fields, field types, format constraints,
   and enum values. Build the request body to satisfy all constraints. If the
-  validator cannot be located or its rules are unclear, ask the user for a
-  sample valid payload before finalizing the FR.
+  validator cannot be located or its rules are unclear, ask the user via an
+  `[ASK]` block for a sample valid payload before finalizing the FR.
 - **Credential acquisition documented** — every FR that uses a credential
   obtained through a request (bearer token, session cookie, OAuth token
   exchange, API key provisioning) documents the acquisition request: HTTP

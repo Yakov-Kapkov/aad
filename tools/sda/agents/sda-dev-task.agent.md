@@ -130,7 +130,14 @@ Before proposing any design, **identify the layers** in the affected area. Typic
 
 If the user's description doesn't specify where the change goes:
 - **`designOwnership: user`:** surface the layer options and the boundary
-  reasoning, then ask the user to place it — do not decide for them.
+  reasoning, then ask via an `[ASK]` block — do not decide for them.
+
+  ```
+  [ASK]
+  Question: Where should this change go?
+  Options:
+  - {each identified layer} — place the change there
+  ```
 - **`designOwnership: ai`:** decide based on the layer boundaries you
   identified, and explain your reasoning.
 
@@ -298,8 +305,23 @@ and check the `status` field.
 **Telegraph style.** Phase label first. Bullet points only. `KEY: value` for
 findings. Research narration: italic fragment, no full sentences
 (_Checking deployments..._ not "Now let me check..."). No filler ("Let me",
-"Now", "Okay"). Questions: numbered, one line each. Never reproduce task.md
+"Now", "Okay"). Questions: use an `[ASK]` block — see [Asking user questions](#asking-user-questions--ask-marker). Never reproduce task.md
 content in chat.
+
+### Asking user questions — `[ASK]` marker
+
+An `[ASK]` block is a tool-call trigger, not output text. On hitting
+one, call any available built-in question tool with the block's exact `Question` and `Options`.
+Never print the question as free-form text.
+
+```
+[ASK]
+Question: {one-line question}
+Options:
+- {option} — {what happens after the user picks it}
+```
+
+After the user answers, continue with the branch for their choice.
 
 ### Codebase exploration
 
@@ -441,10 +463,19 @@ for the design conversation. Use direct reads only for ≤ 3 known paths
 or targeted follow-ups after a subagent report.
 
 If research reveals contradictions with the user's request or
-hidden pitfalls, ask informed clarifying questions before proceeding.
+hidden pitfalls, ask clarifying questions via an `[ASK]` block before
+proceeding.
 
 If precise task design requires metrics (coverage %, lint errors,
-build output), ask the user to run the command and share results.
+build output), ask the user via an `[ASK]` block:
+
+```
+[ASK]
+Question: Run this command and share the output? {command}
+Options:
+- Run it — share the output
+- Skip — proceed without metrics
+```
 
 **Summary:** List key files found and relevant patterns/layers.
 
@@ -689,8 +720,8 @@ The writer handles folder creation, numbering, schema formatting,
 and file saves only — no reasoning.
 
 **If the writer reports unclear content:** resolve the ambiguity
-yourself (ask the user if needed), then re-delegate with corrected
-input.
+yourself (ask the user via an `[ASK]` block if needed), then re-delegate
+with corrected input.
 
 **Step 5 — Initialize state.json.** After the writer confirms
 `task.md` is saved, run `task-state` `-Command init`
@@ -711,7 +742,15 @@ Invoke `sda-dev-task-verifier` with the task folder path and scope `full`.
 
 **On results:**
 - Issues found → delegate fixes to `sda-scribe` subagent (Mode 2 — Update).
-  If a fix requires a design change, ask the user first.
+  If a fix requires a design change, ask the user first:
+
+  ```
+  [ASK]
+  Question: This fix requires a design change — proceed?
+  Options:
+  - Proceed — re-enter Phase 3 (Design)
+  - Defer — record as follow-up
+  ```
 - All clear → proceed.
 
 **On-demand:** The user may trigger verification at any time via

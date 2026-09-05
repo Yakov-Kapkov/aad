@@ -2,7 +2,7 @@
 name: sda-toolscan
 description: "Scans the project toolchain and writes project-tools.md. Use when: sda-setup delegates toolchain scanning, or the user asks to rescan the toolchain."
 argument-hint: Run this to scan the project toolchain and generate project-tools.md.
-tools: ["read", "search", "edit", "execute"]
+tools: ["read", "search", "edit", "execute", "vscode/askQuestions"]
 model: Claude Sonnet 4.6
 ---
 
@@ -116,6 +116,21 @@ Only scan files and folders that are part of the project source. Skip:
 Do NOT use folder naming conventions to infer what is ignored. Always let
 the VCS ignore files decide.
 
+### Asking user questions — `[ASK]` marker
+
+An `[ASK]` block is a tool-call trigger, not output text. On hitting
+one, call any available built-in question tool with the block's exact `Question` and `Options`.
+Never print the question as free-form text.
+
+```
+[ASK]
+Question: {one-line question}
+Options:
+- {option} — {what happens after the user picks it}
+```
+
+After the user answers, continue with the branch for their choice.
+
 ---
 
 ## Communication style — mandatory
@@ -207,7 +222,17 @@ Every phase follows this exact output sequence:
    - `pyproject.toml`, `requirements.txt`, or `setup.py` → `python`
    - `*.csproj` or `global.json` → `csharp`
    - `pom.xml` or `build.gradle` → `java`
-   Collect all into `{detected-languages}`. If none found, ask user.
+   Collect all into `{detected-languages}`. If none found, ask the user:
+
+   ```
+   [ASK]
+   Question: No language markers found — which language(s) does this project use?
+   Options:
+   - typescript — package.json / tsconfig.json
+   - python — pyproject.toml / requirements.txt / setup.py
+   - csharp — *.csproj / global.json
+   - java — pom.xml / build.gradle
+   ```
 
 3. **Read all discovery specifications** — for each language in `{detected-languages}`,
    read `.sda/resources/{language}/tool-discovery.md` in full. Each spec defines

@@ -213,9 +213,20 @@ continue any file that returned exactly 500 lines.
 - Never retry the same range or use single-line reads.
 - Never re-describe or re-summarize content already read. Use extracted data silently and proceed.
 
-### Asking user questions
+### Asking user questions — `[ASK]` marker
 
-Use any available built-in tools for asking questions. Never ask questions in free-form text.
+An `[ASK]` block is a tool-call trigger, not output text. On hitting
+one, call any available built-in question tool with the block's exact `Question` and `Options`.
+Never print the question as free-form text.
+
+```
+[ASK]
+Question: {one-line question}
+Options:
+- {option} — {action to run after the user picks it}
+```
+
+After the user answers, run the action for the chosen option.
 
 ## Communication style — mandatory
 
@@ -366,7 +377,15 @@ Context).
    - `PENDING` → continue to step 3.
    - `RED` → resuming — skip Phase 2, go directly to Phase 3.
    - `GREEN` → resuming — mark DONE, proceed to Phase 4·U (per-unit refactor).
-   - Script returns `{"done": true}` → warn user, ask whether to proceed.
+   - Script returns `{"done": true}` →
+
+     ```
+     [ASK]
+     Question: Task already done — proceed anyway?
+     Options:
+     - Proceed — continue to step 3
+     - Stop — end the response
+     ```
 3. **Read `task.md`** — identify all units and the current unit type
    (`tests required`, `tests only`, `integration only`, or `refactoring`). Set `{multi-unit}` = true if the task has ≥ 2 units, else false.
    **If status was `PENDING`:**
@@ -802,10 +821,22 @@ For each flag from `sda-dev-quality`'s `### Flags` section:
 
 | Flag | Route |
 |---|---|
-| Coverage below threshold | **Ask user immediately.** Present the coverage detail from the flag verbatim. Do NOT run additional coverage commands, analyze whether the gap is a "subset artifact," or attempt to verify the quality agent's findings. Then: _Coverage below threshold in {Area} — what next?_\n  - `add-tests` — delegate to `sda-test-writer`, then re-delegate to `sda-dev-quality`\n  - `skip` — accept gap, proceed to next flag or Phase 6 |
+| Coverage below threshold | **Ask user immediately** with an `[ASK]` block — see [Coverage decision](#coverage-decision). Do NOT run additional coverage commands, analyze whether the gap is a "subset artifact," or attempt to verify the quality agent's findings. |
 | Regression (test failure not in baseline) | If flagged test was written by this task → delegate to `sda-coder`. If flagged test is pre-existing → delegate to `sda-coder` with [regression fix inputs](#regression-fix). If unclear → delegate to `sda-coder` first. |
 | Build failure | Delegate to `sda-coder` with failure output from flag detail |
 | Type / Lint errors in target files | Delegate to `sda-coder` with error output from flag detail |
+
+### Coverage decision
+
+Present the coverage detail from the flag verbatim, then:
+
+```
+[ASK]
+Question: Coverage below threshold in {Area} — what next?
+Options:
+- add-tests — delegate to `sda-test-writer`, then re-delegate to `sda-dev-quality`
+- skip — accept gap, proceed to next flag or Phase 6
+```
 
 Max 3 quality-gate cycles total (original + 2 re-runs). After 3 cycles with unresolved flags → surface the last report verbatim and end the response.
 
@@ -873,10 +904,14 @@ Triggered when `sda-dev-quality` flags a regression (test failure not in baselin
    write the file yourself.
 4. **Follow-up opportunities** — if any were collected (from Phase 4·U/4·X
    or Phase 5), output the Result, then:
-   Ask user this question immediately:
-   > _Follow-up opportunities found — how to address?_
-   > - `Fix all` — re-enter Phase 1 (ad-hoc mode); do NOT write code directly
-   > - `Defer` — end task
+
+   ```
+   [ASK]
+   Question: Follow-up opportunities found — how to address?
+   Options:
+   - Fix all — re-enter Phase 1 (ad-hoc mode); do NOT write code directly
+   - Defer — end task
+   ```
 
 <result>
 
