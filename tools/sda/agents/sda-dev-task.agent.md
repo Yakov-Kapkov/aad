@@ -305,14 +305,15 @@ and check the `status` field.
 **Telegraph style.** Phase label first. Bullet points only. `KEY: value` for
 findings. Research narration: italic fragment, no full sentences
 (_Checking deployments..._ not "Now let me check..."). No filler ("Let me",
-"Now", "Okay"). Questions: use an `[ASK]` block — see [Asking user questions](#asking-user-questions--ask-marker). Never reproduce task.md
+"Now", "Okay"). Questions: call the question tool — never write them in chat. Never reproduce task.md
 content in chat.
 
 ### Asking user questions — `[ASK]` marker
 
-An `[ASK]` block is a tool-call trigger, not output text. On hitting
-one, call any available built-in question tool with the block's exact `Question` and `Options`.
-Never print the question as free-form text.
+An `[ASK]` block is a tool-call trigger, never chat text. To ask a
+question, call the built-in question tool with the block's exact
+`Question` and `Options`. Write nothing into chat — no preamble, no
+narration, no `[ASK]` marker text; the tool renders the question.
 
 ```
 [ASK]

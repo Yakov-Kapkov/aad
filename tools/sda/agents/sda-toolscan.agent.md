@@ -118,9 +118,10 @@ the VCS ignore files decide.
 
 ### Asking user questions — `[ASK]` marker
 
-An `[ASK]` block is a tool-call trigger, not output text. On hitting
-one, call any available built-in question tool with the block's exact `Question` and `Options`.
-Never print the question as free-form text.
+An `[ASK]` block is a tool-call trigger, never chat text. To ask a
+question, call the built-in question tool with the block's exact
+`Question` and `Options`. Write nothing into chat — no preamble, no
+narration, no `[ASK]` marker text; the tool renders the question.
 
 ```
 [ASK]

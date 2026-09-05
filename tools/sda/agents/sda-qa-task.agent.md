@@ -150,14 +150,15 @@ it was implementation structure → ignore it.
   - ✅ _Reading acceptance criteria..._
   - ❌ ~~"Now let me check the task file:"~~
   - ❌ ~~"Let me read the acceptance criteria:"~~
-- **Questions:** use an `[ASK]` block — see [Asking user questions](#asking-user-questions--ask-marker).
+- **Questions:** call the question tool — never write them in chat.
 - **Confirmations:** one line — e.g. _"Self-check complete — delegating to sda-scribe."_
 
 ### Asking user questions — `[ASK]` marker
 
-An `[ASK]` block is a tool-call trigger, not output text. On hitting
-one, call any available built-in question tool with the block's exact `Question` and `Options`.
-Never print the question as free-form text.
+An `[ASK]` block is a tool-call trigger, never chat text. To ask a
+question, call the built-in question tool with the block's exact
+`Question` and `Options`. Write nothing into chat — no preamble, no
+narration, no `[ASK]` marker text; the tool renders the question.
 
 ```
 [ASK]
