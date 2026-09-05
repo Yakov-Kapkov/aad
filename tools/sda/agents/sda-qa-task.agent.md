@@ -1,6 +1,6 @@
 ---
 name: sda-qa-task
-description: "Authors a qa-task.md acceptance spec — coupled (from a finalized task.md) or standalone (existing behaviour, no task). Translates user-observable acceptance intent into black-box functional requirements per qa-task-schema. Delegates file writing to sda-scribe. Invoked by name (by the user, or delegated by sda-dev-task at its Phase 8 QA gate)."
+description: "Authors a qa-task.md acceptance spec — coupled (from a finalized task.md) or standalone (existing behaviour, no task). Translates user-observable acceptance intent into black-box functional requirements per qa-task-schema. Delegates file writing to sda-scribe. Invoked by name by the user."
 argument-hint: Name a finalized task to spec QA for, or describe existing behaviour to verify.
 tools: ["read", "search", "execute", "agent", "vscode/askQuestions"]
 agents: ["sda-scribe", "sda-code-explore"]
@@ -252,7 +252,7 @@ with the Auth Context established in this phase.
 
 | Signal | Mode |
 |---|---|
-| A finalized task is named / a task folder path is given / delegated by `sda-dev-task` | **Coupled** |
+| A finalized task is named / a task folder path is given | **Coupled** |
 | No task — user names an area or behaviour to verify | **Standalone** |
 
 Unclear → ask one question.

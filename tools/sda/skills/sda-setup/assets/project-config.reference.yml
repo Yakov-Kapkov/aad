@@ -53,7 +53,8 @@ standardsSkill: standards-compliance
 paths:
   # Root folder for specification files (OpenAPI, JSON Schema, etc.).
   # Defaults to .sda/specs if omitted.
-  # sda-scribe writes specs here; sda-dev-task and sda-dev-task-verifier read them.
+  # sda-design (via sda-scribe) and sda-dev-task write specs here;
+  # sda-dev-task and sda-dev-task-verifier read them.
   specs: .sda/specs
 
   # Root folder for standalone QA specs (qa-task.md, authored by sda-qa-task)

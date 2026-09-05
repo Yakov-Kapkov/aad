@@ -165,7 +165,7 @@ finds — it reports, and leaves routing (sda-dev-task vs ad-hoc sda-dev) to you
 |---|---|---|---|
 | `sda-toolscan` | Scans toolchain, writes `project-tools.md` | project config | read, search, edit, execute |
 | `sda-design` | System architecture + feature design — components, contracts, diagrams, decision docs | Claude Sonnet 4.6 | read, search, agent |
-| `sda-dev-task` | Designs atomic task specs (`task.md`) with test scenarios and implementation plans | project config | read, search, agent, execute |
+| `sda-dev-task` | Designs and writes atomic task specs (`task.md`) with test scenarios and implementation plans | project config | read, search, edit, agent, execute |
 | `sda-qa-task` | Authors the black-box acceptance spec (`qa-task.md`) — coupled (from a finalized task) or standalone | Claude Sonnet 4.6 | read, search, agent |
 | `sda-dev` | TDD implementation orchestrator — delegates RED/GREEN to subagents to keep context small | project config | read, edit, execute, agent |
 | `sda-qa` | Runtime acceptance QA — starts the app, drives a real browser/CLI through the functional requirements, writes `qa-report.md` (read-only on source) | Claude Sonnet 4.6 | read, edit, search, execute, browser, web |
@@ -174,7 +174,7 @@ finds — it reports, and leaves routing (sda-dev-task vs ad-hoc sda-dev) to you
 
 | Agent | Role | Model | Tools |
 |---|---|---|---|
-| `sda-scribe` | Universal scribe: writes task.md, qa-task.md, dev-report.md, design-decision docs, design docs, design reports, contract specs, and manifest.md | Claude Haiku 4.5 | read, edit, search |
+| `sda-scribe` | Universal scribe: writes qa-task.md, dev-report.md, design-decision docs, design docs, design reports, contract specs, and manifest.md | Claude Haiku 4.5 | read, edit, search |
 | `sda-dev-task-verifier` | Consistency checks + regression analysis on task.md. Delegates file-gathering to sda-code-explore for tasks with >3 files. Runs `unit-file-size` for unit size verification. | Claude Sonnet 4.6 | read, search, agent, execute |
 | `sda-code-explore` | Fast read-only codebase exploration (invoked by sda-dev-task, sda-dev-task-verifier, sda-qa-task, sda-dev, sda-design) | Claude Haiku 4.5 | read, search |
 | `sda-web-explore` | Web research — fetches live API docs and library specs (invoked by sda-dev-task, sda-design) | Claude Haiku 4.5 | web |
@@ -189,7 +189,7 @@ finds — it reports, and leaves routing (sda-dev-task vs ad-hoc sda-dev) to you
 
 `sda-dev` runs the TDD loop and quality gates, delegating test writing and coding to subagents to keep each context small.
 
-`sda-scribe` is the universal scribe for SDA planning and implementation agents — it writes task.md, qa-task.md, dev-report.md, design-decision docs, design docs, design reports, contract spec files, and manifest.md. It uses Haiku for cost efficiency since it performs no reasoning — only schema formatting and file I/O. `sda-code-explore` is invoked by `sda-dev-task`, `sda-dev-task-verifier`, `sda-qa-task`, and `sda-dev` for codebase research — also Haiku, since it only reads and reports. `sda-web-explore` is invoked by `sda-dev-task` and `sda-design` for live web/API research when documentation may have changed. `sda-dev-task-verifier` handles Phase 7 (consistency + regression checks) — it can be invoked directly by the user or delegated to by `sda-dev-task`.
+`sda-scribe` is the universal scribe for SDA planning and implementation agents — it writes qa-task.md, dev-report.md, design-decision docs, design docs, design reports, contract spec files, and manifest.md. It uses Haiku for cost efficiency since it performs no reasoning — only schema formatting and file I/O. `sda-code-explore` is invoked by `sda-dev-task`, `sda-dev-task-verifier`, `sda-qa-task`, and `sda-dev` for codebase research — also Haiku, since it only reads and reports. `sda-web-explore` is invoked by `sda-dev-task` and `sda-design` for live web/API research when documentation may have changed. `sda-dev-task-verifier` handles Phase 7 (consistency + regression checks) — it can be invoked directly by the user or delegated to by `sda-dev-task`.
 
 All pipeline agents are user-invokable and used as needed.
 
@@ -329,7 +329,7 @@ The `models` section in `project-config.json` controls which AI model each agent
 |---|---|---|
 | `sda-toolscan` | Scans project toolchain | `Claude Haiku` |
 | `sda-dev-task` | Designs task specifications | `Claude Sonnet` |
-| `sda-scribe` | Universal scribe: task.md, decision docs, design docs, contract specs, manifest.md | `Claude Haiku` |
+| `sda-scribe` | Universal scribe: decision docs, design docs, contract specs, manifest.md | `Claude Haiku` |
 | `sda-dev-task-verifier` | Consistency + regression checks | `Claude Sonnet` |
 | `sda-code-explore` | Fast codebase exploration | `Claude Haiku` |
 | `sda-dev` | Orchestrates TDD workflow | `Claude Sonnet` |
@@ -358,7 +358,7 @@ Written by the `sda-setup` skill. Stores project-level settings injected into ea
 |---|---|---|---|
 | `designOwnership` | `string` | `user` | Who owns the design decision in `sda-design` and `sda-dev-task`. When `user` (default), the agent never volunteers an approach — it pressure-tests the approach **you** propose and hands the decision back to you; it only proposes options when your message explicitly asks for them. When `ai`, the agent may propose the design itself (legacy behaviour). |
 | `standardsSkill` | `string` | `standards-compliance` | Name of the skill carrying coding standards. `sda-dev`, `sda-coder`, `sda-refactor`, `sda-test-writer`, and `sda-dev-task` load it before generating code. |
-| `paths.specs` | `string` | `.sda/specs` | Root folder for specification files (OpenAPI, JSON Schema, etc.). Written by sda-scribe; read by sda-dev-task and sda-dev-task-verifier. |
+| `paths.specs` | `string` | `.sda/specs` | Root folder for specification files (OpenAPI, JSON Schema, etc.). Written by sda-design (via sda-scribe) and sda-dev-task; read by sda-dev-task and sda-dev-task-verifier. |
 | `paths.issues` | `string` | `.sda/issues` | Root folder for standalone QA work (no task): each `<NNN>-<slug>/` holds a `qa-task.md` authored by sda-qa-task and the `qa-report.md` written by sda-qa. |
 | `paths.secrets` | `string` | `.sda/secrets` | Git-ignored folder holding `qa.secrets.env` credentials used by sda-qa. |
 | `scripts.loadQaSecrets` | `string` | `.sda/scripts/qa/load-qa-secrets.ps1` | Path to the QA secrets loader script (legacy — superseded by `qaSessionInit`). Still used as a fallback when `qaSessionInit` is absent. Use the `.sh` variant on Bash/Unix. |
