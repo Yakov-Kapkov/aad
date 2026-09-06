@@ -387,8 +387,11 @@ Context).
      - Proceed — continue to step 3
      - Stop — end the response
      ```
-3. **Read `task.md`** — identify all units and the current unit type
-   (`tests required`, `tests only`, `integration only`, or `refactoring`). Set `{multi-unit}` = true if the task has ≥ 2 units, else false.
+3. **Read `task.md`** — identify all units **only to count them** and
+   read the **current unit's** type (`tests required`, `tests only`,
+   `integration only`, or `refactoring`). The current unit is the one
+   `task-state next` returned in step 2. Set `{multi-unit}` = true if
+   the task has ≥ 2 units, else false.
    **If status was `PENDING`:**
 
    **Then check `## Prerequisites`.** If present and non-empty, inspect each checkbox. **Checking means reading checkbox states in `task.md` only — do not run commands or explore the codebase to verify them.**
@@ -412,7 +415,7 @@ Context).
    **On failure:** re-run with filter-test-output (`{N}` = `100`) to detect failing tests.
    Merge all failing test names into `{baseline-failures}`. A fully-passing
    result across all areas → set `{baseline-failures}` = `[]`.
-4. **Extract unit inputs** from `task.md`:
+4. **Extract unit inputs** for the **current unit only** from `task.md`:
    - `tests required` / `tests only`: scenarios, Source/Test paths,
      Test Context, and Changes blocks (if present).
    - `integration only` / `refactoring`: step headings (from `#### Step N.N —` lines),
@@ -465,7 +468,7 @@ Context).
 
 Run each unit through its full route (per the [Route table](#route-table)) sequentially **within the same response** (Unit 1 → phases → Unit 2 → phases → …).
 
-- **Task mode** (`{state-tracking}` true): units come from `task.md` via `{task-state}` — Phase 1 reads the current unit and prints its plan block; after each unit's phases, loop back to Phase 1 for the next unit.
+- **Task mode** (`{state-tracking}` true): units come from `task.md` via `{task-state}` — Phase 1 reads the **current unit only** and prints **its plan block alone** (never all units); after each unit's phases, loop back to Phase 1 for the next unit.
 - **Ad-hoc mode** (`{state-tracking}` false): units are derived from exploration and printed up front in the plan; before each unit's first phase — the first unit included — emit the unit title (step 0) — a single `## 💻 Unit: {name}` line, never a plan re-print.
 
 When all units are `DONE`: run Phase 4·X if `{multi-unit}` is true, then Phase 5.
@@ -486,7 +489,7 @@ or:
 
 ---
 
-## 💻 Unit {N}: {name}    ← task mode: include {N}; ad-hoc: omit {N}
+## 💻 Unit {N}: {name}    ← one unit per block. Task mode: include {N}, current unit only. Ad-hoc: omit {N}, repeat this block for every derived unit.
 **Type:** {type}
 **Area:** {area}
 **Language:** {languages}
