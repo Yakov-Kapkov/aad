@@ -1,27 +1,25 @@
 #!/usr/bin/env bash
 # write-config.sh
-# Normalizes .sda/project-config.json against the template, then applies
-# user answers for the fields that were configured in this session.
+# Normalizes .sda/project-config.json against the template:
+# adds missing fields, preserves existing values.
 #
 # Usage:
 #   bash write-config.sh \
 #       <template-file> \
-#       <config-file> \
-#       <coverage-enabled: true|false|keep>
+#       <config-file>
 #
-# Pass "keep" for any field the user declined to reconfigure.
+# Adds fields missing from the config. Existing field values are preserved.
 # Requires: python3 (used for JSON manipulation)
 
 set -euo pipefail
 
-if [ "$#" -lt 3 ]; then
-  echo "Usage: write-config.sh <template> <config> <coverage-enabled>" >&2
+if [ "$#" -lt 2 ]; then
+  echo "Usage: write-config.sh <template> <config>" >&2
   exit 1
 fi
 
 TEMPLATE_FILE="$1"
 CONFIG_FILE="$2"
-COVERAGE_ENABLED="$3"
 
 python3 - <<PYEOF
 import json, sys, os
@@ -46,30 +44,27 @@ def merge_defaults(target, source):
 
 merge_defaults(config, template)
 
-# Step 2: Remove stale fields not in template
-def remove_stale(target, source):
-    stale = [k for k in target if k not in source]
-    for k in stale:
-        del target[k]
-    for key, val in source.items():
-        if isinstance(val, dict) and isinstance(target.get(key), dict):
-            remove_stale(target[key], val)
-
-remove_stale(config, template)
-
-# Step 3: Apply user answers
-def to_bool(v):
-    return v.lower() == 'true'
-
-if "$COVERAGE_ENABLED" != "keep":
-    config["tests"]["coverage"]["enabled"] = to_bool("$COVERAGE_ENABLED")
-
-# Set task-state script path for this platform
-config["scripts"]["taskState"] = ".sda/scripts/dev/task-state.sh"
-config["scripts"]["loadQaSecrets"] = ".sda/scripts/qa/load-qa-secrets.sh"
-config["scripts"]["listQaSecrets"] = ".sda/scripts/qa/list-qa-secrets.sh"
-config["scripts"]["qaSessionInit"] = ".sda/scripts/qa/qa-session-init.sh"
-config["scripts"]["invokeHttp"]    = ".sda/scripts/qa/invoke-http.sh"
+# Step 2: Set platform script paths (never override user values)
+# Set each path only when missing or still at a shipped default.
+SHIPPED = {
+    "taskState":     (".sda/scripts/dev/task-state.ps1",     ".sda/scripts/dev/task-state.sh"),
+    "loadQaSecrets": (".sda/scripts/qa/load-qa-secrets.ps1", ".sda/scripts/qa/load-qa-secrets.sh"),
+    "listQaSecrets": (".sda/scripts/qa/list-qa-secrets.ps1", ".sda/scripts/qa/list-qa-secrets.sh"),
+    "qaSessionInit": (".sda/scripts/qa/qa-session-init.ps1", ".sda/scripts/qa/qa-session-init.sh"),
+    "invokeHttp":    (".sda/scripts/qa/invoke-http.ps1",     ".sda/scripts/qa/invoke-http.sh"),
+}
+PLATFORM = {
+    "taskState":     ".sda/scripts/dev/task-state.sh",
+    "loadQaSecrets": ".sda/scripts/qa/load-qa-secrets.sh",
+    "listQaSecrets": ".sda/scripts/qa/list-qa-secrets.sh",
+    "qaSessionInit": ".sda/scripts/qa/qa-session-init.sh",
+    "invokeHttp":    ".sda/scripts/qa/invoke-http.sh",
+}
+scripts = config.setdefault("scripts", {})
+for key, platform_value in PLATFORM.items():
+    current = scripts.get(key)
+    if current is None or current in SHIPPED[key]:
+        scripts[key] = platform_value
 
 with open("$CONFIG_FILE", "w") as f:
     json.dump(config, f, indent=2)

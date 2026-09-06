@@ -123,20 +123,19 @@ If the script warns that the language-specific tool-discovery spec is missing, r
 
 Read `.sda/resources/project-config.example.json` into `{template}` via `read_file` (exact path — do NOT search). If missing, abort: _"`project-config.example.json` not found — Step 3 may have failed. Re-run setup."_
 
-Test coverage is always enabled by setup. Record `coverage-enabled = true`.
+Test coverage defaults to `enabled: true` on first setup. On update, the existing `tests.coverage.enabled` value is preserved — setup never resets it.
 
 ### Step 5 — Normalize project-config.json
 
 **Post:** `**Step 5 — Writing project-config.json.**`
 
-Run the write-config script. Pass `keep` for any section the user declined to reconfigure.
+Run the write-config script. It adds missing fields and preserves existing values.
 
 **Windows (PowerShell):**
 ```
 <this-skill-folder>\assets\scripts\powershell\write-config.ps1 `
     -TemplateFile  ".sda/resources/project-config.example.json" `
-    -ConfigFile    ".sda/project-config.json" `
-    -CoverageEnabled true
+    -ConfigFile    ".sda/project-config.json"
 ```
 
 If the resolved path contains spaces, prefix with `&` and quote the script path.
@@ -145,11 +144,10 @@ If the resolved path contains spaces, prefix with `&` and quote the script path.
 ```
 bash "<this-skill-folder>/assets/scripts/bash/write-config.sh" \
     ".sda/resources/project-config.example.json" \
-    ".sda/project-config.json" \
-    "true"
+    ".sda/project-config.json"
 ```
 
-Adds missing fields, removes stale fields, applies answers atomically. **Mandatory — do not skip.**
+Adds missing fields, preserves existing values. **Mandatory — do not skip.**
 
 ### Step 6 — Toolchain scan
 
@@ -257,6 +255,6 @@ If `No` → **Post:** `> Re-run **sda-toolscan** to update project-tools.md with
 ---
 ## SDA is ready.
 
-**Test coverage** `enabled = true`
+**Test coverage** `enabled = true` on first setup; preserved on update.
 
 ---

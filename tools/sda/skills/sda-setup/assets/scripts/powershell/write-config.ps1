@@ -1,20 +1,17 @@
 # write-config.ps1
-# Normalizes .sda/project-config.json against the template, then applies
-# user answers for the fields that were configured in this session.
+# Normalizes .sda/project-config.json against the template:
+# adds missing fields, preserves existing values.
 #
 # Usage:
 #   .\write-config.ps1 `
 #       -TemplateFile  ".sda/resources/project-config.example.json" `
-#       -ConfigFile    ".sda/project-config.json" `
-#       -CoverageEnabled <true|false|keep>
+#       -ConfigFile    ".sda/project-config.json"
 #
-# Pass "keep" for any field the user declined to reconfigure — its existing
-# value (or the template default on first run) will be preserved.
+# Adds fields missing from the config. Existing field values are preserved.
 
 param(
     [Parameter(Mandatory)][string]$TemplateFile,
-    [Parameter(Mandatory)][string]$ConfigFile,
-    [string]$CoverageEnabled = 'keep'
+    [Parameter(Mandatory)][string]$ConfigFile
 )
 
 $ErrorActionPreference = 'Stop'
@@ -42,34 +39,28 @@ function Merge-Defaults {
 }
 Merge-Defaults $config $template
 
-# --- Step 2: Remove stale fields (present in config but not in template) ---
-function Remove-Stale {
-    param($target, $source)
-    $toRemove = @()
-    foreach ($prop in $target.PSObject.Properties) {
-        if ($null -eq $source.PSObject.Properties[$prop.Name]) {
-            $toRemove += $prop.Name
-        } elseif ($prop.Value -is [PSCustomObject]) {
-            Remove-Stale $prop.Value $source.$($prop.Name)
-        }
-    }
-    foreach ($name in $toRemove) {
-        $target.PSObject.Properties.Remove($name)
+# --- Step 2: Set platform script paths (never override user values) ---
+$platformPaths = [ordered]@{
+    taskState     = '.sda/scripts/dev/task-state.ps1'
+    loadQaSecrets = '.sda/scripts/qa/load-qa-secrets.ps1'
+    listQaSecrets = '.sda/scripts/qa/list-qa-secrets.ps1'
+    qaSessionInit = '.sda/scripts/qa/qa-session-init.ps1'
+    invokeHttp    = '.sda/scripts/qa/invoke-http.ps1'
+}
+$shippedPaths = @{
+    taskState     = @('.sda/scripts/dev/task-state.ps1', '.sda/scripts/dev/task-state.sh')
+    loadQaSecrets = @('.sda/scripts/qa/load-qa-secrets.ps1', '.sda/scripts/qa/load-qa-secrets.sh')
+    listQaSecrets = @('.sda/scripts/qa/list-qa-secrets.ps1', '.sda/scripts/qa/list-qa-secrets.sh')
+    qaSessionInit = @('.sda/scripts/qa/qa-session-init.ps1', '.sda/scripts/qa/qa-session-init.sh')
+    invokeHttp    = @('.sda/scripts/qa/invoke-http.ps1', '.sda/scripts/qa/invoke-http.sh')
+}
+foreach ($key in $platformPaths.Keys) {
+    if ($null -eq $config.scripts.PSObject.Properties[$key]) {
+        $config.scripts | Add-Member -NotePropertyName $key -NotePropertyValue $platformPaths[$key]
+    } elseif ($config.scripts.$key -in $shippedPaths[$key]) {
+        $config.scripts.$key = $platformPaths[$key]
     }
 }
-Remove-Stale $config $template
-
-# --- Step 3: Apply user answers (only non-"keep" values) ---
-if ($CoverageEnabled -ne 'keep') {
-    $config.tests.coverage.enabled = [System.Convert]::ToBoolean($CoverageEnabled)
-}
-
-# Set task-state script path for this platform
-$config.scripts.taskState       = '.sda/scripts/dev/task-state.ps1'
-$config.scripts.loadQaSecrets   = '.sda/scripts/qa/load-qa-secrets.ps1'
-$config.scripts.listQaSecrets   = '.sda/scripts/qa/list-qa-secrets.ps1'
-$config.scripts.qaSessionInit   = '.sda/scripts/qa/qa-session-init.ps1'
-$config.scripts.invokeHttp      = '.sda/scripts/qa/invoke-http.ps1'
 
 # Write result using a recursive serializer — avoids PS 5.1 ConvertTo-Json indent bugs
 function Format-Json {
