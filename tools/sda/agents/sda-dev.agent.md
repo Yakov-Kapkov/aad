@@ -454,6 +454,11 @@ Context).
      area → that area. If files span multiple areas → comma-separated list.
    - **Unit type** — `tests required` (default), `tests only`,
      `integration only`, or `refactoring`.
+   - **Follow-up refactor grouping** — re-entering from Phase 6's
+     "Fix all": combine all *simple* refactoring follow-ups into one
+     `refactoring` unit (one unit total). Simple = mechanical and
+     localized (rename, extract, dedup, import rewrite). Split out
+     only a concern that is complex or spans unrelated subsystems.
 3. **Determine route** — see [Route table](#route-table).
 
 4. **Capture test baseline.** Skip if `{baseline-failures}` is already set for this session.
