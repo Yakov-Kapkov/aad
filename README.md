@@ -50,7 +50,7 @@ Multi-agent tool suites.
 
 | Tool | Description |
 |---|---|
-| [`sda`](tools/sda/README.md) | Software Development Assistant — coordinated agents and skills for specification-driven development (setup skill → init → system → feature → task → qa-spec → dev → qa) |
+| [`sda`](tools/sda/README.md) | Software Development Assistant — coordinated agents and skills for specification-driven development (sda-ba user story → setup → design → task → qa-spec → dev → qa) |
 
 ---
 

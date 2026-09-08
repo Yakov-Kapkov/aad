@@ -67,6 +67,10 @@ paths:
   # .sda/secrets if omitted. Never commit real credential values.
   secrets: .sda/secrets
 
+  # Root folder for User Stories authored by sda-ba (user-story.md). Defaults
+  # to .sda/stories if omitted. sda-ba writes here when no output path is given.
+  userStories: .sda/stories
+
 tests:
   coverage:
     # true | false

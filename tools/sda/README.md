@@ -2,9 +2,11 @@
 
 A suite of coordinated AI agents that implement a Specification-Driven Development workflow. Use it to go from a feature idea to tested, standards-compliant code without manually orchestrating each step.
 
+`sda-ba` (optional front-end) turns a raw requirement into a ready User Story — one Actor + Gherkin — that feeds `sda-dev-task`:
+
 ```
-sda-setup skill  →  sda-toolscan  →  sda-dev-task  →  sda-dev  →  sda-qa
-(once, skill)       (once)           (tasks)      (implement)     (verify)
+sda-ba  →  sda-setup skill  →  sda-toolscan  →  sda-dev-task  →  sda-dev  →  sda-qa
+(story)     (once, skill)       (once)           (tasks)      (implement)     (verify)
 ```
 
 ---
@@ -64,6 +66,18 @@ The `sda-setup` skill scaffolds `.sda/` with resource files, then automatically 
 ---
 
 ## Usage
+
+### Capture the requirement — `sda-ba`
+
+```
+Draft a story for <raw requirement here>
+```
+
+Turns a raw requirement into one **ready User Story** — a single Actor statement
+plus Gherkin scenarios (happy / negative / edge) with local NFRs — gated by the
+Definition of Ready before writing `user-story.md`. One actor per story;
+multi-actor requests are split. `sda-ba` captures *what* and *why*, never *how* —
+design, implementation, and QA specs belong to the later agents.
 
 ### 1. Design a task — `sda-dev-task`
 
@@ -164,6 +178,7 @@ finds — it reports, and leaves routing (sda-dev-task vs ad-hoc sda-dev) to you
 | Agent | Role | Model | Tools |
 |---|---|---|---|
 | `sda-toolscan` | Scans toolchain, writes `project-tools.md` | project config | read, search, edit, execute |
+| `sda-ba` | Business Analyst — elicits a raw requirement into one ready User Story (Actor + Gherkin + local NFRs), gated by the Definition of Ready | Claude Sonnet 4.6 | read, search, agent, edit |
 | `sda-design` | System architecture + feature design — components, contracts, diagrams, decision docs | Claude Sonnet 4.6 | read, search, agent |
 | `sda-dev-task` | Designs and writes atomic task specs (`task.md`) with test scenarios and implementation plans | project config | read, search, edit, agent, execute |
 | `sda-qa-task` | Authors the black-box acceptance spec (`qa-task.md`) — coupled (from a finalized task) or standalone | Claude Sonnet 4.6 | read, search, agent |
@@ -281,6 +296,8 @@ All resources are read from a `.sda/` folder in the project root (may be git-ign
 | Project config | `.sda/project-config.json` |
 | Project config reference | `.sda/project-config.reference.yml` |
 | Tool-discovery spec | `.sda/resources/{language}/tool-discovery.md` |
+| User Story schema | `.sda/resources/ba/user-story-schema.md` |
+| User Story | `.sda/stories/<slug>/user-story.md` |
 | Task spec | `.sda/tasks/<NN>-<task-name>/task.md` |
 | QA acceptance spec | `.sda/tasks/<NN>-<task-name>/qa-task.md` |
 | Dev report | `.sda/tasks/<NN>-<task-name>/dev-report.md` |
@@ -311,6 +328,7 @@ The `models` section in `project-config.json` controls which AI model each agent
 ```json
 "models": {
   "sda-toolscan": "Claude Haiku",
+  "sda-ba": "Claude Sonnet",
   "sda-dev-task": "Claude Sonnet",
   "sda-scribe": "Claude Haiku",
   "sda-dev-task-verifier": "Claude Sonnet",
@@ -328,6 +346,7 @@ The `models` section in `project-config.json` controls which AI model each agent
 | Key | Role | Default |
 |---|---|---|
 | `sda-toolscan` | Scans project toolchain | `Claude Haiku` |
+| `sda-ba` | Authors User Stories from raw requirements | `Claude Sonnet` |
 | `sda-dev-task` | Designs task specifications | `Claude Sonnet` |
 | `sda-scribe` | Universal scribe: decision docs, design docs, contract specs, manifest.md | `Claude Haiku` |
 | `sda-dev-task-verifier` | Consistency + regression checks | `Claude Sonnet` |
@@ -361,6 +380,7 @@ Written by the `sda-setup` skill. Stores project-level settings injected into ea
 | `paths.specs` | `string` | `.sda/specs` | Root folder for specification files (OpenAPI, JSON Schema, etc.). Written by sda-design (via sda-scribe) and sda-dev-task; read by sda-dev-task and sda-dev-task-verifier. |
 | `paths.issues` | `string` | `.sda/issues` | Root folder for standalone QA work (no task): each `<NNN>-<slug>/` holds a `qa-task.md` authored by sda-qa-task and the `qa-report.md` written by sda-qa. |
 | `paths.secrets` | `string` | `.sda/secrets` | Git-ignored folder holding `qa.secrets.env` credentials used by sda-qa. |
+| `paths.userStories` | `string` | `.sda/stories` | Root folder for User Stories authored by sda-ba. Written by sda-ba when no output path is given. |
 | `scripts.loadQaSecrets` | `string` | `.sda/scripts/qa/load-qa-secrets.ps1` | Path to the QA secrets loader script (legacy — superseded by `qaSessionInit`). Still used as a fallback when `qaSessionInit` is absent. Use the `.sh` variant on Bash/Unix. |
 | `scripts.listQaSecrets` | `string` | `.sda/scripts/qa/list-qa-secrets.ps1` | Path to the QA secrets lister script. Called by sda-qa-task to discover existing credential key names. Use the `.sh` variant on Bash/Unix. |
 | `scripts.qaSessionInit` | `string` | `.sda/scripts/qa/qa-session-init.ps1` | Path to the QA session init script. Dot-sourced by sda-qa at Phase 2; sets UTF-8 encoding and loads credentials. Outputs a combined summary and `var_name \| is_empty` table. Use the `.sh` variant on Bash/Unix. |
@@ -383,7 +403,8 @@ Example:
   "paths": {
     "specs": ".sda/specs",
     "issues": ".sda/issues",
-    "secrets": ".sda/secrets"
+    "secrets": ".sda/secrets",
+    "userStories": ".sda/stories"
   },
   "tests": {
     "coverage": {

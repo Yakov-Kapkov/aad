@@ -32,6 +32,8 @@ New-Item -ItemType Directory -Force -Path "$targetDir/resources/toolscan" | Out-
 Copy-Item "$scriptDir/toolscan/project-tools-schema.md"    "$targetDir/resources/toolscan/project-tools-schema.md"
 New-Item -ItemType Directory -Force -Path "$targetDir/resources/design" | Out-Null
 Copy-Item "$scriptDir/design/design-report-schema.md"  "$targetDir/resources/design/design-report-schema.md"
+New-Item -ItemType Directory -Force -Path "$targetDir/resources/ba" | Out-Null
+Copy-Item "$scriptDir/ba/user-story-schema.md"            "$targetDir/resources/ba/user-story-schema.md"
 
 $tcSource = "$scriptDir/tool-catalog/$Language/tool-catalog.md"
 if (Test-Path $tcSource) {

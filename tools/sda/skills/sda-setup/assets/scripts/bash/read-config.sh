@@ -14,6 +14,7 @@ REPO_ROOT="$(pwd)"
 
 # Agent → config keys (space-separated)
 case "$AGENT" in
+    sda-ba)            KEYS="paths.userStories" ;;
     sda-dev)           KEYS="scripts.taskState scripts.readProjectTools standardsSkill paths.specs tests.coverage.enabled" ;;
     sda-dev-quality)   KEYS="scripts.readProjectTools tests.coverage.enabled" ;;
     sda-dev-task)          KEYS="scripts.taskState scripts.unitFileSize devTaskUnitSizeLimit designOwnership standardsSkill paths.specs paths.tasks" ;;
@@ -49,6 +50,7 @@ get_default() {
         paths.specs)            echo ".sda/specs" ;;
         paths.tasks)            echo ".sda/tasks" ;;
         paths.issues)           echo ".sda/issues" ;;
+        paths.userStories)      echo ".sda/stories" ;;
         tests.coverage.enabled) echo "true" ;;
         *)                      echo "" ;;
     esac
