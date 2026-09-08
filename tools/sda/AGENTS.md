@@ -17,6 +17,7 @@ tools/sda/
 ├── agents/
 │   ├── sda-toolscan.agent.md           ← toolchain scanning and project-tools generation
 │   └── sda-tool-installer.agent.md    ← subagent: installs required dev tools (delegated by sda-setup skill)
+│   ├── sda-ba.agent.md                ← Business Analyst: raw requirement → ready User Story (one Actor + Gherkin)
 │   ├── sda-design.agent.md            ← system + feature design
 │   ├── sda-dev-task.agent.md              ← task specification design
 │   ├── sda-qa-task.agent.md           ← qa-task.md authoring (coupled + standalone)
@@ -110,6 +111,11 @@ The TDD implementation phase is **orchestrated**: `sda-dev` reads `task.md`, the
 ```
 sda-setup skill ──▸ sda-toolscan                          project scaffolding + scanning
 sda-setup skill ──▸ sda-tool-installer                    required tool installation (Step 7)
+
+user ──▸ sda-ba                                          raw requirement → User Story (requirements front-end)
+sda-ba ─delegates─▸ sda-code-explore / sda-web-explore  elicitation research only (never design)
+sda-ba ─produces──▸ user-story.md                       input for sda-design / sda-dev-task
+
 sda-design ─delegates─▸ sda-diagram-writer            diagram generation (system mode)
 sda-design ─delegates─▸ sda-scribe                    canonical specs, decision + design docs, design report (Mode 7)
 sda-design ─delegates─▸ sda-code-explore              layer discovery + structure
@@ -139,6 +145,8 @@ sda-dev ─delegates─▸ sda-qa                      runtime acceptance QA (ta
 
 | When you change… | Also update… | Why |
 |---|---|---|
+| `user-story-schema.md` | `sda-ba` (authors per it), **sda-setup skill** (copies asset to `.sda/resources/ba/`) | BA authors the story against the schema; setup scaffolds it into consumer projects |
+| `paths.userStories` in `project-config.json` | `sda-ba` (default story output root), **sda-setup skill** (config example + read-config defaults) | Injected via session context; default `.sda/stories` |
 | `sda-dev` RED/test-writing rules | `sda-test-writer` | `sda-test-writer` executes the RED phase the orchestrator delegates |
 | `sda-dev` GREEN/implementation rules | `sda-coder` | `sda-coder` executes the GREEN phase the orchestrator delegates |
 | `sda-dev` REFACTOR/refactoring rules | `sda-refactor` | `sda-refactor` executes both refactor scopes (per-unit 4·U, cross-unit 4·X) the orchestrator delegates; for `refactoring` units, also receives and applies Changes blocks as sweep 0 |
@@ -184,7 +192,7 @@ sda-dev ─delegates─▸ sda-qa                      runtime acceptance QA (ta
 | `sda-dev` Flags processing (Phase 5) | `sda-coder`, `sda-test-writer` | Orchestrator routes quality flags to the correct subagent for fixes |
 | `task.md` Area field + Area Index in `project-tools.md` | `sda-dev-task` (derives area per unit), `sda-scribe` (writes), `sda-dev` (reads per-unit areas), `sda-dev-quality` (discovers areas) | Area connects task design → implementation → quality gates |
 | Init output format (`project-tools.md`) | `sda-toolscan`, `sda-dev`, **sda-setup skill** | The orchestrator, the toolscan agent, and the setup skill depend on project-tools output |
-| `models` in `project-config.json` | `sda-setup` skill (asks user, normalizes, resolves, applies to agent frontmatter) | sda-setup resolves family names to versioned models and writes `model:` into `sda-toolscan`, `sda-dev-task`, `sda-qa-task`, `sda-scribe`, `sda-dev-task-verifier`, `sda-code-explore`, `sda-dev`, `sda-dev-quality`, `sda-qa`, `sda-test-writer`, `sda-coder`, `sda-refactor`, `sda-docs-check` |
+| `models` in `project-config.json` | `sda-setup` skill (asks user, normalizes, resolves, applies to agent frontmatter) | sda-setup resolves family names to versioned models and writes `model:` into `sda-toolscan`, `sda-ba`, `sda-dev-task`, `sda-qa-task`, `sda-scribe`, `sda-dev-task-verifier`, `sda-code-explore`, `sda-dev`, `sda-dev-quality`, `sda-qa`, `sda-test-writer`, `sda-coder`, `sda-refactor`, `sda-docs-check` |
 | `unit-file-size` script (parameters or output format) | `sda-dev-task` (Phase 6 Step 1), `sda-dev-task-verifier` (Check 1) | Both agents invoke the script; interface changes break invocations |
 | Decision docs (`<layer>/docs/decisions/`) | No config field — derived per layer from the repo layout. `sda-design` (records + structures via sda-scribe Mode 5), `sda-scribe` (Mode 5 writes), `sda-docs-check` (verifies) | Decision docs live per layer under `<layer>/docs/decisions/` — feature-grouped (`shared/`, `<feature>/`) with descriptively-named files; one decision per file, routed by feature `index.md` |
 | `repo-ai-friendly` skill (design + decision schemas) | `sda-design` (loads for structure), `sda-scribe` (Mode 5/6 loads for formats), `sda-docs-check` (loads for verification), **install-dev-suite** (installs it), `read-config` (resolves `docsSkill`) | All three load it by name via `docsSkill`; the skill owns the doc tree + schema formats; sda-setup no longer copies them |

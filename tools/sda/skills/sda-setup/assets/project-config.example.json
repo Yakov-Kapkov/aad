@@ -15,7 +15,8 @@
   "paths": {
     "specs": ".sda/specs",
     "issues": ".sda/issues",
-    "secrets": ".sda/secrets"
+    "secrets": ".sda/secrets",
+    "userStories": ".sda/stories"
   },
   "tests": {
     "coverage": {

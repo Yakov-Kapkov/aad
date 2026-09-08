@@ -36,6 +36,8 @@ mkdir -p "$TARGET_DIR/resources/toolscan"
 cp "$ASSETS_DIR/toolscan/project-tools-schema.md"    "$TARGET_DIR/resources/toolscan/project-tools-schema.md"
 mkdir -p "$TARGET_DIR/resources/design"
 cp "$ASSETS_DIR/design/design-report-schema.md"  "$TARGET_DIR/resources/design/design-report-schema.md"
+mkdir -p "$TARGET_DIR/resources/ba"
+cp "$ASSETS_DIR/ba/user-story-schema.md"            "$TARGET_DIR/resources/ba/user-story-schema.md"
 
 TC_SOURCE="$ASSETS_DIR/tool-catalog/$LANGUAGE/tool-catalog.md"
 if [ -f "$TC_SOURCE" ]; then
