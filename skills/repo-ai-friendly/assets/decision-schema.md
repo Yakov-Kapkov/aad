@@ -56,4 +56,10 @@ feature with descriptive kebab-case file names.
 - Feature folders use descriptive names; decision files use descriptive
   kebab-case names — no `d{N}` numbering.
 - Lead with the decision; rationale is optional and capped at one line.
+- **No stale wording.** Record only the current decision — never keep a
+  "previous decision" block or past wording in the file. When a decision
+  changes, amend only the part that changed (e.g. the `**Decision:**`
+  sentence), not the whole file.
+- **Exception:** a long-term refactoring or migration that spans multiple
+  tasks may retain superseded wording where the history stays valuable.
 - Place every decision per the Placement rule: global only for cross-layer.

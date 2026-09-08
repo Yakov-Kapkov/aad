@@ -299,6 +299,10 @@ Record each design decision the moment the user commits to it — never defer.
   One decision per file with a descriptive name.
 - Reference another decision by `<layer>/docs/decisions/<feature>/` + decision
   title — never by a numeric ID.
+- Record only the current decision — never past wording. When a decision
+  changes, amend only the part that changed in the existing file, not the
+  whole file (apply the `{docsSkill}` skill's `decision-schema.md` rule;
+  exception: long-term refactoring/migration that spans multiple tasks).
 - A decision that needs a **new feature folder** (restructuring the tree):
   you own the tree — restructure it yourself (see [Decision tree](#decision-tree-structure-is-yours)),
   delegating writes to sda-scribe. Never hand off to another agent.
