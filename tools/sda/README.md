@@ -5,8 +5,8 @@ A suite of coordinated AI agents that implement a Specification-Driven Developme
 `sda-ba` (optional front-end) turns a raw requirement into a ready User Story — one Actor + Gherkin — that feeds `sda-dev-task`:
 
 ```
-sda-ba  →  sda-setup skill  →  sda-toolscan  →  sda-dev-task  →  sda-dev  →  sda-qa
-(story)     (once, skill)       (once)           (tasks)      (implement)     (verify)
+sda-ba  →  sda-setup skill  →  sda-toolscan  →  sda-dev-task  →  sda-dev
+(story)     (once, skill)       (once)           (tasks)      (implement)
 ```
 
 ---
@@ -150,11 +150,16 @@ delegates the file write to `sda-scribe`.
 ### Verify acceptance — `sda-qa`
 
 `sda-qa` verifies a running application against a `qa-task.md` (its black-box
-spec of functional requirements). That spec reaches it two ways:
+spec of functional requirements). It is always invoked by you — never by
+another agent. That spec reaches it two ways:
 
-- **Task-coupled** — written during task design and verified automatically:
-  `sda-dev` invokes `sda-qa` at the end of a task when a `qa-task.md` and
-  app-run commands both exist.
+- **Task-coupled** — written during task design; run the verification
+  yourself once the task is complete:
+
+  ```
+  QA the current task.
+  ```
+
 - **Standalone** — for checking **existing** behaviour when there is no task
   (e.g. "does feature X already work?"). First author the spec with
   [`sda-qa-task`](#author-the-qa-acceptance-spec--sda-qa-task), then run the
@@ -231,12 +236,14 @@ All pipeline agents are user-invokable and used as needed.
 ## Workflow phases
 
 ```
-PHASE 0 — INIT  (once per project)
+Setup + task design (before sda-dev execution)
+
+INIT  (once per project)
   sda-toolscan detects OS, shell, and language(s) from project markers.
   Reads all matching tool-discovery specs → scans for test runner, linter, type checker, etc.
   Writes .sda/project-tools.md and .sda/project-config.json.
 
-PHASE 1 — TASK DESIGN  (sda-dev-task)
+TASK DESIGN  (sda-dev-task)
   sda-dev-task brainstorms the task with the user.
   Researches the codebase (read-only).
   Verifies consistency with the existing design and assesses regression risks.
@@ -245,36 +252,37 @@ PHASE 1 — TASK DESIGN  (sda-dev-task)
   Produces .sda/tasks/<NN>-<task-name>/task.md with test scenarios,
   implementation plan, and state.json for tracking.
 
-PHASE 2 — BOOTSTRAP  (once per conversation, sda-dev)
+sda-dev execution — phases 0–6 (per sda-dev.agent.md)
+
+PHASE 0 — BOOTSTRAP  (once per conversation)
   Verifies tooling, loads standards, detects mode.
   Ad-hoc: explores codebase and derives work unit.
   Task: proceeds to PLAN.
 
-PHASE 3 — PLAN  (task mode, per slice)
+PHASE 1 — PLAN  (task mode, per unit)
   Reads state.json (via task-state script) and task.md.
-  Extracts current slice inputs.
-  Routes to RED or GREEN.
+  Extracts current unit inputs; routes to RED or GREEN (resume table).
 
-PHASE 4 — RED
+PHASE 2 — RED
   Writes failing tests for every approved scenario.
   Confirms RED state (tests fail as expected).
 
-PHASE 5 — GREEN
+PHASE 3 — GREEN
   Writes production code to make all tests pass.
   Re-runs tests until fully green.
 
-PHASE 6 — REFACTOR + QUALITY CHECKS
-  Refactors the code each slice added or modified as it completes (per-unit); after all slices,
-  a thin cross-unit pass removes duplication spanning slices.
-  Delegates quality gates to sda-dev-quality — gates run per project area (Backend, Frontend, etc.).
+PHASE 4 — REFACTOR
+  Refactors each unit's files as it completes (per-unit); after all units,
+  a thin cross-unit pass removes inter-unit duplication.
+
+PHASE 5 — QUALITY CHECKS
+  Delegates quality gates to sda-dev-quality — gates run per project area.
   Presents per-area results and exact commands to the user.
 
-PHASE 7 — DEV REPORT + ACCEPTANCE QA  (task mode, sda-dev)
+PHASE 6 — FINALIZE  (task mode)
   Delegates dev-report.md (what was built + issues encountered + follow-up opportunities) to sda-scribe.
-  If qa-task.md and app-run commands exist, delegates to sda-qa:
-  sda-qa starts the app, drives a real browser/CLI through each functional
-  requirement, and writes qa-report.md (per-FR PASS/FAIL + evidence).
-  sda-dev posts the clickable report link — it never auto-fixes findings.
+  QA is not part of this phase — you invoke sda-qa yourself afterwards
+  (see "Verify acceptance — sda-qa").
 ```
 
 ### Mode routing (sda-dev)

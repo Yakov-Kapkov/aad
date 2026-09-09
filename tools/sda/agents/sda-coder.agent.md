@@ -32,6 +32,7 @@ You do not write tests or manage state files.
 - Working directory.
 - Repo root — absolute path to the repository root.
 - Changes blocks (when provided — signatures, algorithms, implementation snippets).
+- Design Approach (optional) — implementation guidance when Changes are absent; may be the unit's step headings + body.
 - Prior failure N (optional, repeatable) — trimmed output of attempt N.
 - Fix direction N (optional, repeatable) — orchestrator's diagnosis for attempt N. Use as primary guidance for a different implementation path; override only if the source files clearly point to a different cause.
 - Regression context (optional) — present when the orchestrator invokes this agent to fix a regression detected in Phase 5. The listed tests passed before the task started and broke due to changes in the Source files. Restore them without reverting the task's intended changes.

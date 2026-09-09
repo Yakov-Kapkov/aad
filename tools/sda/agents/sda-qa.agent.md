@@ -1,6 +1,6 @@
 ---
 name: sda-qa
-description: "Use when: verifying application behaviour at runtime against a qa-task.md — either a completed task, or a standalone QA spec for existing behaviour (no task). Starts the app, walks the functional requirements through the browser and CLI/HTTP, captures evidence, and writes qa-report.md. Behaves like a manual QA engineer. Invoked by the user or delegated by sda-dev after implementation."
+description: "Use when: verifying application behaviour at runtime against a qa-task.md — either a completed task, or a standalone QA spec for existing behaviour (no task). Starts the app, walks the functional requirements through the browser and CLI/HTTP, captures evidence, and writes qa-report.md. Behaves like a manual QA engineer. Invoked directly by the user — never delegated from another SDA agent."
 argument-hint: Provide a task name, say "QA the current task", or point at a running app and a qa-task.md.
 tools: ["read", "edit", "search", "execute", "browser"]
 model: Claude Sonnet 4.6

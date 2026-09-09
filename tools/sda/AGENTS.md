@@ -131,6 +131,7 @@ sda-dev-task ────handoff──▸ sda-dev                  design → im
 user ──▸ sda-qa-task                                      qa-task.md authoring (standalone / coupled)
 sda-qa-task ─delegates─▸ sda-code-explore            standalone entry-point discovery
 sda-qa-task ─delegates─▸ sda-scribe                  qa-task.md write (Mode 4: coupled or standalone)
+user ──▸ sda-qa                                          runtime acceptance QA (task-coupled or standalone)
 
 sda-dev ─delegates─▸ sda-test-writer             RED phase
 sda-dev ─delegates─▸ sda-coder                   GREEN phase
@@ -138,7 +139,6 @@ sda-dev ─delegates─▸ sda-refactor                REFACTOR phase
 sda-dev ─delegates─▸ sda-code-explore            ad-hoc mode: codebase exploration
 sda-dev ─delegates─▸ sda-scribe                  dev-report.md (Mode 3, at completion)
 sda-dev ─delegates─▸ sda-dev-quality             per-area quality gates (Phase 5)
-sda-dev ─delegates─▸ sda-qa                      runtime acceptance QA (task mode)
 ```
 
 ### Detailed dependency matrix
@@ -161,13 +161,12 @@ sda-dev ─delegates─▸ sda-qa                      runtime acceptance QA (ta
 | `qa-task.md` schema (`qa-task-schema.md`) | `sda-qa-task` (designs FRs — coupled or standalone), `sda-scribe` (writes — Mode 4), `sda-qa` (reads — sole input) | sda-qa-task designs the QA spec; scribe writes it; sda-qa verifies against it black-box. Standalone specs live under `paths.issues` |
 | `dev-report.md` schema (`dev-report-schema.md`) | `sda-dev` (provides facts), `sda-scribe` (writes) | Orchestrator reports what was built; scribe formats it |
 | `project-tools.md` schema (`project-tools-schema.md`) | `sda-toolscan` (writes output), `sda-dev` (fetches command labels via read-project-tools script) | Labels are machine-readable keys — renaming breaks script lookups |
-| `qa-report.md` format (in `sda-qa`) | `sda-qa` (writes), `sda-dev` (surfaces link only) | Orchestrator posts the link; it never parses or acts on the report |
+| `qa-report.md` format (in `sda-qa`) | `sda-qa` (writes and presents the report directly) | sda-qa posts the report link; no agent parses or acts on its findings |
 | Application-run commands (in `project-tools.md`) | `sda-toolscan` (discovers + writes `### Application Run` inside each area block), `sda-qa` (reads to start the app) | sda-qa starts each layer from these long-running commands |
 | `paths.issues` in `project-config.json` | `sda-qa-task` (designs standalone `qa-task.md`), `sda-scribe` (Mode 4 numbers + writes there), `sda-qa` (reads standalone specs, writes `qa-report.md` beside them) | Shared root for standalone QA work (no task); default `.sda/issues`. Spec + report co-locate in one `<NNN>-<slug>/` folder |
 | `paths.secrets` in `project-config.json` | **sda-setup skill** (scaffolds git-ignored folder + writes `.gitignore`) | No agent resolves this field at runtime — credentials are loaded via `scripts.loadQaSecrets`; default `.sda/secrets` |
 | `scripts.qaSessionInit` / `scripts.invokeHttp` in `project-config.json` | `sda-qa` (from session context), **sda-setup skill** (scaffolds scripts) | sda-qa uses session-init path (fallback: `scripts.loadQaSecrets`) and HTTP helper path; defaults `.sda/scripts/qa/qa-session-init.ps1` and `.sda/scripts/qa/invoke-http.ps1` |
 | Step 7 required-tools table (in **sda-setup skill**) | `sda-tool-installer` | Installer receives the missing-category list and runs the install commands |
-| `sda-dev` QA delegation trigger/format | `sda-qa` input expectations | sda-qa is invoked with the task name/folder when qa-task.md + app-run commands exist |
 | `sda-scribe` Mode 4 (QA spec) destination/numbering | `sda-qa-task` (delegates it — coupled or standalone), `sda-qa` (discovers standalone specs in `paths.issues`) | Producer and consumer must agree on the coupled (beside `task.md`) and standalone (`{issues-root}/<NNN>-<slug>/`) layouts |
 | `state.json` schema (in `task-schema.md`) | `sda-dev-task` (creates via script), `sda-dev` | Task agent initializes it; the orchestrator updates via `task-state` script |
 | `sda-dev-task` Phase 6 delegation format | `sda-scribe` input contract | Scribe parses the exact context sda-dev-task sends |

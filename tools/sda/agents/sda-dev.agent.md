@@ -158,6 +158,19 @@ Omit `[{labels}]` when no labels are needed.
 
 An absent key in `{read-project-tools}` output means the tool was not detected — skip silently.
 
+**Command labels** — request exactly these labels from `{read-project-tools}`:
+
+| Label | Used for |
+|---|---|
+| `shell` | Phase 0 — detect shell |
+| `test-all` | baseline — run the full test suite |
+| `filter-last-n` | baseline — trim output to `{N}` lines |
+| `filter-test-output` | baseline + delegation — trim to `{N}` failing lines |
+| `test-path` | delegation — run one unit's tests |
+| `format-code-path` | delegation — format source/test files |
+| `type-path` | delegation — type-check |
+| `validate-{ext}-path` | delegation — validate data files (one per extension) |
+
 ### No file output for command results
 
 Never write command output to files. Present results inline.
@@ -191,6 +204,10 @@ evaluated and execute.
 **Act-now trigger:** When you conclude "I have all the info" or
 "I'm ready to write," the next action must be a tool call — not
 more reasoning.
+
+**Resume decisions are one-shot.** In task mode, map the state field
+to the resume table (Phase 1 step 2) once per unit entry — never
+re-derive "what does this state mean" or "do I capture baseline".
 
 - Never skip or defer any unit.
 
@@ -373,20 +390,35 @@ paths, Related tests (when listed), and Changes (no scenarios, no Test
 Context).
 
 1. **Derive task folder.** Take the path of `task.md` from context (attached or open in editor). Not present → **stop:** _"Attach task.md or open it in the editor."_ Strip the filename to get the task folder (e.g. `.sda/tasks/001. my-task`). Store it for all `{task-state}` commands.
-2. **Read state.** Run `task-state` `-Command next`.
-   Check the returned `state` field:
-   - `PENDING` → continue to step 3.
-   - `RED` → resuming — skip Phase 2, go directly to Phase 3.
-   - `GREEN` → resuming — mark DONE, proceed to Phase 4·U (per-unit refactor).
-   - Script returns `{"done": true}` →
+2. **Read state.** Run `task-state` `-Command next`. Read the
+   returned `state` field once and act from the table — never
+   re-derive it:
 
-     ```
-     [ASK]
-     Question: Task already done — proceed anyway?
-     Options:
-     - Proceed — continue to step 3
-     - Stop — end the response
-     ```
+   | state | Action | Prereq / regression checks | Baseline capture |
+   |---|---|---|---|
+   | `PENDING` | continue to step 3 | run (step 3) | run (step 3) |
+   | `RED` | resuming — skip Phase 2, go to Phase 3 (GREEN) | skip | skip — treat as clear |
+   | `GREEN` | resuming — mark unit DONE, go to Phase 4·U | skip | skip — treat as clear |
+   | `{"done": true}` | [ASK] proceed anyway? | n/a | n/a |
+
+   On resume, skip baseline capture because `{baseline-failures}` does
+   not persist across sessions — treat the baseline as clear.
+
+   For `{"done": true}`:
+
+   ```
+   [ASK]
+   Question: Task already done — proceed anyway?
+   Options:
+   - Proceed — continue to step 3
+   - Stop — end the response
+   ```
+
+   **Trust `state.json` — never reconcile it against files.** `RED`
+   with source files already present means a prior GREEN run was
+   interrupted: delegate GREEN anyway — `sda-coder` makes tests pass
+   idempotently. Never run commands or read files to check whether
+   files exist.
 3. **Read `task.md`** — identify all units **only to count them** and
    read the **current unit's** type (`tests required`, `tests only`,
    `integration only`, or `refactoring`). The current unit is the one
@@ -485,7 +517,7 @@ When all units are `DONE`: run Phase 4·X if `{multi-unit}` is true, then Phase 
 <result>
 ---
 
-## 🔍 Pre-existing failures     ← always shown; task mode: first unit only — omit on subsequent units
+## 🔍 Pre-existing failures     ← always shown; task mode: first unit whose plan is printed in this session — omit on later units
 ✅ all tests pass 
 or:
 ⚠️ {N} pre-existing failure(s):
@@ -612,8 +644,9 @@ or changes from other units. Delegate and wait.
 1. **Invoke `sda-coder` by name.** Pass:
 
    **Omit `Changes:` if the work unit has no Changes.** When Changes
-   are absent for integration-only units, pass the Design Approach
-   for the current unit instead.
+   are absent, pass the current unit's Design Approach — or, for
+   `tests required` / `tests only` units with no Design Approach,
+   its step headings + body as implementation guidance.
 
    ```
    Type: {`GREEN — make tests pass` | `integration only`}
@@ -622,7 +655,8 @@ or changes from other units. Delegate and wait.
    Source: {source file path(s)}   ← integration only: current unit's target files ONLY — do not include files from other units
    Test: {test file path(s)}       ← GREEN only; omit for integration only
    Related tests: {the unit's `**Related tests:**` paths}   ← integration only; include only when the work unit has Related tests; omit for GREEN
-   Test command: {test-path with {path}=Related tests paths; filter-test-output ({N}=100)}   ← integration only; include only when Related tests are present; omit entirely when none listed
+   Test command: {test-path with {path}=Test file paths; filter-test-output ({N}=100)}   ← GREEN only
+   Test command: {test-path with {path}=Related tests paths; filter-test-output ({N}=100)}   ← integration only; omit entirely when no Related tests listed
    Format-code command: {format-code-path with {path}=source file paths — omit if absent}
    Type-check command: {type-path with {path}=source files — omit if absent}
    Validate-data commands: {validate-{ext}-path with {path}=data file paths; normalize .yml → yaml — omit if absent}
@@ -634,8 +668,8 @@ or changes from other units. Delegate and wait.
    Changes:                    ← include only if work unit has Changes
    {changes blocks}            ← integration only: current unit's changes ONLY
 
-   Design Approach:            ← integration only: include only when Changes are absent; omit for GREEN
-   {design approach for the current unit}
+   Design Approach:            ← include only when Changes are absent; omit when Changes present
+   {design approach for the current unit — or step headings + body for a tests-required/tests-only unit with no Design Approach}
    ```
 
 2. **When `sda-coder` returns** — route by result:
