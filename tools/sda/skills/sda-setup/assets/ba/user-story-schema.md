@@ -35,15 +35,53 @@ Then {outcome}
 ```
 
 ## Local NFRs
-- **LNFR-1** — {feature-specific quality constraint} → applies to FR-{n}
+- **LNFR-1** — The system shall {quality} {threshold} under {condition} — measured by {how} — applies to FR-{n}
 ````
+
+## Scenario Outline (edge families)
+
+`{...}` = schema placeholder (fill it in). `<...>` = Gherkin parameter, filled per row from the `Examples` table.
+
+Template:
+
+```gherkin
+Scenario Outline: {name} (edge)
+  Given {boundary precondition} with <value>
+  When {action}
+  Then {outcome}
+
+  Examples:
+    | value |
+    | {boundary value 1} |
+    | {boundary value 2} |
+```
+
+Example:
+
+```gherkin
+Scenario Outline: Withdrawal rejected at balance limits (edge)
+  Given my account has a balance of <balance>
+  When I try to withdraw <amount>
+  Then I see "<message>"
+
+  Examples:
+    | balance | amount | message            |
+    | 0       | 1      | Insufficient funds |
+    | 100     | 100    | Cannot leave zero  |
+    | 100     | 101    | Insufficient funds |
+```
 
 ## Rules
 
 - **Exactly one** Actor statement (Layer 1). More than one actor → not a single story.
 - **≥1 negative and ≥1 edge** scenario in addition to the happy path.
 - Each scenario is a single Gherkin `Given/When/Then` block (machine-readable).
+- **3–5 steps** per scenario; chain extra steps with `And`/`But`.
+- **Declarative only.** Describe behaviour, not implementation — "When Bob logs in", never "When I click the login button". A step must survive an implementation change.
+- **`Then` = observable outcome.** Assert what the user or external system sees — never internal state (database rows, records, field values).
+- **`Given` = context only.** No user interaction in `Given` steps.
+- **Edge-case families** (multiple boundary values) → one `Scenario Outline` with an `Examples` table, not near-duplicate scenarios.
 - Each scenario is unambiguous and independently testable.
-- Local NFRs are authored here and attached to specific FRs.
+- **Local NFRs are measurable** — threshold + measurement method + `applies to FR-{n}`.
 - Entity doc — describes only the User Story document; it names no agent, phase, or
   workflow.

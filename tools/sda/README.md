@@ -74,7 +74,7 @@ Draft a story for <raw requirement here>
 ```
 
 Turns a raw requirement into one **ready User Story** — a single Actor statement
-plus Gherkin scenarios (happy / negative / edge) with local NFRs — gated by the
+plus Gherkin scenarios (happy / negative / edge) with measurable local NFRs — gated by the
 Definition of Ready before writing `user-story.md`. One actor per story;
 multi-actor requests are split. `sda-ba` captures *what* and *why*, never *how* —
 design, implementation, and QA specs belong to the later agents.
@@ -178,7 +178,7 @@ finds — it reports, and leaves routing (sda-dev-task vs ad-hoc sda-dev) to you
 | Agent | Role | Model | Tools |
 |---|---|---|---|
 | `sda-toolscan` | Scans toolchain, writes `project-tools.md` | project config | read, search, edit, execute |
-| `sda-ba` | Business Analyst — elicits a raw requirement into one ready User Story (Actor + Gherkin + local NFRs), gated by the Definition of Ready | Claude Sonnet 4.6 | read, search, agent, edit |
+| `sda-ba` | Business Analyst — elicits a raw requirement into one ready User Story (Actor + Gherkin + measurable local NFRs), gated by the Definition of Ready | Claude Sonnet 4.6 | read, search, agent, edit |
 | `sda-design` | System architecture + feature design — components, contracts, diagrams, decision docs | Claude Sonnet 4.6 | read, search, agent |
 | `sda-dev-task` | Designs atomic task specs (`task.md`) with test scenarios and implementation plans | project config | read, search, agent, execute |
 | `sda-qa-task` | Authors the black-box acceptance spec (`qa-task.md`) — coupled (from a finalized task) or standalone | Claude Sonnet 4.6 | read, search, agent |

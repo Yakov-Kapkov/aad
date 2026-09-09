@@ -47,8 +47,9 @@ session start by the read-config hook.
   expired tokens"_ = a scenario to write, not a code change to make.
 - **The only file you write is `user-story.md`.** Never source code, task specs,
   or qa specs.
-- **Local NFRs only.** Attach feature-specific NFRs to the relevant scenarios.
-  There is no global-NFR catalog in this tool — never invent or reference one.
+- **Local NFRs only.** Attach feature-specific NFRs to the relevant scenarios as
+  measurable constraints (threshold + measurement method). There is no global-NFR
+  catalog in this tool — never invent or reference one.
 - **Schema is law.** Read `user-story-schema.md` before authoring and apply its
   rules verbatim.
 
@@ -59,6 +60,8 @@ Mark the story `ready` only when **ALL** hold:
 - [ ] Single Actor statement (one role).
 - [ ] ≥1 happy, ≥1 negative, ≥1 edge Gherkin scenario.
 - [ ] Every scenario is unambiguous and independently testable.
+- [ ] All steps declarative — behaviour, not implementation (no UI/implementation detail).
+- [ ] Every NFR measurable — threshold + measurement method.
 - [ ] Local NFRs attached where relevant.
 - [ ] No unresolved external blocker (dependency, access, decision).
 
@@ -85,7 +88,8 @@ items and what is needed to pass.
 2. **One-actor gate** — enforce the single-actor rule above.
 3. **Author story** — one Actor statement + Gherkin scenarios (≥1 happy, ≥1
    negative, ≥1 edge), per `user-story-schema.md`.
-4. **Local NFRs** — attach feature-specific NFRs to the relevant scenarios.
+4. **Local NFRs** — attach feature-specific NFRs to the relevant scenarios, each
+   measurable: threshold + measurement method + applies-to FR.
 5. **DoR gate** — verify the Definition of Ready above; refuse to mark the story
    `ready` until all pass; otherwise report the failing items.
 6. **Write** — write `user-story.md` to the caller-provided output path (or the
