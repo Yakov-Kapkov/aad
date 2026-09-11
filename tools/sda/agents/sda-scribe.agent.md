@@ -147,11 +147,14 @@ caller-provided descriptive kebab-case name as-is (e.g.
 ### Mode 6 — Design docs (write/update)
 
 Written when the caller's design docs or readmes need creating or updating
-(caller: `sda-design`). You receive:
+(callers: `sda-design`, `sda-dev`). You receive:
 1. **Files** — the complete list of files to create or update, each with:
    - `kind` — one of the file types the `{docsSkill}` skill defines.
    - `path` — root-relative target path (repo root, layer root, or docs folder).
-   - `content` — fully-specified content for that file.
+   - **Content** — exactly one of:
+     - `content` — fully-specified content: a new file, or a full rewrite.
+     - `changes` — ordered anchored deltas for an existing file: `anchor`
+       (3–5 lines of existing text) + `content` (the text that replaces it).
 
 You format each file per its schema. No reasoning — the caller has already
 decided placement and content.
@@ -329,10 +332,14 @@ When invoked in **Mode 5**:
 When invoked in **Mode 6**:
 1. Load the `{docsSkill}` skill and read, in full, the schema it defines for
    each `kind` in the caller's file list.
-2. Write each file at the caller-provided path, formatted per its `kind`'s
-   schema.
-3. Updates use `edit` operations; preserve unchanged content.
+2. For each file in the caller's list:
+   - `content` → create/overwrite the file, formatted per its `kind`'s schema.
+   - `changes` → apply each anchored delta in order with `edit` operations,
+     formatted per its `kind`'s schema.
+3. Preserve all content the caller's `changes` do not touch.
 4. Never invent design content — use only caller-provided data.
+5. Anchor did not match → stop and return to caller:
+   _"Anchor not found in {path}: {anchor}"_.
 
 ### Step 9 — Write design report (Mode 7)
 

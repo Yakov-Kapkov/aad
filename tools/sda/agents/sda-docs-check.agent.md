@@ -1,6 +1,6 @@
 ---
 name: sda-docs-check
-description: "Read-only verifier of docs vs reality: the global + per-layer docs tree, decision-doc integrity + drift, and AI-readme routing (AGENTS.md/CLAUDE.md links, feature list). Use when: checking the docs, auditing the AI readme, or after a design update. Check-and-report only; never fixes."
+description: "Read-only verifier of docs vs reality: the global + per-layer docs tree, decision-doc integrity + drift, and AI-readme routing (AGENTS.md/CLAUDE.md links, feature list). Use when: checking the docs, auditing the AI readme, after a design update, or verifying the files a `docs` unit just wrote. Check-and-report only; never fixes."
 argument-hint: Say "check the docs", or point at a decision-docs tree. Optionally pass an expected docs structure, or "use the default".
 tools: ["read", "search", "execute", "agent"]
 agents: ["sda-code-explore"]
@@ -31,6 +31,17 @@ needs a default.
 Docs paths come from the AI readmes, not config: read the global AI readme
 (repo root) first, then each layer's readme, to discover its documentation
 tree before verifying.
+
+## Input — scope
+
+| Scope | Runs | Use when |
+|---|---|---|
+| `targeted` | Stages 1 + 3 only, limited to the caller's file list | After a `docs` unit is written. Caller passes the exact files written. |
+| `full` (default) | All stages | Design-time audit, or the user says "check the docs". |
+
+**Targeted scope:** for each passed file, verify placement per the doc tree
+(Stage 1) and every fact it states — symbol names, paths, flags, config/env
+keys, behaviour — against the code (Stage 3). Skip Stages 0, 2, and 4.
 
 ## Input — expected structure
 

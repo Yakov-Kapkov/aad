@@ -181,6 +181,7 @@ Apply these constraints during Phase 6 plan generation:
 - `tests only` — existing behaviour that lacks tests. No production code changes.
 - `integration only` — wiring, config, re-exports. No scenarios, no new tests.
 - `refactoring` — pure structural transformations (renames, file moves, extraction). No behaviour change, no scenarios, no new tests. Changes blocks required.
+- `docs` — documentation this task's own changes make stale (AI readmes + docs tree). **At most one per task, always last.** No scenarios, no tests, no Changes blocks — step entries carry the exact file content or an anchored delta. Exempt from unit-size rules.
 
 **Unit numbering:** plain integers only (Unit 1, Unit 2, Unit 3). Never letters
 or suffixes (`2a`, `2b`). Renumber all later units so the sequence stays
@@ -190,10 +191,10 @@ contiguous after splits.
 
 **Sizing:** 6 scenarios per unit max, 3 source files per unit max. When a unit
 exceeds the cap, split along behavioural seams (happy path, validation, edge
-cases) — never mid-behaviour.
+cases) — never mid-behaviour. **`docs` units are exempt from both caps.**
 
 **No-behaviour file-cap waiver:** the 3-file cap is waived for:
-- **Deletion / docs** — units that only delete code or edit docs.
+- **Deletion** — units that only delete code.
 - **Refactoring / rewiring** — renames, moves, extraction, import-path
   rewiring. Split by stage, not file count: create the new home while the
   old location re-exports the moved symbols (repo stays green), rewire
@@ -210,7 +211,8 @@ only, in conceptual terms. No file names, symbol names, import paths, or
 code snippets; route those into the Implementation Plan content you hand
 to scribe (format per the task-schema).
 
-**Other:** test consistency (pre-existing test breakage fixed in same unit),
+**Other:** test + docs consistency (pre-existing test breakage fixed in the
+same unit; a `docs` unit stays in sync with the code units it describes),
 end-to-end deliverability (every task must produce reachable results),
 self-containment (use intra-document references for repeated patterns).
 
@@ -256,6 +258,15 @@ Task-scoped decisions live in `task.md`'s Design Approach — you own those.
 A **durable cross-cutting** decision (a rule, convention, or architecture
 that outlives this task) belongs to `sda-design`'s decision docs — flag it
 to the user; do not record it yourself.
+
+**Docs routing — mechanical vs semantic:**
+
+| Doc change | Route |
+|---|---|
+| **Mechanical** — adds an entry to an existing format: CLI row, env var, config key, readme feature line, a doc file that already exists | `docs` unit (last unit) |
+| **Semantic** — new/changed concept, decision, vocabulary term, doc-tree structure, or readme routing | `sda-design` (decision docs) — flag to the user, do not write it |
+
+Uncertain → treat as semantic and flag it.
 
 ### Coding standards compliance — mandatory
 All code in task.md — Changes blocks, Implementation Plan steps,
@@ -673,9 +684,10 @@ the right place:
 Apply [Codebase exploration](#codebase-exploration) strategy.
 **Always batch all units into one `sda-code-explore` call** — list every
 Source/Test path in a single prompt so the explorer can read them in
-parallel.
+parallel. Skip `docs` units — they have no Source/Test paths, and their
+content comes from the code units' Changes.
 
-After reads, for each unit with more than one file, run the resolved `{unit-file-size}` script with `-Mode task -Paths '{p1},{p2},...'` for its Source+Test paths — never compose your own line-count one-liner (`Get-Content`, `Measure-Object`, `wc -l`). If the output shows any unit's total exceeding `{unit-size-limit}` lines, split its file set before Step 2 — regroup files so each unit stays within the limit. A single-file unit is the minimum granularity and is exempt even if its line count exceeds the limit.
+After reads, for each unit with more than one file, run the resolved `{unit-file-size}` script with `-Mode task -Paths '{p1},{p2},...'` for its Source+Test paths — never compose your own line-count one-liner (`Get-Content`, `Measure-Object`, `wc -l`). If the output shows any unit's total exceeding `{unit-size-limit}` lines, split its file set before Step 2 — regroup files so each unit stays within the limit. A single-file unit is the minimum granularity and is exempt even if its line count exceeds the limit. `docs` units are exempt — no code paths.
 
 **Step 2 — Build Implementation Plan.** Using research findings and
 the approved Design Approach, produce for each unit:
@@ -689,6 +701,11 @@ the approved Design Approach, produce for each unit:
 - **Integration test units** for each boundary crossing identified
   during contract trace (type: `integration`). Scenarios assert
   contract compliance: correct fields, types, shapes, error handling.
+- **`docs` unit (one max, always last).** Include it only when the task's own
+  changes make documentation stale. Content = step entries, one per file:
+  `File:` + `Kind:` + the exact content (full file) or an anchored delta.
+  No scenarios, no Test Context, no Changes, no Source/Test paths. Mechanical
+  doc changes only — semantic ones escalate to `sda-design`.
 - **Pattern reuse across units.** When multiple units apply the same
   transformation (same imports, same registration call, same handler
   shape), define it completely in the first unit. Subsequent units
@@ -708,6 +725,7 @@ the approved Design Approach, produce for each unit:
 
 **Step 3 — Write Acceptance Criteria.** One checkbox per criterion,
 each mapped to ≥1 scenario: `- [ ] {criterion} _(Unit N, scenarios X–Y)_`.
+`docs` unit criteria map to steps instead: `_(Unit N, step N.M)_`.
 
 **Step 4 — Delegate to `sda-scribe` subagent.** Invoke with:
 - **Repo root** (`{repo-root}`) — absolute path; scribe must anchor all folder creation and numbering here

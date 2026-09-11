@@ -114,15 +114,22 @@ never ask it to judge.
      conceptual what/why only; that detail belongs in the Implementation
      Plan steps.
    - Every unit's `**Type:**` field is exactly one of: `tests required`,
-     `tests only`, `integration only`, or `refactoring`. Flag any other value as invalid.
+     `tests only`, `integration only`, `refactoring`, or `docs`. Flag any other value as invalid.
    - `tests required` units must have a `**Test:**` file. If `**Test:**`
      is absent or `none`, flag as contradiction: change type to
-     `integration only` or `refactoring`, or add a test file.
-   - `integration only` and `refactoring` units must not have Given/When/Then scenarios,
-     Test Context, or `Expected (RED):` fields. They use step headings
+     `integration only`, `refactoring`, or `docs`, or add a test file.
+   - `integration only`, `refactoring`, and `docs` units must not have Given/When/Then
+     scenarios, Test Context, or `Expected (RED):` fields. They use step headings
      with change entries instead.
    - Every scenario in a `tests required` unit has an
      `Expected (RED):` field.
+   - `docs` units: at most one per task, and it must be the **last** unit.
+     Flag two or more, or a `docs` unit that is not last.
+   - `docs` units must not have Given/When/Then scenarios, Test Context,
+     `Expected (RED):`, Changes blocks, or a `**Test:**` field — flag any as
+     malformed. They use step headings with `File:` + `Kind:` + content.
+   - Every `docs` unit step carries a `File:` path under a readme or docs
+     tree, and `**Language:** markdown`.
    - Every Source/Test path in every unit header carries a per-file
      language annotation `` `path` (lang) `` listing the language(s) it
      contains. Flag any unannotated path. The header `**Language:**`
@@ -135,10 +142,10 @@ never ask it to judge.
    - No unit exceeds 6 scenarios. Flag oversized units — they must be
      split into sequential units sharing the same Source/Test files.
    - No unit exceeds 3 source files — exempt: `refactoring` units (renames,
-     moves, extraction, import rewiring) and units that only delete code or
-     edit docs. Flag any other unit over 3 files — split by file group into
+     moves, extraction, import rewiring), units that only delete code, and
+     `docs` units. Flag any other unit over 3 files — split by file group into
      sequential units.
-   - For each multi-file unit: run `{unit-file-size}` with `-Mode verify -Paths '{p1},{p2},...' -Limit {unit-size-limit}` (see [CLI scripts](#cli-scripts)) for its Source+Test paths. `FAIL` → flag oversized unit — split by file group into sequential units. `PASS` → no action. Single-file units are exempt.
+   - For each multi-file unit: run `{unit-file-size}` with `-Mode verify -Paths '{p1},{p2},...' -Limit {unit-size-limit}` (see [CLI scripts](#cli-scripts)) for its Source+Test paths. `FAIL` → flag oversized unit — split by file group into sequential units. `PASS` → no action. Single-file units and `docs` units are exempt.
 
 ### 2. Structural Consistency (task.md against codebase)
 

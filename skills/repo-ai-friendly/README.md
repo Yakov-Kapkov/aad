@@ -65,7 +65,7 @@ your approval before modifying anything.
   "Coding standards" section to `docs/coding-standards/` (repo-local rules)
   or to the [`standards-compliance`](../standards-compliance/) skill when no
   local rules exist. It authors the routing, not the rules themselves.
-- **SDA (`tools/sda`)** — `sda-design` / `sda-scribe` load this skill by name
-  (`docsSkill`) as their design/decision schema source. SDA adds its own
-  workflow schemas (task, qa, toolscan, design report); this skill stays the
-  standalone documentation layer with no `.sda/` dependency.
+- **SDA (`tools/sda`)** — `sda-design`, `sda-scribe`, and `sda-docs-check` load
+  this skill by name (`docsSkill`) as their design/decision schema source.
+  SDA adds its own workflow schemas (task, qa, toolscan, design report); this
+  skill stays the standalone documentation layer with no `.sda/` dependency.

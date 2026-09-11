@@ -23,8 +23,9 @@ Layer: {layer-name}
 
 ## Design Approach
 {Omit for small, obvious changes. Subsections must map 1:1 to
-Implementation Plan units using the same `Unit N — {name}` headings.
-Include `### Summary` for decisions that span multiple units.}
+Implementation Plan units using the same `Unit N — {name}` headings;
+`docs` units are exempt. Include `### Summary` for decisions that span
+multiple units.}
 
 ### Summary
 {Optional — overall design decisions and rationale that apply across
@@ -217,6 +218,19 @@ Algorithm:
 
 **`{symbol_name}`** _(rename to `{new_name}`)_
 File: `{file-path}`
+
+### Unit 5 — {unit name}
+**Type:** docs
+**Area:** {layer the doc belongs to, or `Global`}
+**Language:** markdown
+
+#### Step 5.1 — {file being written}
+
+File: `{docs-path}`
+Kind: {file type — e.g. `readme`, `index`, `cli`, `architecture`}
+\`\`\`markdown
+{complete file content — or, for an existing file, the anchor line plus the new content}
+\`\`\`
 ```
 
 ---
@@ -247,7 +261,7 @@ File: `{file-path}`
 
 ### Design Approach
 - High-level explanation of the solution — the "what and why" a dev needs before reading the detailed Implementation Plan.
-- Subsections map 1:1 to Implementation Plan units: `### Unit N — {name}` (same name as the unit).
+- Subsections map 1:1 to Implementation Plan units: `### Unit N — {name}` (same name as the unit). `docs` units are exempt — their content is the file text itself.
 - `### Summary` (optional) — overall decisions that span multiple units.
 - Per-unit content uses **Problem/Context → Solution → Details** structure.
 - **Problem:** for bug fixes and regressions (what is broken today).
@@ -279,17 +293,20 @@ File: `{file-path}`
 
 ### Units
 - Named after the **behaviour** they deliver (`Token refresh`, `Error responses`), not architectural tiers.
-- Annotated: **tests required**, **tests only**, **integration only**, or **refactoring**.
+- Annotated: **tests required**, **tests only**, **integration only**, **refactoring**, or **docs**.
 - **Area:** the project area the unit belongs to (e.g. `Backend`, `Frontend`, `Worker`), derived from the unit's file paths matched against the Area Index in `project-tools.md`. Multi-area units list comma-separated areas (e.g. `Backend, Frontend`). The Area field is mandatory — always present on every unit.
+  - `docs` units: the layer the doc belongs to (`<layer>/docs/...`, `<layer>/README.md` → that layer); `Global` for repo-root readmes and the root `docs/` tree.
 - **Per-file language.** Annotate every Source/Test path with the programming language(s) it contains: `` `src/repo.py` (python, postgres) ``.
 - **Language:** header line = deduplicated **union** of the per-file annotations (e.g. `python, postgres`).
   - Fence tags on Changes / Test Context blocks must match the language of the code they contain.
   - Use dialect-specific names (`postgres`, not `sql`).
+  - `docs` units: always `markdown` — docs units have no Source/Test paths to annotate.
 - **Unit types:**
   - **tests required** — new behaviour: TDD cycle (RED → GREEN).
   - **tests only** — existing behaviour that lacks tests: write tests that pass against existing code.
   - **integration only** — wiring, config, re-exports: no scenarios, no new tests. Use step headings with change entries (Symbol layout); use `Algorithm:` for non-trivial logic.
   - **refactoring** — pure structural transformations: renames, file moves, extraction, restructure. No behaviour change, no new tests, no scenarios. Existing tests must pass. Changes blocks required. Use step headings with change entries.
+  - **docs** — documentation this task's own changes make stale: AI readmes and the docs tree. **At most one per task, always the last unit.** Step entries carry the file content (see [Docs unit layout](#docs-unit-layout)). Exempt from [Unit sizing](#unit-sizing) caps.
 - **Refactoring tasks:** use `refactoring` units for renames, extraction, and structural changes. For high-risk refactoring, precede with a `tests only` unit as a regression safety net. Reserve `tests required` for genuinely new behavior.
 - **Ordering matters.** Foundational behaviour first, dependent behaviour after.
 - **Structural prep:** renames, file merges, import rewiring → own `refactoring` unit before dependent units.
@@ -297,6 +314,7 @@ File: `{file-path}`
 ### Changes
 - **`tests required` / `tests only` units:** optional — include when: complex algorithms, new type definitions, coordinated multi-file changes, tricky signatures. When omitted, dev agents derive signatures from Source files.
 - **`integration only` and `refactoring` units:** always required — change entries are the unit's content.
+- **`docs` units:** never used — the step entries are the unit's content (see [Docs unit layout](#docs-unit-layout)).
 - If duplicates Design Approach content, cross-reference instead: `See Design Approach > {Unit name} for {detail}.`
 
 ### Symbol layout
@@ -311,8 +329,17 @@ File: `{file-path}`
   - Single-line unconditional insertions: bare "add this call after line X" is sufficient.
 - **Imports:** list non-obvious imports (third-party, cross-module) as separate entry or inline. When an existing production utility/helper — in this file or another — already provides logic the unit needs, name it here as **reuse — do not recreate** (symbol + import) so the implementer calls it instead of re-implementing.
 
+### Docs unit layout
+- One step per file written. Heading: `#### Step N.M — {file being written}`.
+- Entry:
+  - `File: {path}` — repo-relative target path.
+  - `Kind: {file type}` — e.g. `readme`, `index`, `cli`, `architecture`.
+  - Content — one of:
+    - **Full file** — fenced block with the complete file content (new files, or full rewrites).
+    - **Anchored delta** — the anchor line from the existing file plus the new content in a fenced block (existing files). Mirrors **Modified symbols** in [Symbol layout](#symbol-layout).
+
 ### Test Context
-- Mandatory for `tests required` and `tests only` units. Omit for `integration only` and `refactoring` units.
+- Mandatory for `tests required` and `tests only` units. Omit for `integration only`, `refactoring`, and `docs` units.
 - Heading: `#### Test Context` (same level as `#### Step N.M`).
 - Three subsections:
   - **Patterns:** one bullet per pattern — description, when to use, scenario numbers.
@@ -323,12 +350,12 @@ File: `{file-path}`
 
 ### Steps
 - Heading: `#### Step N.M — {description}`.
-- Each step contains Symbol layout entries (see **Symbol layout**). One logical change = one step. Independent changes = multiple steps.
+- Each step contains Symbol layout entries (see **Symbol layout**) — or Docs unit layout entries for `docs` units. One logical change = one step. Independent changes = multiple steps.
 - Entries in units with scenarios carry `— satisfies scenarios N–M` to link back to the `**Scenarios:**` section. Steps with no scenarios omit the annotation.
 - Scenario numbering continuous across all steps and units.
 
 ### Scenarios
-- Applies to `tests required` and `tests only` units only. `integration only` and `refactoring` units use step headings — no scenarios, no Given/When/Then.
+- Applies to `tests required` and `tests only` units only. `integration only`, `refactoring`, and `docs` units use step headings — no scenarios, no Given/When/Then.
 - **Location:** Include a `**Scenarios:**` section immediately after the unit header (Type/Language/Source/Test lines), before `#### Test Context`. All scenario definitions live here — scenarios do NOT appear inside steps.
 - **Format:** Numbered bold paragraphs `**N. {name}**` with `Given`/`When`/`Then` (flat bullets). Include `Expected (RED):` for `tests required` units.
 - Cover happy path, errors, edge cases.
@@ -338,7 +365,7 @@ File: `{file-path}`
 - Values:
   - `FAIL` — test should fail because production code doesn't exist yet.
   - `vacuous PASS — {reason}` — test passes trivially (e.g., empty collection, no-op stub, default return). Include reason so reviewer understands why it's not a real pass.
-- Omit for `tests only`, `integration only`, and `refactoring` units.
+- Omit for `tests only`, `integration only`, `refactoring`, and `docs` units.
 
 ### Source and Test paths
 - The `{langs}` placeholder means **one or more** comma-separated languages — a file may contain several (e.g. `python, postgres`).
@@ -349,7 +376,7 @@ File: `{file-path}`
 ### Acceptance Criteria
 - Every criterion maps to ≥1 scenario or integration step.
 - `tests required` / `tests only`: `- [ ] {criterion} _(Unit N, scenarios X–Y)_`
-- `integration only` / `refactoring`: `- [ ] {criterion} _(Unit N, step N.M)_`
+- `integration only` / `refactoring` / `docs`: `- [ ] {criterion} _(Unit N, step N.M)_`
 
 ### Scenarios test behaviour, never structure
 Assert **observable behaviour**, never that a symbol exists or has a shape
@@ -384,8 +411,10 @@ field is the wrong value.
 - Scenario numbering is continuous across all units — never resets per unit.
 - Units are split by **boundary** and **size** only — never by language.
   A single unit may span multiple languages.
+- **`docs` units are exempt from both caps.** They carry file content, not
+  behaviour — one unit covers every affected doc file.
 
-### Source-change and test consistency
+### Source-change, test, and docs consistency
 When a `tests required` unit modifies source behaviour in ways that cause
 pre-existing tests to fail, those tests must be addressed within the same
 unit — never deferred to a later `tests only` unit.
@@ -393,6 +422,16 @@ unit — never deferred to a later `tests only` unit.
 - List the affected tests explicitly in the unit's scope.
 - Include their removal or update in the unit's Changes alongside the
   source changes.
+
+A `docs` unit's content is written from the **predicted** state in the code
+units' Changes blocks — it has no test to catch a mismatch. When an
+implementation deviates from its Changes block in a way that changes a fact
+the `docs` unit states (symbol name, path, signature, default value,
+flag/config/env key, observable behaviour), the `docs` unit's content must be
+re-synced **before** that unit runs.
+
+- Facts the `docs` unit does not mention are unaffected — no action.
+- Correct replacement text cannot be determined → stop and escalate.
 
 ### End-to-end deliverability
 Every task must produce a **self-consistent, reachable result** — not dead

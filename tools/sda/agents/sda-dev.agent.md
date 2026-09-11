@@ -3,7 +3,7 @@ name: sda-dev
 description: "Use when: implementing code changes via TDD workflows (RED → GREEN → refactor), or executing quality checks. Orchestrates sda-test-writer and sda-coder subagents. Supports task mode (from task.md) and ad-hoc mode (direct requests)."
 argument-hint: Provide a task name, say "implement the current task", attach a task.md file, or describe what you want implemented.
 tools: ["read", "edit", "execute", "agent", "vscode/askQuestions", "AskUserQuestion", "ask_user"]
-agents: ["sda-code-explore", "sda-test-writer", "sda-coder", "sda-refactor", "sda-scribe", "sda-dev-quality"]
+agents: ["sda-code-explore", "sda-test-writer", "sda-coder", "sda-refactor", "sda-scribe", "sda-docs-check", "sda-dev-quality"]
 model: Claude Sonnet 4.6
 hooks:
   SessionStart:
@@ -23,7 +23,8 @@ own bootstrapping, state tracking, unit routing, refactoring, and quality checks
 - `sda-test-writer` — writes tests (RED phase) and tests-only units
 - `sda-coder` — writes implementation (GREEN phase) and integration-only units
 - `sda-refactor` — per-unit refactor (Phase 4·U, including `refactoring` units) and cross-unit dedup (Phase 4·X)
-- `sda-scribe` — writes dev-report.md (Phase 6)
+- `sda-scribe` — writes dev-report.md (Phase 6) and the `docs` unit's files (Phase 3·D)
+- `sda-docs-check` — targeted verification after each `docs` unit (Phase 3·D)
 - `sda-dev-quality` — runs per-area quality gates (Phase 5)
 
 ## HARD CONSTRAINTS — read before anything else
@@ -127,7 +128,7 @@ is missing — always pass `agentName` explicitly.
 
 The only valid delegation targets are:
 `sda-code-explore`, `sda-test-writer`, `sda-coder`, `sda-refactor`,
-`sda-scribe`, `sda-dev-quality`.
+`sda-scribe`, `sda-docs-check`, `sda-dev-quality`.
 
 If you are about to call `runSubagent` without `agentName`, or with
 `agentName: "sda-dev"` → stop. Pick the correct subagent from the
@@ -260,6 +261,7 @@ messages, Result templates, and the unit-title marker (see
 | 1 | PLAN |
 | 2 | RED |
 | 3 | GREEN |
+| 3·D | DOCS |
 | 4 | REFACTOR |
 | 5 | QUALITY |
 | 6 | COMPLETE |
@@ -363,6 +365,7 @@ This phase resolves the work unit via the selected mode. Follow the [Task mode](
 | `tests only` | Phase 2 (RED, expected GREEN) → Phase 4·U |
 | `integration only` | Phase 3 (GREEN, integration) → Phase 4·U |
 | `refactoring` | Phase 4·U |
+| `docs` | Phase 3·D (DOCS) |
 
 ### Mode registry
 
@@ -387,11 +390,8 @@ available unit inputs directly from `task.md`: for `tests required` /
 `tests only` units that is scenarios, file paths, Test Context, and
 Changes; for `integration only` and `refactoring` units that is step headings, Source
 paths, Related tests (when listed), and Changes (no scenarios, no Test
-Context).
-
-1. **Derive task folder.** Take the path of `task.md` from context (attached or open in editor). Not present → **stop:** _"Attach task.md or open it in the editor."_ Strip the filename to get the task folder (e.g. `.sda/tasks/001. my-task`). Store it for all `{task-state}` commands.
-2. **Read state.** Run `task-state` `-Command next`. Read the
-   returned `state` field once and act from the table — never
+   Context); for `docs` units that is step headings with `File:` + `Kind:` +
+   content (no scenarios, no Source/Test paths, no Changes).
    re-derive it:
 
    | state | Action | Prereq / regression checks | Baseline capture |
@@ -421,7 +421,7 @@ Context).
    files exist.
 3. **Read `task.md`** — identify all units **only to count them** and
    read the **current unit's** type (`tests required`, `tests only`,
-   `integration only`, or `refactoring`). The current unit is the one
+   `integration only`, `refactoring`, or `docs`). The current unit is the one
    `task-state next` returned in step 2. Set `{multi-unit}` = true if
    the task has ≥ 2 units, else false.
    **If status was `PENDING`:**
@@ -441,7 +441,8 @@ Context).
 
    **Then capture test baseline.** Skip if `{baseline-failures}` is already set for this session.
    Collect every area listed in `task.md`'s per-unit `**Area:**` annotations
-   (one `test-all` per unique area, not per file). For each unique area,
+   (one `test-all` per unique area, not per file) — **exclude `docs` units**
+   (no runnable code). For each unique area,
    call `{read-project-tools} {area-workdir} ["test-all,filter-last-n,filter-test-output"]`.
    **First pass:** run `test-all` with filter-last-n (`{N}` = `10`). Exit 0 → baseline is clear.
    **On failure:** re-run with filter-test-output (`{N}` = `100`) to detect failing tests.
@@ -453,6 +454,8 @@ Context).
    - `integration only` / `refactoring`: step headings (from `#### Step N.N —` lines),
      Source paths, Related tests (the `**Related tests:**` line, when
      present), and Changes blocks (if present). No scenarios.
+   - `docs`: step headings, and for each step the `File:`, `Kind:`, and
+     content (full file or anchored delta). No scenarios, no Source/Test paths.
    In all cases, extract per-file language annotations (the
    `**Language:**` line is their union) and the per-unit area
    (the `**Area:**` line).
@@ -477,7 +480,7 @@ Context).
 2. **Derive work unit** — from the user's request + exploration
    results:
    - **Scenarios** — concrete Given/When/Then statements.
-     (`tests required` / `tests only` only — omit for `integration only` and `refactoring`.)
+     (`tests required` / `tests only` only — omit for `integration only`, `refactoring`, and `docs`.)
    - **Source / Test files** — paths for production and test code.
    - **Per-file language** — annotate each Source/Test path with the
      language(s) it contains, inferred from the file type (no task.md in ad-hoc mode).
@@ -485,7 +488,7 @@ Context).
      the `working-dir=` key maps to the area. If all files map to the same
      area → that area. If files span multiple areas → comma-separated list.
    - **Unit type** — `tests required` (default), `tests only`,
-     `integration only`, or `refactoring`.
+     `integration only`, `refactoring`, or `docs`.
    - **Follow-up refactor grouping** — re-entering from Phase 6's
      "Fix all": combine all *simple* refactoring follow-ups into one
      `refactoring` unit (one unit total). Simple = mechanical and
@@ -494,7 +497,8 @@ Context).
 3. **Determine route** — see [Route table](#route-table).
 
 4. **Capture test baseline.** Skip if `{baseline-failures}` is already set for this session.
-   Collect the unique areas from step 2 (one `test-all` per area, not per file).
+   Collect the unique areas from step 2 (one `test-all` per area, not per file) —
+   **exclude `docs` units** (no runnable code).
    For each unique area, call `{read-project-tools} {area-workdir} ["test-all,filter-last-n,filter-test-output"]`.
    **First pass:** run `test-all` with filter-last-n (`{N}` = `10`). Exit 0 → baseline is clear.
    **On failure:** re-run with filter-test-output (`{N}` = `100`) to detect failing tests.
@@ -512,7 +516,7 @@ When all units are `DONE`: run Phase 4·X if `{multi-unit}` is true, then Phase 
 
 **Before printing the result:** 
 - **Task mode** — list each scenario by name only (task.md holds the full text). 
-- **Ad-hoc mode** — list each scenario in full: `Given: … / When: … / Then: …` beneath the scenario name. Skip scenarios entirely for `integration only` and `refactoring` units.
+- **Ad-hoc mode** — list each scenario in full: `Given: … / When: … / Then: …` beneath the scenario name. Skip scenarios entirely for `integration only`, `refactoring`, and `docs` units.
 
 <result>
 ---
@@ -531,7 +535,7 @@ or:
 **Area:** {area}
 **Language:** {languages}
 **Route:** {e.g. RED → GREEN → REFACTOR}
-{if type == integration only or type == refactoring:}
+{if type == integration only or type == refactoring or type == docs:}
 **Steps:**
 {N}. {step heading}
 ...
@@ -692,12 +696,30 @@ Proceed to Phase 4·U (per-unit refactor).
 {copy verbatim from subagent result}
 </result>
 
+### Phase 3·D — Docs unit
+
+**Route for `docs` units only.** No RED, no GREEN, no refactor, no quality gates.
+
+1. **Delegate to `sda-scribe`** by name (Mode 6 — Design docs), passing the unit's step entries verbatim: per file, `kind`, `path`, and either full content or an anchored delta. Pass nothing else — `sda-scribe` never invents content.
+2. **Delegate to `sda-docs-check`** by name with `Scope: targeted` and the exact file list just written. Targeted = placement/format + facts vs code (Stages 1 and 3 only).
+3. **Route the result:**
+   - No findings → output the `<result>` block below.
+   - Findings → re-delegate to `sda-scribe` **once**, each finding as an anchored delta, then re-run `sda-docs-check`.
+   - Findings after the retry → apply [Failure handling & escalation](#failure-handling--escalation).
+4. **State update** — same as Phase 3. **Next step** — return to Phase 1 for the next unit; when all units are `DONE`, run Phase 4·X if `{multi-unit}` is true, then Phase 5.
+
+<result>
+### Docs gate
+{N}/{N} files verified
+</result>
+
 ## PHASE 4 — Refactoring
 
 Refactoring runs in two scopes:
 - **4·U (per-unit)** — full refactor of the **current unit's** files, once per
   unit, inside the unit loop (after Phase 3 GREEN, after a tests-only unit's
-  Phase 2, or directly for `refactoring` units). Runs for every unit type.
+  Phase 2, or directly for `refactoring` units). Runs for every unit type
+  except `docs`.
 - **4·X (cross-unit)** — a single thin pass after all units are DONE, scoped to
   inter-unit duplication only. Runs when `{multi-unit}` is true; skip when false.
 
@@ -837,7 +859,7 @@ source or test files. Delegate and wait.
 
 ### Control flow
 
-1. **Gather inputs.** Collect all source + test files from all units processed this session (from the unit inputs and the subagent results you hold). If a file's area is unknown, resolve it via `{read-project-tools} {file-directory}` (the `working-dir=` key maps to the area).
+1. **Gather inputs.** Collect all source + test files from all units processed this session (from the unit inputs and the subagent results you hold) — **exclude `docs` units** (no code to gate). If a file's area is unknown, resolve it via `{read-project-tools} {file-directory}` (the `working-dir=` key maps to the area).
 
 2. **Invoke `sda-dev-quality` by name.** Pass:
 
@@ -926,8 +948,9 @@ Triggered when `sda-dev-quality` flags a regression (test failure not in baselin
    and verify every unit is `DONE` and task status is `DONE`.
    If any unit is not `DONE`, report it before proceeding.
 2. **Self-check (both modes):** Confirm that per-unit refactoring
-   (Phase 4·U) ran for every unit, and that cross-unit dedup
-   (Phase 4·X) ran when `{multi-unit}` is true. Report pass/fail.
+   (Phase 4·U) ran for every non-`docs` unit, that cross-unit dedup
+   (Phase 4·X) ran when `{multi-unit}` is true, and that the `docs` unit
+   (when present) ran `sda-docs-check` with no open findings. Report pass/fail.
 3. **Dev report (when `{dev-report}`).** Delegate to `sda-scribe` by name
    (Mode 3 — Dev Report), passing the task folder path and:
    - **Summary** — what the task was, what was done.

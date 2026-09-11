@@ -30,7 +30,7 @@ tools/sda/
 │   ├── sda-coder.agent.md             ← subagent: writes production code (GREEN phase)
 │   ├── sda-refactor.agent.md          ← subagent: refactoring pass (REFACTOR phase)
 │   ├── sda-dev-quality.agent.md       ← subagent: per-area quality gates (Phase 5); check-and-report only
-│   ├── sda-docs-check.agent.md       ← subagent: verifies docs tree + decision docs + AI-readme routing against reality; check-and-report only
+│   ├── sda-docs-check.agent.md       ← subagent: verifies docs tree + decision docs + AI-readme routing against reality (full scope, or targeted on a `docs` unit's files); check-and-report only
 │   ├── sda-qa.agent.md                 ← runtime acceptance QA (read-only on source; writes qa-report.md)
 │   └── sda-diagram-writer.agent.md   ← subagent: renders Mermaid diagrams from DIAGRAM blocks → `.md` files with ```mermaid fenced blocks
 ├── prompts/
@@ -137,7 +137,8 @@ sda-dev ─delegates─▸ sda-test-writer             RED phase
 sda-dev ─delegates─▸ sda-coder                   GREEN phase
 sda-dev ─delegates─▸ sda-refactor                REFACTOR phase
 sda-dev ─delegates─▸ sda-code-explore            ad-hoc mode: codebase exploration
-sda-dev ─delegates─▸ sda-scribe                  dev-report.md (Mode 3, at completion)
+sda-dev ─delegates─▸ sda-scribe                  dev-report.md (Mode 3) + `docs` unit files (Phase 3·D)
+sda-dev ─delegates─▸ sda-docs-check             `docs` unit verification, targeted scope (Phase 3·D)
 sda-dev ─delegates─▸ sda-dev-quality             per-area quality gates (Phase 5)
 ```
 
@@ -176,8 +177,8 @@ sda-dev ─delegates─▸ sda-dev-quality             per-area quality gates (P
 | `sda-dev-task-verifier` delegation to `sda-code-explore` | `sda-code-explore` input contract | Verifier sends file lists for structural + regression fact-gathering; explorer returns raw findings |
 | Consistency/regression check rules | `sda-dev-task-verifier` | All verification logic lives in the verifier |
 | Contract spec file format or storage conventions | `sda-design` (defines policy, writes canonical specs via sda-scribe), `sda-dev-task` (designs content), `sda-scribe` (writes files), `sda-dev-task-verifier` (reads for verification) | All planning agents share spec conventions |
-| App readme outline (`AGENTS.md`) | `sda-design` (owns content), `sda-scribe` (Mode 6 writes), `sda-dev-task` (reads the AI readme for task scope), `sda-docs-check` (verifies routing against reality) | Readmes are the routing map — the format comes from the `{docsSkill}` skill's readme outline; thin, no implementation detail; reference entries carry triggers; features listed in the features section |
-| Doc tree & per-layer readmes | `sda-design` (owns placement), `sda-scribe` (Mode 6 writes), `sda-docs-check` (verifies) | The tree layout comes from the `{docsSkill}` skill's doc tree — every layer gets AI readme + human README + a docs set; every docs folder gets an `index.md` |
+| App readme outline (`AGENTS.md`) | `sda-design` (owns content), `sda-scribe` (Mode 6 writes), `sda-dev-task` (reads the AI readme for task scope), `sda-dev` (routes `docs` units that touch it), `sda-docs-check` (verifies routing against reality) | Readmes are the routing map — the format comes from the `{docsSkill}` skill's readme outline; thin, no implementation detail; reference entries carry triggers; features listed in the features section |
+| Doc tree & per-layer readmes | `sda-design` (owns placement), `sda-scribe` (Mode 6 writes), `sda-dev` (routes `docs` units), `sda-docs-check` (verifies) | The tree layout comes from the `{docsSkill}` skill's doc tree — every layer gets AI readme + human README + a docs set; every docs folder gets an `index.md` |
 | Design topic files (`architecture.md`, `vocabulary.md`) | `sda-design` (dictates content), `sda-scribe` (Mode 6 writes) | Formats come from the `{docsSkill}` skill's architecture + vocabulary file rules |
 | `paths.specs` in `project-config.json` | `sda-design` (writes canonical specs, reads manifest for affected specs), `sda-dev-task` (reads specs during contract trace), `sda-scribe` (writes spec files), `sda-dev-task-verifier` (reads specs for verification) | All planning agents receive this from session context; default `.sda/specs` |
 | `manifest.md` format | `sda-design` (adds canonical specs, reads for affected specs), `sda-dev-task` (reads for spec discovery), `sda-scribe` (writes/updates rows), `sda-dev-task-verifier` (reads for verification) | Entry point for spec discovery; scribe maintains it |
@@ -195,7 +196,9 @@ sda-dev ─delegates─▸ sda-dev-quality             per-area quality gates (P
 | `unit-file-size` script (parameters or output format) | `sda-dev-task` (Phase 6 Step 1), `sda-dev-task-verifier` (Check 1) | Both agents invoke the script; interface changes break invocations |
 | Decision docs (`<layer>/docs/decisions/`) | No config field — derived per layer from the repo layout. `sda-design` (records + structures via sda-scribe Mode 5), `sda-scribe` (Mode 5 writes), `sda-docs-check` (verifies) | Decision docs live per layer under `<layer>/docs/decisions/` — feature-grouped (`shared/`, `<feature>/`) with descriptively-named files; one decision per file, routed by feature `index.md` |
 | `repo-ai-friendly` skill (design + decision schemas) | `sda-design` (loads for structure), `sda-scribe` (Mode 5/6 loads for formats), `sda-docs-check` (loads for verification), **install-dev-suite** (installs it), `read-config` (resolves `docsSkill`) | All three load it by name via `docsSkill`; the skill owns the doc tree + schema formats; sda-setup no longer copies them |
-| `sda-docs-check` expected-structure input | `sda-design` (passes the repo's structure when its AI readme declares one, else default) | Caller decides the structure to verify against; otherwise the repo's AI readme if it declares one, else the `{docsSkill}` skill's canonical tree |
+| `sda-docs-check` input (scope + expected structure) | `sda-design` (passes `full` + the repo's structure when its AI readme declares one, else default), `sda-dev` (passes `targeted` + the written file list) | Caller decides what to verify against; otherwise the repo's AI readme if it declares one, else the `{docsSkill}` skill's canonical tree |
+| `docs` unit type (`task-schema.md`) | `sda-dev-task` (designs it — one per task, last), `sda-dev-task-verifier` (validates it), `sda-dev` (routes to Phase 3·D; skips refactor + quality for it), `sda-scribe` (Mode 6 writes the files), `sda-docs-check` (targeted verification) | The only sanctioned path for mechanical doc changes made during implementation; semantic doc changes escalate to `sda-design` |
+| `sda-scribe` Mode 6 content shape (`content` vs `changes`) | `sda-design`, `sda-dev` (both callers) | Callers must pass the shape the scribe parses; anchored deltas update an existing file, full content creates or rewrites one |
 | Design report schema (`design-report-schema.md`) | `sda-design` (provides content), `sda-scribe` (Mode 7 writes), `sda-dev-task` (reads as handoff context), **sda-setup skill** (copies asset to `.sda/resources/design/`) | sda-design ends each design session with `design_report.md`; sda-dev-task reads it instead of the full conversation |
 | `scripts.docsIntegrity` in `project-config.json` | `sda-docs-check` (runs it) | Integrity script for links/orphans/duplicate index rows |
 | `README.md` | Keep consistent with all agent descriptions and workflow phases | User-facing docs must match agent behavior |
