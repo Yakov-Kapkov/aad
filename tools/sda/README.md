@@ -319,7 +319,7 @@ All resources are read from a `.sda/` folder in the project root (may be git-ign
 | Config injection script | `.sda/scripts/read-config.ps1` or `.sda/scripts/read-config.sh` |
 | Project-tools command lookup | `.sda/scripts/read-project-tools.ps1` or `.sda/scripts/read-project-tools.sh` |
 | Toolchain scan scripts | `.sda/scripts/toolscan/` (cleanup, timestamp, probe-validators) |
-| Design + decision schemas | `{docsSkill}` skill (`repo-ai-friendly`) — `assets/readme-outline-schema.md`, `docs-index-schema.md`, `architecture-schema.md`, `vocabulary-schema.md`, `decision-schema.md`, `coding-standards-schema.md` |
+| Design + decision schemas | `{docsSkill}` skill (`repo-ai-friendly`) — load it by name; its `SKILL.md` routes to the readme-outline, docs-index, architecture, vocabulary, decision, and coding-standards schemas |
 | Design report schema | `.sda/resources/design/design-report-schema.md` |
 | Design report | `.sda/design/reports/<yyyy-MM-dd_HH-mm_<short-name>>/design_report.md` |
 | Docs integrity script | `.sda/scripts/decisions/docs-integrity.ps1` or `.sda/scripts/decisions/docs-integrity.sh` |
