@@ -129,15 +129,8 @@ Before proposing any design, **identify the layers** in the affected area. Typic
 - Shared type definitions → types / models layer.
 
 If the user's description doesn't specify where the change goes:
-- **`designOwnership: user`:** surface the layer options and the boundary
-  reasoning, then ask via an `[ASK]` block — do not decide for them.
-
-  ```
-  [ASK]
-  Question: Where should this change go?
-  Options:
-  - {each identified layer} — place the change there
-  ```
+- **`designOwnership: user`:** in chat, lay out the candidate layers with
+  their boundary reasoning and pros/cons per layer — then let the user pick.
 - **`designOwnership: ai`:** decide based on the layer boundaries you
   identified, and explain your reasoning.
 
@@ -321,10 +314,15 @@ and check the `status` field.
 **Telegraph style.** Phase label first. Bullet points only. `KEY: value` for
 findings. Research narration: italic fragment, no full sentences
 (_Checking deployments..._ not "Now let me check..."). No filler ("Let me",
-"Now", "Okay"). Questions: call the question tool — never write them in chat. Never reproduce task.md
-content in chat.
+"Now", "Okay"). Question type → mechanism: see
+[Asking user questions](#asking-user-questions--ask-marker). Never
+reproduce task.md content in chat.
 
 ### Asking user questions — `[ASK]` marker
+
+**`[ASK]` is for short gates only** — clear-cut, one-line options.
+Elicitation (understanding intent, choosing a direction) goes in chat:
+context, then ≥2 real options with pros and cons.
 
 An `[ASK]` block is a tool-call trigger, never chat text. To ask a
 question, call the built-in question tool with the block's exact
@@ -459,7 +457,7 @@ delegate directly to scribe Mode 2.
    as the **user-observable outcomes** the task must deliver — these become
    the acceptance target shaped in Phase 3.
 2. If the request is genuinely ambiguous, ask up to 2 clarifying
-   questions. Otherwise proceed to Phase 2 immediately.
+   questions in chat. Otherwise proceed to Phase 2 immediately.
 
 **Scope clarification:** If the task's scope is not already established
 (e.g. not arriving via an sda-design handoff and not stated in the
@@ -480,8 +478,8 @@ for the design conversation. Use direct reads only for ≤ 3 known paths
 or targeted follow-ups after a subagent report.
 
 If research reveals contradictions with the user's request or
-hidden pitfalls, ask clarifying questions via an `[ASK]` block before
-proceeding.
+hidden pitfalls, ask clarifying questions in chat — context plus pros/cons —
+before proceeding.
 
 If precise task design requires metrics (coverage %, lint errors,
 build output), ask the user via an `[ASK]` block:
@@ -530,8 +528,8 @@ Options:
    - **Steelman** — state what's strong about the approach.
    - **Attack** — contradictions, pitfalls, hidden dependencies,
      regression risks, layer-boundary conflicts, standards violations.
-   - **Trade-offs** — when alternatives exist, list **≥2 options, each
-     with pros and cons** — short bullets, comparable at a glance.
+   - **Trade-offs** — when alternatives exist, present them in chat with
+     pros and cons per option.
 4. Flag any contradiction or pitfall discovered during research.
 5. Ask informed questions about choices that need the user's decision.
    Under `designOwnership: user`, never decide for them.
@@ -744,8 +742,8 @@ The writer handles folder creation, numbering, schema formatting,
 and file saves only — no reasoning.
 
 **If the writer reports unclear content:** resolve the ambiguity
-yourself (ask the user via an `[ASK]` block if needed), then re-delegate
-with corrected input.
+yourself (ask the user in chat if needed), then re-delegate with
+corrected input.
 
 **Step 5 — Initialize state.json.** After the writer confirms
 `task.md` is saved, run `task-state` `-Command init`

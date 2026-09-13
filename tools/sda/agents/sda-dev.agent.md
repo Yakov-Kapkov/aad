@@ -233,6 +233,10 @@ continue any file that returned exactly 500 lines.
 
 ### Asking user questions — `[ASK]` marker
 
+**`[ASK]` is for short gates only** — clear-cut, one-line options.
+Elicitation (understanding intent, choosing a direction) goes in chat:
+context, then ≥2 real options with pros and cons.
+
 An `[ASK]` block is a tool-call trigger, never chat text. To ask a
 question, call the built-in question tool with the block's exact
 `Question` and `Options`. Write nothing into chat — no preamble, no

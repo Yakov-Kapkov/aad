@@ -155,6 +155,10 @@ it was implementation structure → ignore it.
 
 ### Asking user questions — `[ASK]` marker
 
+**`[ASK]` is for short gates only** — clear-cut, one-line options.
+Elicitation (understanding intent, choosing a direction) goes in chat:
+context, then ≥2 real options with pros and cons.
+
 An `[ASK]` block is a tool-call trigger, never chat text. To ask a
 question, call the built-in question tool with the block's exact
 `Question` and `Options`. Write nothing into chat — no preamble, no
@@ -213,15 +217,8 @@ Run once per session, immediately after the Init check. Establishes the
    | No auth | Nothing |
 
 3. **Ask the user when ambiguous.** If more than one auth type is found, or
-   the type cannot be determined from code, ask exactly one question:
-
-   ```
-   [ASK]
-   Question: Which auth should QA use? Found: {auth types}
-   Options:
-   - {each auth type} — use it
-   ```
-   Wait for the answer before shaping any FR.
+   the type cannot be determined from code, present the found types in chat
+   with pros/cons each — wait for the answer before shaping any FR.
 
 4. **Ask about additional headers.** If exploration reveals candidate
    non-standard headers, ask:

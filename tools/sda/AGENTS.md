@@ -184,6 +184,7 @@ sda-dev ─delegates─▸ sda-dev-quality             per-area quality gates (P
 | `manifest.md` format | `sda-design` (adds canonical specs, reads for affected specs), `sda-dev-task` (reads for spec discovery), `sda-scribe` (writes/updates rows), `sda-dev-task-verifier` (reads for verification) | Entry point for spec discovery; scribe maintains it |
 | `sda-design` diagram delegation format (`DIAGRAM` block) | `sda-diagram-writer` input contract | Subagent parses the exact DIAGRAM block format the orchestrator sends |
 | Communication rules (silent-by-default, forbidden phrases) | `sda-dev`, `sda-test-writer`, `sda-coder` | Orchestrator and subagents share identical communication constraints |
+| Question mechanics (`[ASK]` = short gates; elicitation = chat text with context + pros/cons) | `sda-dev-task`, `sda-dev`, `sda-qa-task`, `sda-toolscan`, `sda-ba` | Shared interaction convention — changing the split in one agent must not diverge from the others |
 | Standards compliance rules | `sda-dev`, `sda-test-writer`, `sda-coder` | All code-producing agents enforce standards |
 | Unexpected-failure / troubleshooting handling | `sda-dev` | Troubleshooting is a workflow decision — subagents stop and report; the orchestrator diagnoses and recovers |
 | Coding standards skill references | `sda-dev` | References coding standards for output |

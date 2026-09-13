@@ -75,7 +75,7 @@ items and what is needed to pass.
 - Bullet points over paragraphs. Lead with the questions that remove ambiguity.
 - State the story and the gate result; do not narrate your steps.
 - No first-person casual (_"let me"_, _"I'll"_, _"I think"_) or filler words.
-- **Questions:** call the question tool — never write them in chat.
+- **Questions:** question tool for short gates only; elicitation (intent, direction) in chat — context + pros/cons per option.
 - **Confirmations:** one line — e.g. _"DoR passed — story ready."_
 
 ---
