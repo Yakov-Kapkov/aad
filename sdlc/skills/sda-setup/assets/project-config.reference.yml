@@ -1,0 +1,135 @@
+# SDA project-config reference
+# This file documents all fields in project-config.json and their possible values.
+# Edit project-config.json directly — this file is for reference only.
+
+scripts:
+  # Full path to the task-state script. Set automatically by setup.
+  # PowerShell: .sda/scripts/dev/task-state.ps1
+  # Bash:       .sda/scripts/dev/task-state.sh
+  taskState: .sda/scripts/dev/task-state.ps1
+
+  # Full path to the unit-file-size script. Used by sda-dev-task-verifier and
+  # sda-dev to check per-unit file line counts against devTaskUnitSizeLimit.
+  # Set automatically by setup.
+  # PowerShell: .sda/scripts/dev/unit-file-size.ps1
+  # Bash:       .sda/scripts/dev/unit-file-size.sh
+  unitFileSize: .sda/scripts/dev/unit-file-size.ps1
+
+  # Full path to the read-project-tools script. Reads project-tools.md to resolve
+  # per-area commands (lint, format, build, tests, coverage). Set automatically by setup.
+  # PowerShell: .sda/scripts/read-project-tools.ps1
+  # Bash:       .sda/scripts/read-project-tools.sh
+  readProjectTools: .sda/scripts/read-project-tools.ps1
+
+  # Full path to the QA secrets loader script (legacy — superseded by qaSessionInit).
+  # Still used as a fallback when qaSessionInit is absent. Set automatically by setup.
+  # PowerShell: .sda/scripts/qa/load-qa-secrets.ps1
+  # Bash:       .sda/scripts/qa/load-qa-secrets.sh
+  loadQaSecrets: .sda/scripts/qa/load-qa-secrets.ps1
+
+  # Full path to the QA secrets lister script. Called by sda-qa-task to
+  # discover existing credential key names. Set automatically by setup.
+  # PowerShell: .sda/scripts/qa/list-qa-secrets.ps1
+  # Bash:       .sda/scripts/qa/list-qa-secrets.sh
+  listQaSecrets: .sda/scripts/qa/list-qa-secrets.ps1
+
+  # Full path to the QA session init script. Dot-sourced by sda-qa at Phase 2;
+  # sets UTF-8 encoding and loads credentials; outputs combined summary + var_name | is_empty table.
+  # Set automatically by setup.
+  # PowerShell: .sda/scripts/qa/qa-session-init.ps1
+  # Bash:       .sda/scripts/qa/qa-session-init.sh
+  qaSessionInit: .sda/scripts/qa/qa-session-init.ps1
+
+  # Full path to the HTTP helper script. Called by sda-qa for every CLI/HTTP
+  # request; outputs STATUS + BODY; supports -StatusOnly / --status-only.
+  # Set automatically by setup.
+  # PowerShell: .sda/scripts/qa/invoke-http.ps1
+  # Bash:       .sda/scripts/qa/invoke-http.sh
+  invokeHttp: .sda/scripts/qa/invoke-http.ps1
+
+  # System-context write scripts. Each enforces the system-context schema and
+  # formatting; the writer agent reasons about what to write, the script does the I/O.
+  # Each takes an action (add | update | delete) except scBlastRadius (read-only).
+  # Set automatically by setup.
+  # PowerShell: .sda/scripts/system-context/<name>.ps1
+  # Bash:       .sda/scripts/system-context/<name>.sh
+  scComponents: .sda/scripts/system-context/components.ps1     # dependency-map nodes
+  scEdges: .sda/scripts/system-context/edges.ps1               # dependency-map edges
+  scBehaviors: .sda/scripts/system-context/behaviors.ps1       # per-domain behaviours + status
+  scDecisions: .sda/scripts/system-context/decisions.ps1       # architectural decisions
+  scDomains: .sda/scripts/system-context/domains.ps1           # domain files + index registration
+  scBlastRadius: .sda/scripts/system-context/blast-radius.ps1  # read-only regression blast-radius query
+
+  # Workflow-layer scripts (outer SDLC loop + inner DEV+QA cycle). sda-workflow runs
+  # these to read/advance workflow state and read the inner cycle's next step; it never
+  # opens the state YAML directly. Set automatically by setup.
+  workflowState: .sda/scripts/workflow/workflow-state.ps1        # read/advance/escalate workflow-state.yaml
+  workflowNextStep: .sda/scripts/workflow/workflow-next-step.ps1 # outer "what is next" housekeeper hint
+  devQaNextStep: .sda/scripts/workflow/dev-qa-next-step.ps1      # inner DEV+QA cycle next-step + verdict
+
+# Maximum line count per task unit file. sda-dev-task-verifier flags units above this;
+# sda-dev checks it via the unitFileSize script. Defaults to 1000.
+devTaskUnitSizeLimit: 1000
+
+# user — sda-system, sda-feature, and sda-dev-task pressure-test YOUR proposed approach and never design for you
+# ai   — they may propose the design approach themselves (legacy behaviour)
+designOwnership: user
+
+# Name of the skill that carries coding standards. sda-dev, sda-coder,
+# sda-refactor, and sda-test-writer load it before writing code. Defaults to
+# standards-compliance if omitted.
+standardsSkill: standards-compliance
+
+paths:
+  # Durable DESIGN ledger: system design docs (design.md + feature.md).
+  # Repurposed from the former sda-system scratch root; now the approved,
+  # browsable design ledger. Defaults to docs/design.
+  design: docs/design
+
+  # Root folder for specification files (OpenAPI, JSON Schema, etc.).
+  # Defaults to .sda/specs if omitted.
+  # sda-scribe writes specs here; sda-dev-task and sda-dev-task-verifier read them.
+  specs: .sda/specs
+
+  # Folder holding gitignored QA credentials (qa.secrets.env). Defaults to
+  # .sda/secrets if omitted. Never commit real credential values.
+  secrets: .sda/secrets
+
+  # --- Durable SDLC ledgers (one per bounded context) ---------------------
+  # Browsable, committed, tool-agnostic project docs. Each is a durable
+  # contribution updated as a User Story completes. BC-tied keys carry the BC
+  # prefix (ba/dev/qa/dep); `design` is the DESIGN ledger above. Defaults are
+  # docs/*; override to any relative path from the project root.
+
+  # BA global standards: definition-of-ready.md, definition-of-done.md,
+  # global-nfr.md (BA gates + system-wide NFRs). Defaults to docs/standards.
+  baStandards: docs/standards
+
+  # BA implemented-feature ledger: the delivered-feature catalog. Defaults to docs/features.
+  baFeatures: docs/features
+
+  # DEV system context: behaviors, decisions, dependency map.
+  # Defaults to docs/system-context.
+  devSystemContext: docs/system-context
+
+  # QA known-test-case library: reusable executable test-case definitions
+  # promoted from passed QA runs. Defaults to docs/test-cases.
+  qaTestCases: docs/test-cases
+
+  # DEP per-part deployment details. Defaults to docs/deployment.
+  depContext: docs/deployment
+
+  # --- Overlay + transient roots ------------------------------------------
+
+  # Pending-changes overlay: proposed-but-unapproved changes to the durable
+  # ledgers, mirroring the roots above until a story completes. Defaults to .sda/pending.
+  pendingChanges: .sda/pending
+
+  # Transient per-workflow workspace (workflow-<id>/) for the outer SDLC loop.
+  # Tool-scoped. Defaults to .sda/workflows.
+  workflows: .sda/workflows
+
+tests:
+  coverage:
+    # true | false
+    enabled: true
