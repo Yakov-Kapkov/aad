@@ -1,6 +1,6 @@
 ---
 name: repo-ai-friendly
-description: "Authors and maintains AI-friendly documentation: thin routing readmes (AGENTS.md / CLAUDE.md / .cursorrules) plus a global and per-layer docs/ tree (architecture, vocabulary, decisions, coding standards, CLI). Use when: setting up docs for a new repo, onboarding or reorganizing an existing repo's docs, updating docs after code changes, or making a repo navigable for AI agents."
+description: "Authors and maintains AI-friendly documentation: thin routing readmes (AGENTS.md / CLAUDE.md / .cursorrules) plus a global and per-layer docs/ tree (architecture, vocabulary, requirements, decisions, coding standards, CLI). Use when: setting up docs for a new repo, onboarding or reorganizing an existing repo's docs, updating docs after code changes, or making a repo navigable for AI agents."
 ---
 
 # Repo AI-Friendly
@@ -57,10 +57,10 @@ Default layout — full tree in
 ```
 docs/                          ← global (repo-wide only)
   index.md · architecture.md · vocabulary.md
-  coding-standards/ · decisions/ · diagrams/   (as needed)
+  requirements/<feature>/ · coding-standards/ · decisions/ · diagrams/   (as needed)
 <layer>/docs/                  ← one per subsystem (backend, frontend, …)
   index.md · architecture.md · vocabulary.md · cli.md
-  coding-standards/ · decisions/               (as needed)
+  requirements/<feature>/ · coding-standards/ · decisions/               (as needed)
 ```
 
 - `cli.md` is **per-layer only** — layers use different tools. Global docs
@@ -128,6 +128,8 @@ file(s) with a filter that drops passing results. See
 | Terms special to one layer | `<layer>/docs/vocabulary.md` |
 | Cross-layer rules only (never subsystem-specific) | Global `docs/decisions/` |
 | Rules for one layer or feature | `<layer>/docs/decisions/` |
+| Cross-layer requirements (FRs + shared NFRs) | Global `docs/requirements/` |
+| Requirements for one layer's features | `<layer>/docs/requirements/` |
 | Commands (test, lint, build, type-check, run) | `<layer>/docs/cli.md` |
 | Cross-layer coding rules | Global `docs/coding-standards/` |
 | Layer coding rules | `<layer>/docs/coding-standards/` |
@@ -159,7 +161,8 @@ Read the schema for each file type before writing it:
 | `docs/index.md` router | [`assets/docs-index-schema.md`](assets/docs-index-schema.md) |
 | `architecture.md` | [`assets/architecture-schema.md`](assets/architecture-schema.md) |
 | `vocabulary.md` | [`assets/vocabulary-schema.md`](assets/vocabulary-schema.md) |
-| Decisions (`index.md` + decision files) | [`assets/decision-schema.md`](assets/decision-schema.md) |
+| Decisions (per-level `index.md` + decision files) | [`assets/decision-schema.md`](assets/decision-schema.md) |
+| Requirements (`index.md` + one file per feature + `nfr.md`) | [`assets/requirements-schema.md`](assets/requirements-schema.md) |
 | Coding-standards routing | [`assets/coding-standards-schema.md`](assets/coding-standards-schema.md) |
 | `cli.md` | [`assets/cli-schema.md`](assets/cli-schema.md) |
 

@@ -16,6 +16,7 @@ repo-ai-friendly/
     ├── architecture-schema.md
     ├── vocabulary-schema.md
     ├── decision-schema.md
+    ├── requirements-schema.md
     ├── coding-standards-schema.md
     └── cli-schema.md
 ```

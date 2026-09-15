@@ -1,23 +1,46 @@
 # Decision Schema
 
-One decision per file, routed by an `index.md`. Decision folders live at
-`docs/decisions/` (global) and `<layer>/docs/decisions/` (layer), grouped by
-feature with descriptive kebab-case file names.
+One decision per file, routed by an `index.md` in every folder. Decision
+folders live at `docs/decisions/` (global) and `<layer>/docs/decisions/`
+(layer), grouped by feature with descriptive kebab-case file names.
 
 ---
 
+## Layout
+
+```
+{docs-root}/decisions/
+├── index.md                     ← routes to each feature
+└── <feature>/
+    ├── index.md                 ← routes to each decision
+    └── <decision>.md
+```
+
 ## Decision index
 
-`docs/decisions/index.md` (same shape for a layer):
+`decisions/index.md` — routes to features:
 
 ```markdown
 # Decisions
 
+| Feature | When it applies | Document |
+|---|---|---|
+| Shared | auth, logging, retries — cross-layer rules | [shared/index.md](shared/index.md) |
+| Users | user lifecycle and deletion | [users/index.md](users/index.md) |
+```
+
+`<feature>/index.md` — routes to decisions:
+
+```markdown
+# {Feature} decisions
+
 | Decision | When it applies | Document |
 |---|---|---|
-| {Title} | {trigger phrase} | [shared/auth.md](shared/auth.md) |
-| {Title} | {trigger phrase} | [users/delete-policy.md](users/delete-policy.md) |
+| {Title} | {trigger phrase} | [delete-policy.md](delete-policy.md) |
+| {Title} | {trigger phrase} | [soft-delete.md](soft-delete.md) |
 ```
+
+The first column names the level the index routes to.
 
 ## Decision file
 
@@ -52,7 +75,11 @@ feature with descriptive kebab-case file names.
 
 ## Schema Rules
 
-- One decision per file; the index routes by file name.
+- Every folder has an `index.md`; every child is routed by its **parent's**
+  index — exactly one router per decision (two = duplicate row, none = orphan).
+- A feature folder exists only with its `index.md` — it is a routing level, not
+  a bare grouping.
+- One decision per file; the feature's index routes by file name.
 - Feature folders use descriptive names; decision files use descriptive
   kebab-case names — no `d{N}` numbering.
 - Lead with the decision; rationale is optional and capped at one line.

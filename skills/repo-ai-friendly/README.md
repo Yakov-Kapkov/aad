@@ -2,9 +2,9 @@
 
 A Copilot skill that makes a repository navigable for AI agents. It authors
 thin routing readmes (`AGENTS.md` / `CLAUDE.md` / `.cursorrules`) and a global
-plus per-layer `docs/` tree (architecture, vocabulary, decisions, coding
-standards, CLI) — always conversationally, with your approval before it
-touches the repo.
+plus per-layer `docs/` tree (architecture, vocabulary, requirements,
+decisions, coding standards, CLI) — always conversationally, with your
+approval before it touches the repo.
 
 ---
 
@@ -53,7 +53,8 @@ your approval before modifying anything.
 | `assets/docs-index-schema.md` | `index.md` router format (global + layer) |
 | `assets/architecture-schema.md` | `architecture.md` format (global + layer) |
 | `assets/vocabulary-schema.md` | `vocabulary.md` format (global + layer) |
-| `assets/decision-schema.md` | Decision `index.md` + one-decision-per-file format |
+| `assets/decision-schema.md` | Decision tree — per-level `index.md` + one-decision-per-file format |
+| `assets/requirements-schema.md` | Requirements tree — per-level `index.md`, `<feature>/[<concern>/]<item>.md`, `nfr.md` |
 | `assets/coding-standards-schema.md` | Coding-standards routing (repo-local or standards skill) |
 | `assets/cli-schema.md` | Per-layer command reference format |
 
@@ -65,7 +66,8 @@ your approval before modifying anything.
   "Coding standards" section to `docs/coding-standards/` (repo-local rules)
   or to the [`standards-compliance`](../standards-compliance/) skill when no
   local rules exist. It authors the routing, not the rules themselves.
-- **SDA (`tools/sda`)** — `sda-design`, `sda-scribe`, and `sda-docs-check` load
-  this skill by name (`docsSkill`) as their design/decision schema source.
-  SDA adds its own workflow schemas (task, qa, toolscan, design report); this
-  skill stays the standalone documentation layer with no `.sda/` dependency.
+- **SDA (`tools/sda`)** — `sda-design`, `sda-scribe`, `sda-ba`, and
+  `sda-docs-check` load this skill by name (`docsSkill`) as their
+  design/decision/requirements schema source. SDA adds its own workflow
+  schemas (task, qa, toolscan, design record, workflow container); this skill
+  stays the standalone documentation layer with no `.sda/` dependency.

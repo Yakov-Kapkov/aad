@@ -17,6 +17,7 @@ Global `docs/index.md`:
 |---|---|---|
 | Architecture | system layout, layers, storage | [architecture](architecture.md) |
 | Vocabulary | shared terminology | [vocabulary](vocabulary.md) |
+| Requirements | what the system shall do — FRs and cross-layer NFRs | [requirements](requirements/index.md) |
 | Coding standards | repo-wide rules | [coding-standards](coding-standards/index.md) |
 | Diagrams | visual flows | [diagrams](diagrams/) |
 | Decisions | why a design choice was made | [decisions](decisions/index.md) |
@@ -31,6 +32,7 @@ Global `docs/index.md`:
 |---|---|---|
 | Architecture | this layer's modules, ownership, communication, storage | [architecture](architecture.md) |
 | Vocabulary | this layer's terms | [vocabulary](vocabulary.md) |
+| Requirements | what this layer's features shall do | [requirements](requirements/index.md) |
 | CLI | commands to run this layer | [cli](cli.md) |
 | Coding standards | this layer's rules | [coding-standards](coding-standards/index.md) |
 | Diagrams | this layer's visual flows | [diagrams](diagrams/) |
@@ -49,3 +51,4 @@ Global `docs/index.md`:
 - The `CLI` row appears in layer indexes only, and only when `cli.md` exists.
 - The `Coding standards` row appears only when the `coding-standards/` folder
   exists.
+- The `Requirements` row appears only when the `requirements/` folder exists.

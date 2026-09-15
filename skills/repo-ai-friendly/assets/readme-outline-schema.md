@@ -12,9 +12,11 @@ layer root. It applies identically to every AI readme (`AGENTS.md`,
 # {Repo or layer name}
 
 ## {Preamble}
-{AI readme: "This file is the routing index to architecture, features, and
-decisions. Find the reference for what you're working on below; read what you
-need, or explore the code."
+{AI readme: "This file is the routing index to architecture, features,
+requirements, and decisions. The repo maintains two documentation types — the
+design docs (architecture, vocabulary, decisions) and the requirements docs.
+Find the reference for what you're working on below; read what you need, or
+explore the code."
 Human README: one-line summary.}
 
 ## {Description}
@@ -31,6 +33,12 @@ docs/index.md (layer).}
 ## {Implemented features}
 - **{Feature}** — {≤3 sentences} → the owning layer's docs index (or docs
   folder) — read when changing {feature}
+
+## {Requirements}
+{When a requirements tree exists. Global readme: routing line to
+docs/requirements/ (cross-layer) + one line per layer → its
+docs/requirements/ index. Layer readme: routing line to this layer's
+docs/requirements/ index.}
 
 ## {Design decisions}
 {Global readme: routing line to docs/decisions/ (cross-layer) + one line per
