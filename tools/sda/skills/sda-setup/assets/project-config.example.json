@@ -7,7 +7,8 @@
     "listQaSecrets": ".sda/scripts/qa/list-qa-secrets.ps1",
     "qaSessionInit": ".sda/scripts/qa/qa-session-init.ps1",
     "invokeHttp": ".sda/scripts/qa/invoke-http.ps1",
-    "docsIntegrity": ".sda/scripts/decisions/docs-integrity.ps1"
+    "docsIntegrity": ".sda/scripts/docs/docs-integrity.ps1",
+    "workflow": ".sda/scripts/workflow/workflow.ps1"
   },
   "devTaskUnitSizeLimit": 1000,
   "designOwnership": "user",
@@ -16,7 +17,8 @@
     "specs": ".sda/specs",
     "issues": ".sda/issues",
     "secrets": ".sda/secrets",
-    "userStories": ".sda/stories"
+    "userStories": ".sda/stories",
+    "workflows": ".sda/workflows"
   },
   "tests": {
     "coverage": {

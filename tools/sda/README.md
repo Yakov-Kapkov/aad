@@ -67,6 +67,37 @@ The `sda-setup` skill scaffolds `.sda/` with resource files, then automatically 
 
 ## Usage
 
+### Plan in a workflow — `/sda.workflow.init`
+
+Planning artifacts live in a **workflow**: a numbered container for one requirement.
+
+```
+.sda/workflows/
+  001. const-refactoring/
+    workflow.json          script-written state (stage + escalation log)
+    user-story.md          owner: sda-ba
+    design.md              owner: sda-design
+    tasks/                 owner: sda-dev-task
+      001. ui-refactoring/
+    escalations/           one evidence brief per escalation
+```
+
+Create one with `/sda.workflow.init`, then start `sda-ba` on it in its own session. The
+`sda-workflow` agent is the advisor surface: it reports where a container sits, names the next
+action and its owning agent, and runs `init`, `advance`, and a user-requested `escalate`.
+The stage machine is `story → design → tasks → ready`: `advance` moves
+forward exactly one stage, and `escalate` moves back — recording why, plus a **brief** holding the
+evidence — when the current stage cannot finish on the artifacts it was given. The script refuses
+a raise without a brief, so the blocked stage writes it first (`sda-scribe` numbers and names it);
+the target stage reads the brief, then the artifact it cites, renews its own artifact, and closes
+the escalation with `resolve`. While an escalation is open, `advance` is refused. Producers may run
+the read-only commands (`list`, `current`, `read`) plus `escalate`/`resolve`; the `sda-workflow`
+advisor owns `init` and `advance`, and may raise a user-requested escalation from any stage with an
+upstream.
+
+`sda-ba`, `sda-design`, and `sda-dev-task` default to workflow mode and fall back to standalone
+paths when the requirement has no container. Standalone use is unchanged.
+
 ### Capture the requirement — `sda-ba`
 
 ```
@@ -74,7 +105,7 @@ Draft a story for <raw requirement here>
 ```
 
 Turns a raw requirement into one **ready User Story** — a single Actor statement
-plus Gherkin scenarios (happy / negative / edge) with measurable local NFRs — gated by the
+plus Gherkin scenarios (happy / negative / edge) with measurable NFRs — gated by the
 Definition of Ready before writing `user-story.md`. One actor per story;
 multi-actor requests are split. `sda-ba` captures *what* and *why*, never *how* —
 design, implementation, and QA specs belong to the later agents.
@@ -124,10 +155,10 @@ One agent, two altitudes — detect from the request:
   ```
   Design a feature for paginated order listing filtered by status.
   ```
-  Records design decisions and updates the features section of all readmes, writes a
-  `design_report.md`.
+  Records design decisions, updates the features section of all readmes, and writes the
+  design record (`design.md`).
 
-`sda-design` is conversational. By default it pressure-tests the design **you** propose rather than authoring it — describe the area you're tackling, defend your direction against its push-back on complexity and risk, and iterate together before committing. (Configurable via `designOwnership` — see [project-config.json](#project-configjson).) At the end of every session it writes a `design_report.md` (`.sda/design/reports/<yyyy-MM-dd_HH-mm_<name>>/design_report.md`) so the next agent reads a compact summary instead of the full conversation.
+`sda-design` is conversational. By default it pressure-tests the design **you** propose rather than authoring it — describe the area you're tackling, defend your direction against its push-back on complexity and risk, and iterate together before committing. (Configurable via `designOwnership` — see [project-config.json](#project-configjson).) At the end of every session it writes the design record, `design.md` — inside the workflow folder when the requirement has one, otherwise under `.sda/design/reports/<yyyy-MM-dd_HH-mm_<name>>/` — so the next agent reads a compact record instead of the full conversation.
 
 ### Author the QA acceptance spec — `sda-qa-task`
 
@@ -183,8 +214,8 @@ finds — it reports, and leaves routing (sda-dev-task vs ad-hoc sda-dev) to you
 | Agent | Role | Model | Tools |
 |---|---|---|---|
 | `sda-toolscan` | Scans toolchain, writes `project-tools.md` | project config | read, search, edit, execute |
-| `sda-ba` | Business Analyst — elicits a raw requirement into one ready User Story (Actor + Gherkin + measurable local NFRs), gated by the Definition of Ready | Claude Sonnet 4.6 | read, search, agent, edit |
-| `sda-design` | System architecture + feature design — components, contracts, diagrams, decision docs | Claude Sonnet 4.6 | read, search, agent |
+| `sda-ba` | Business Analyst — elicits a raw requirement into one ready User Story (Actor + Gherkin + measurable NFRs) and owns the durable requirements tree, gated by the Definition of Ready | Claude Sonnet 4.6 | read, search, agent, edit, execute |
+| `sda-design` | System architecture + feature design — components, contracts, diagrams, decision docs | Claude Sonnet 4.6 | read, search, agent, execute |
 | `sda-dev-task` | Designs atomic task specs (`task.md`) with test scenarios and implementation plans | project config | read, search, agent, execute |
 | `sda-qa-task` | Authors the black-box acceptance spec (`qa-task.md`) — coupled (from a finalized task) or standalone | Claude Sonnet 4.6 | read, search, agent |
 | `sda-dev` | TDD implementation orchestrator — delegates RED/GREEN to subagents to keep context small; routes `docs` units to sda-scribe + sda-docs-check | project config | read, edit, execute, agent |
@@ -194,7 +225,7 @@ finds — it reports, and leaves routing (sda-dev-task vs ad-hoc sda-dev) to you
 
 | Agent | Role | Model | Tools |
 |---|---|---|---|
-| `sda-scribe` | Universal scribe: writes task.md, qa-task.md, dev-report.md, design-decision docs, design docs, design reports, contract specs, manifest.md, and the files of a task's `docs` unit | Claude Haiku 4.5 | read, edit, search |
+| `sda-scribe` | Universal scribe: writes task.md, qa-task.md, dev-report.md, design-decision docs, design docs, requirements docs, design records, contract specs, manifest.md, and the files of a task's `docs` unit | Claude Haiku 4.5 | read, edit, search |
 | `sda-dev-task-verifier` | Consistency checks + regression analysis on task.md. Delegates file-gathering to sda-code-explore for tasks with >3 files. Runs `unit-file-size` for unit size verification. | Claude Sonnet 4.6 | read, search, agent, execute |
 | `sda-code-explore` | Fast read-only codebase exploration (invoked by sda-dev-task, sda-dev-task-verifier, sda-qa-task, sda-dev, sda-design) | Claude Haiku 4.5 | read, search |
 | `sda-web-explore` | Web research — fetches live API docs and library specs (invoked by sda-dev-task, sda-design) | Claude Haiku 4.5 | web |
@@ -209,7 +240,7 @@ finds — it reports, and leaves routing (sda-dev-task vs ad-hoc sda-dev) to you
 
 `sda-dev` runs the TDD loop and quality gates, delegating test writing and coding to subagents to keep each context small. A task's `docs` unit routes to `sda-scribe` (write) and then `sda-docs-check` (targeted verification).
 
-`sda-scribe` is the universal scribe for SDA planning and implementation agents — it writes task.md, qa-task.md, dev-report.md, design-decision docs, design docs, design reports, contract spec files, and manifest.md. It uses Haiku for cost efficiency since it performs no reasoning — only schema formatting and file I/O. `sda-code-explore` is invoked by `sda-dev-task`, `sda-dev-task-verifier`, `sda-qa-task`, and `sda-dev` for codebase research — also Haiku, since it only reads and reports. `sda-web-explore` is invoked by `sda-dev-task` and `sda-design` for live web/API research when documentation may have changed. `sda-dev-task-verifier` handles Phase 7 (consistency + regression checks) — it can be invoked directly by the user or delegated to by `sda-dev-task`.
+`sda-scribe` is the universal scribe for SDA planning and implementation agents — it writes task.md, qa-task.md, dev-report.md, design-decision docs, design docs, requirements docs, design records, contract spec files, and manifest.md. It uses Haiku for cost efficiency since it performs no reasoning — only schema formatting and file I/O. `sda-code-explore` is invoked by `sda-dev-task`, `sda-dev-task-verifier`, `sda-qa-task`, and `sda-dev` for codebase research — also Haiku, since it only reads and reports. `sda-web-explore` is invoked by `sda-dev-task` and `sda-design` for live web/API research when documentation may have changed. `sda-dev-task-verifier` handles Phase 7 (consistency + regression checks) — it can be invoked directly by the user or delegated to by `sda-dev-task`.
 
 All pipeline agents are user-invokable and used as needed.
 
@@ -230,6 +261,10 @@ All pipeline agents are user-invokable and used as needed.
 | `sda.setup` | Sets up SDA tool — scaffolds `.sda/` and scans the project toolchain |
 | `sda.setup.no-scan` | Sets up SDA tool — scaffolds `.sda/` without a toolchain scan |
 | `sda.design.reconcile` | Reconciles design docs with code — finds and fixes inconsistencies across the AI readme, global + per-layer docs, and decision docs |
+| `sda.workflow.init` | Creates a workflow container for one requirement, then names the `sda-ba` session to start |
+| `sda.workflow.status` | Reports where the workflow containers sit, ending with the single next action and the agent that owns it |
+| `sda.workflow.advance` | Moves a workflow forward one stage, after showing the state and confirming |
+| `sda.workflow.escalate` | Sends a workflow back a stage — elicits what is wrong, writes the evidence brief, then raises |
 
 ---
 
@@ -247,8 +282,9 @@ TASK DESIGN  (sda-dev-task)
   sda-dev-task brainstorms the task with the user.
   Researches the codebase (read-only).
   Verifies consistency with the existing design and assesses regression risks.
-  When handed off from sda-design, reads the design_report.md first
-  (most recent under .sda/design/reports/) instead of the full conversation.
+  When handed off from sda-design, reads design.md first (the workflow
+  record, or the most recent under .sda/design/reports/) instead of the full
+  conversation.
   Produces .sda/tasks/<NN>-<task-name>/task.md with test scenarios,
   implementation plan, and state.json for tracking.
 
@@ -325,13 +361,21 @@ All resources are read from a `.sda/` folder in the project root (may be git-ign
 | Config injection script | `.sda/scripts/read-config.ps1` or `.sda/scripts/read-config.sh` |
 | Project-tools command lookup | `.sda/scripts/read-project-tools.ps1` or `.sda/scripts/read-project-tools.sh` |
 | Toolchain scan scripts | `.sda/scripts/toolscan/` (cleanup, timestamp, probe-validators) |
-| Design + decision schemas | `{docsSkill}` skill (`repo-ai-friendly`) — load it by name; its `SKILL.md` routes to the readme-outline, docs-index, architecture, vocabulary, decision, and coding-standards schemas |
-| Design report schema | `.sda/resources/design/design-report-schema.md` |
-| Design report | `.sda/design/reports/<yyyy-MM-dd_HH-mm_<short-name>>/design_report.md` |
-| Docs integrity script | `.sda/scripts/decisions/docs-integrity.ps1` or `.sda/scripts/decisions/docs-integrity.sh` |
+| Design + decision + requirements schemas | `{docsSkill}` skill (`repo-ai-friendly`) — load it by name; its `SKILL.md` routes to the readme-outline, docs-index, architecture, vocabulary, requirements, decision, and coding-standards schemas |
+| Design record schema | `.sda/resources/design/design-record-schema.md` |
+| Design record (workflow) | `.sda/workflows/<NNN>. <slug>/design.md` |
+| Design record (standalone) | `.sda/design/reports/<yyyy-MM-dd_HH-mm_<short-name>>/design.md` |
+| Workflow container | `.sda/workflows/<NNN>. <slug>/` |
+| Workflow state | `.sda/workflows/<NNN>. <slug>/workflow.json` |
+| Escalation brief | `.sda/workflows/<NNN>. <slug>/escalations/<NNN>. <yyyy-MM-dd_HH-mm>-<from>-to-<to>.md` |
+| Workflow schema | `.sda/resources/workflow/workflow-schema.md` |
+| Escalation brief schema | `.sda/resources/workflow/escalation-brief-schema.md` |
+| Workflow state script | `.sda/scripts/workflow/workflow.ps1` or `.sda/scripts/workflow/workflow.sh` |
+| Docs integrity script | `.sda/scripts/docs/docs-integrity.ps1` or `.sda/scripts/docs/docs-integrity.sh` |
 | Design docs (global) | `docs/` — `architecture.md`, `vocabulary.md`, `index.md`, `decisions/`, `diagrams/` |
 | Design docs (per-layer) | `<layer>/docs/` — `architecture.md`, `index.md`, `vocabulary.md`, `decisions/`, `diagrams/` |
 | Decision docs (per-layer) | `<layer>/docs/decisions/<feature>/` — `index.md` + descriptive kebab-case `.md` files (`shared/` for cross-cutting) |
+| Requirements docs (per-layer) | `<layer>/docs/requirements/` — `index.md` at every level + `<feature>/[<concern>/]<item>.md` + `nfr.md` |
 
 `{language}` values are inferred from project markers — one or more per project (`package.json` → `typescript`, `pyproject.toml` / `requirements.txt` → `python`, etc.). Multi-language projects (e.g. TypeScript frontend + Python backend) load all matching discovery specs and produce a single `project-tools.md` with sections for each area.
 
@@ -341,6 +385,7 @@ The `models` section in `project-config.json` controls which AI model each agent
 
 ```json
 "models": {
+  "sda-workflow": "Claude Sonnet",
   "sda-toolscan": "Claude Haiku",
   "sda-ba": "Claude Sonnet",
   "sda-dev-task": "Claude Sonnet",
@@ -359,6 +404,7 @@ The `models` section in `project-config.json` controls which AI model each agent
 
 | Key | Role | Default |
 |---|---|---|
+| `sda-workflow` | Workflow advisor: container position, next action, `init` / `advance` / `escalate` | `Claude Sonnet` |
 | `sda-toolscan` | Scans project toolchain | `Claude Haiku` |
 | `sda-ba` | Authors User Stories from raw requirements | `Claude Sonnet` |
 | `sda-dev-task` | Designs task specifications | `Claude Sonnet` |
@@ -395,12 +441,14 @@ Written by the `sda-setup` skill. Stores project-level settings injected into ea
 | `paths.issues` | `string` | `.sda/issues` | Root folder for standalone QA work (no task): each `<NNN>-<slug>/` holds a `qa-task.md` authored by sda-qa-task and the `qa-report.md` written by sda-qa. |
 | `paths.secrets` | `string` | `.sda/secrets` | Git-ignored folder holding `qa.secrets.env` credentials used by sda-qa. |
 | `paths.userStories` | `string` | `.sda/stories` | Root folder for User Stories authored by sda-ba. Written by sda-ba when no output path is given. |
+| `paths.workflows` | `string` | `.sda/workflows` | Root folder for workflow containers. Read by sda-ba, sda-design, and sda-dev-task to resolve workflow vs standalone mode. |
 | `scripts.loadQaSecrets` | `string` | `.sda/scripts/qa/load-qa-secrets.ps1` | Path to the QA secrets loader script (legacy — superseded by `qaSessionInit`). Still used as a fallback when `qaSessionInit` is absent. Use the `.sh` variant on Bash/Unix. |
 | `scripts.listQaSecrets` | `string` | `.sda/scripts/qa/list-qa-secrets.ps1` | Path to the QA secrets lister script. Called by sda-qa-task to discover existing credential key names. Use the `.sh` variant on Bash/Unix. |
 | `scripts.qaSessionInit` | `string` | `.sda/scripts/qa/qa-session-init.ps1` | Path to the QA session init script. Dot-sourced by sda-qa at Phase 2; sets UTF-8 encoding and loads credentials. Outputs a combined summary and `var_name \| is_empty` table. Use the `.sh` variant on Bash/Unix. |
-| `scripts.docsIntegrity` | `string` | `.sda/scripts/decisions/docs-integrity.ps1` | Path to the docs-integrity script. Called by sda-docs-check to verify decision-doc links, orphans, and duplicate index rows. Use the `.sh` variant on Bash/Unix. |
+| `scripts.docsIntegrity` | `string` | `.sda/scripts/docs/docs-integrity.ps1` | Path to the docs-integrity script. Called by sda-docs-check with a decisions/requirements root (links, orphans, duplicates, one-way `.sda/` rule) or a single document path (links, code fence, non-`.md` path). Use the `.sh` variant on Bash/Unix. |
 | `scripts.invokeHttp` | `string` | `.sda/scripts/qa/invoke-http.ps1` | Path to the HTTP helper script. Called by sda-qa for every CLI/HTTP request; outputs `STATUS: N` and `BODY: ...`; supports `-StatusOnly` / `--status-only`. Use the `.sh` variant on Bash/Unix. |
 | `scripts.unitFileSize` | `string` | `.sda/scripts/dev/unit-file-size.ps1` | Path to the file line-count script. Called by `sda-dev-task` (Phase 6) and `sda-dev-task-verifier` (Check 1) to measure source file volume. Use the `.sh` variant on Bash/Unix. |
+| `scripts.workflow` | `string` | `.sda/scripts/workflow/workflow.ps1` | Path to the workflow state script — the only writer of `workflow.json`. Run by the `sda-workflow` advisor and the `/sda.workflow.*` prompts; read-only commands plus `escalate`/`resolve` are run by sda-ba, sda-design, and sda-dev-task. `escalate` also takes the path of the escalation brief, which must already exist. Use the `.sh` variant on Bash/Unix. |
 | `devTaskUnitSizeLimit` | `number` | `1000` | Maximum total lines across existing Source+Test files in any single unit. Units exceeding this limit require splitting in `sda-dev-task`. |
 | `tests.coverage.enabled` | `boolean` | `true` | Whether to run coverage checks in Phase 5 (Quality). When disabled, coverage gate is skipped entirely. |
 
@@ -409,7 +457,8 @@ Example:
 {
   "scripts": {
     "taskState": ".sda/scripts/dev/task-state.ps1",
-    "unitFileSize": ".sda/scripts/dev/unit-file-size.ps1"
+    "unitFileSize": ".sda/scripts/dev/unit-file-size.ps1",
+    "workflow": ".sda/scripts/workflow/workflow.ps1"
   },
   "devTaskUnitSizeLimit": 1000,
   "designOwnership": "user",
@@ -418,7 +467,8 @@ Example:
     "specs": ".sda/specs",
     "issues": ".sda/issues",
     "secrets": ".sda/secrets",
-    "userStories": ".sda/stories"
+    "userStories": ".sda/stories",
+    "workflows": ".sda/workflows"
   },
   "tests": {
     "coverage": {
@@ -434,11 +484,40 @@ Read in full by `sda-dev` at the start of every session — before any source fi
 
 ---
 
+## Tests
+
+Scripts that ship in `skills/sda-setup/assets/` are covered by tests that live **beside the code
+they test**, named `_<subject>.Tests.ps1`. Tests never ship: the skill installers prune
+`_*.Tests.*` from the installed copy, and none is copied into a project's `.sda/`.
+
+| Test | Covers | Asserts |
+|---|---|---|
+| `_twins.Tests.ps1` | `assets/workflow/powershell/workflow.ps1` and `assets/workflow/bash/workflow.sh` | One scenario sequence, run against both twins: stdout, exit code, and the written `workflow.json` must match. A few refusals are also checked against the documented contract, not just against each other — a corrupted container must stop `list` without printing a partial list |
+
+The two workflow scripts are one contract with two implementations, and nothing else compares
+them, so a change to either can diverge from the other in silence. Run the harness after
+editing one:
+
+```powershell
+powershell -NoProfile -File tools/sda/skills/sda-setup/assets/workflow/_twins.Tests.ps1
+```
+
+It prints `PASS`/`FAIL` and exits 0/1. Its scratch lives in `.test-scratch/workflow-twins/` —
+the shared, gitignored test scratch root — and is removed on a green run, so after a failure the
+two temp roots and their step-by-step transcripts are still there to inspect. It needs Git Bash
+and `jq`, and skips with a message when either is missing.
+
+Covered today: the stage machine and its artifact gate, the escalation brief gate, `--to` jumps,
+displayed open-ness and LIFO unwind, container-consistency verification, and CLI misuse.
+
+---
+
 ## Key design constraints
 
 - **The `sda-setup` skill and `sda-toolscan` agent run once per project, not per task.** Re-run only if the toolchain changes.
 - **`sda-design` is read-only.** It researches and decides content, but never edits any file — all writes are delegated to `sda-scribe`.
 - **One docs writer.** `sda-coder` and `sda-refactor` never edit docs. A **mechanical** doc change (new entry in an existing format) goes through a `docs` unit → `sda-scribe` (write) → `sda-docs-check` (targeted verify); a **semantic** one (new concept, decision, vocabulary, tree structure, routing) goes through `sda-design`. At most one `docs` unit per task, always last.
+- **One owner per planning artifact.** Story → `sda-ba`, design → `sda-design`, tasks → `sda-dev-task`; every other agent is read-only on them. `workflow.json` and `state.json` are written by their scripts only — never hand-edited.
 - **`sda-dev` hard-stops if `project-tools.md` is missing.** There is no fallback — run `sda-setup` + `sda-toolscan` first.
 - **Standards are mandatory, always.** `sda-dev` reads all standards files before every session — even for trivial fixes or ad-hoc requests.
 - **Quality checks are non-negotiable.** After any code change, `sda-dev` must run and pass all quality gates (tests, coverage, pre-merge, types, lint, full test suite) before finishing.

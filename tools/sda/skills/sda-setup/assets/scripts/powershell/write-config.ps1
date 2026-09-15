@@ -46,6 +46,8 @@ $platformPaths = [ordered]@{
     listQaSecrets = '.sda/scripts/qa/list-qa-secrets.ps1'
     qaSessionInit = '.sda/scripts/qa/qa-session-init.ps1'
     invokeHttp    = '.sda/scripts/qa/invoke-http.ps1'
+    docsIntegrity = '.sda/scripts/docs/docs-integrity.ps1'
+    workflow      = '.sda/scripts/workflow/workflow.ps1'
 }
 $shippedPaths = @{
     taskState     = @('.sda/scripts/dev/task-state.ps1', '.sda/scripts/dev/task-state.sh')
@@ -53,6 +55,11 @@ $shippedPaths = @{
     listQaSecrets = @('.sda/scripts/qa/list-qa-secrets.ps1', '.sda/scripts/qa/list-qa-secrets.sh')
     qaSessionInit = @('.sda/scripts/qa/qa-session-init.ps1', '.sda/scripts/qa/qa-session-init.sh')
     invokeHttp    = @('.sda/scripts/qa/invoke-http.ps1', '.sda/scripts/qa/invoke-http.sh')
+    # docsIntegrity: the first pair is the pre-rename location — kept so existing
+    # installs migrate to the new folder instead of keeping a stale path.
+    docsIntegrity = @('.sda/scripts/decisions/docs-integrity.ps1', '.sda/scripts/decisions/docs-integrity.sh',
+                      '.sda/scripts/docs/docs-integrity.ps1',      '.sda/scripts/docs/docs-integrity.sh')
+    workflow      = @('.sda/scripts/workflow/workflow.ps1', '.sda/scripts/workflow/workflow.sh')
 }
 foreach ($key in $platformPaths.Keys) {
     if ($null -eq $config.scripts.PSObject.Properties[$key]) {

@@ -8,13 +8,14 @@
 ## Goal
 {1-2 sentences: what and why.}
 
+## Context
+{Omit entirely for a standalone task.}
+- **Workflow:** {id}. {slug}
+- **Design:** [design.md](../../design.md)
+
 ## Scope
 Feature: {feature-name}
 Layer: {layer-name}
-
-## QA
-**State:** required
-**Reason:** {optional — include only when State is `declined`}
 
 ## Prerequisites
 {Omit if the task has no setup dependencies.}
@@ -241,6 +242,12 @@ Kind: {file type — e.g. `readme`, `index`, `cli`, `architecture`}
 - 1-2 sentences: what the task accomplishes and why it matters.
 - Omit implementation details — those belong in Design Approach.
 
+### Context
+- Placed directly above `## Scope` — `## Goal` stays the document's opening section.
+- Workflow mode only: the workflow id + slug, and a relative link to the design record.
+  Links are relative, so `../../design.md` resolves from the task's own folder.
+- Omit the section entirely for a standalone task — never write an empty header.
+
 ### Scope
 - Required. First line: `Feature: {name}` (exact match to a feature listed in
   the repo's `AGENTS.md` features section) or `Global` (cross-cutting /
@@ -248,10 +255,6 @@ Kind: {file type — e.g. `readme`, `index`, `cli`, `architecture`}
 - Second line: `Layer: {layer}` — the architectural layer the task primarily
   touches (from the AI readme's architecture section / `architecture.md`),
   e.g. `Backend`, `Persistence`.
-
-### QA
-- **`State:`** required — `required` | `declined`. Default `required`.
-- **`Reason:`** optional string — include only when `State: declined`.
 
 ### Prerequisites
 - Checkboxes (`- [ ]`). Omit section if none.
@@ -306,7 +309,7 @@ Kind: {file type — e.g. `readme`, `index`, `cli`, `architecture`}
   - **tests only** — existing behaviour that lacks tests: write tests that pass against existing code.
   - **integration only** — wiring, config, re-exports: no scenarios, no new tests. Use step headings with change entries (Symbol layout); use `Algorithm:` for non-trivial logic.
   - **refactoring** — pure structural transformations: renames, file moves, extraction, restructure. No behaviour change, no new tests, no scenarios. Existing tests must pass. Changes blocks required. Use step headings with change entries.
-  - **docs** — documentation this task's own changes make stale: AI readmes and the docs tree. **At most one per task, always the last unit.** Step entries carry the file content (see [Docs unit layout](#docs-unit-layout)). Exempt from [Unit sizing](#unit-sizing) caps.
+  - **docs** — documentation this task's own changes make stale: AI readmes and the docs tree — never the requirements tree. **At most one per task, always the last unit.** Step entries carry the file content (see [Docs unit layout](#docs-unit-layout)). Exempt from [Unit sizing](#unit-sizing) caps.
 - **Refactoring tasks:** use `refactoring` units for renames, extraction, and structural changes. For high-risk refactoring, precede with a `tests only` unit as a regression safety net. Reserve `tests required` for genuinely new behavior.
 - **Ordering matters.** Foundational behaviour first, dependent behaviour after.
 - **Structural prep:** renames, file merges, import rewiring → own `refactoring` unit before dependent units.

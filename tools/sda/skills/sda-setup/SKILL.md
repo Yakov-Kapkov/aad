@@ -117,6 +117,8 @@ If the resolved path contains spaces, use `& "<path>" -Language {language}` inst
 
 If the script warns that the language-specific tool-discovery spec is missing, relay that warning.
 
+On update, the script also deletes paths retired by earlier versions — it prints one `Removed retired path:` line per deletion. Relay those lines.
+
 ### Step 4 — Configure project
 
 **Post:** `**Step 4 — Configuring project.**`

@@ -14,14 +14,15 @@ REPO_ROOT="$(pwd)"
 
 # Agent → config keys (space-separated)
 case "$AGENT" in
-    sda-ba)            KEYS="paths.userStories" ;;
+    sda-ba)            KEYS="paths.userStories paths.workflows scripts.workflow" ;;
     sda-dev)           KEYS="scripts.taskState scripts.readProjectTools standardsSkill paths.specs tests.coverage.enabled" ;;
     sda-dev-quality)   KEYS="scripts.readProjectTools tests.coverage.enabled" ;;
-    sda-dev-task)          KEYS="scripts.taskState scripts.unitFileSize devTaskUnitSizeLimit designOwnership standardsSkill paths.specs paths.tasks" ;;
+    sda-dev-task)          KEYS="scripts.taskState scripts.unitFileSize devTaskUnitSizeLimit designOwnership standardsSkill paths.specs paths.tasks paths.workflows scripts.workflow" ;;
     sda-dev-task-verifier) KEYS="scripts.unitFileSize devTaskUnitSizeLimit paths.specs" ;;
     sda-qa)            KEYS="paths.issues scripts.qaSessionInit scripts.loadQaSecrets scripts.invokeHttp scripts.readProjectTools" ;;
     sda-qa-task)       KEYS="designOwnership paths.tasks paths.issues paths.specs scripts.listQaSecrets scripts.readProjectTools" ;;
-    sda-design)        KEYS="designOwnership paths.specs docsSkill" ;;
+    sda-design)        KEYS="designOwnership paths.specs docsSkill paths.workflows scripts.workflow" ;;
+    sda-workflow)      KEYS="paths.workflows scripts.workflow" ;;
     sda-scribe)        KEYS="paths.specs paths.issues docsSkill" ;;
     sda-docs-check)    KEYS="scripts.docsIntegrity docsSkill" ;;
     *)                 KEYS="" ;;
@@ -42,7 +43,8 @@ get_default() {
         scripts.listQaSecrets)  echo ".sda/scripts/qa/list-qa-secrets.sh" ;;
         scripts.qaSessionInit)  echo ".sda/scripts/qa/qa-session-init.sh" ;;
         scripts.invokeHttp)     echo ".sda/scripts/qa/invoke-http.sh" ;;
-        scripts.docsIntegrity)  echo ".sda/scripts/decisions/docs-integrity.sh" ;;
+        scripts.docsIntegrity)  echo ".sda/scripts/docs/docs-integrity.sh" ;;
+        scripts.workflow)       echo ".sda/scripts/workflow/workflow.sh" ;;
         devTaskUnitSizeLimit)   echo "1000" ;;
         designOwnership)        echo "user" ;;
         standardsSkill)         echo "standards-compliance" ;;
@@ -51,6 +53,7 @@ get_default() {
         paths.tasks)            echo ".sda/tasks" ;;
         paths.issues)           echo ".sda/issues" ;;
         paths.userStories)      echo ".sda/stories" ;;
+        paths.workflows)        echo ".sda/workflows" ;;
         tests.coverage.enabled) echo "true" ;;
         *)                      echo "" ;;
     esac

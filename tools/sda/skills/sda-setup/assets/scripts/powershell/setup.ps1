@@ -31,9 +31,12 @@ Copy-Item "$scriptDir/qa/qa-task-schema.md"                "$targetDir/resources
 New-Item -ItemType Directory -Force -Path "$targetDir/resources/toolscan" | Out-Null
 Copy-Item "$scriptDir/toolscan/project-tools-schema.md"    "$targetDir/resources/toolscan/project-tools-schema.md"
 New-Item -ItemType Directory -Force -Path "$targetDir/resources/design" | Out-Null
-Copy-Item "$scriptDir/design/design-report-schema.md"  "$targetDir/resources/design/design-report-schema.md"
+Copy-Item "$scriptDir/design/design-record-schema.md"  "$targetDir/resources/design/design-record-schema.md"
 New-Item -ItemType Directory -Force -Path "$targetDir/resources/ba" | Out-Null
 Copy-Item "$scriptDir/ba/user-story-schema.md"            "$targetDir/resources/ba/user-story-schema.md"
+New-Item -ItemType Directory -Force -Path "$targetDir/resources/workflow" | Out-Null
+Copy-Item "$scriptDir/workflow/workflow-schema.md"        "$targetDir/resources/workflow/workflow-schema.md"
+Copy-Item "$scriptDir/workflow/escalation-brief-schema.md" "$targetDir/resources/workflow/escalation-brief-schema.md"
 
 $tcSource = "$scriptDir/tool-catalog/$Language/tool-catalog.md"
 if (Test-Path $tcSource) {
@@ -68,9 +71,14 @@ Copy-Item "$toolscanSrc/cleanup-project-tools.ps1"      "$targetDir/scripts/tool
 Copy-Item "$toolscanSrc/get-timestamp.ps1"              "$targetDir/scripts/toolscan/get-timestamp.ps1"
 Copy-Item "$toolscanSrc/probe-validators.ps1"           "$targetDir/scripts/toolscan/probe-validators.ps1"
 
-$decisionsSrc = Join-Path (Join-Path $scriptDir 'decisions') 'powershell'
-New-Item -ItemType Directory -Force -Path "$targetDir/scripts/decisions" | Out-Null
-Copy-Item "$decisionsSrc/docs-integrity.ps1"            "$targetDir/scripts/decisions/docs-integrity.ps1"
+$docsSrc = Join-Path (Join-Path $scriptDir 'docs') 'powershell'
+New-Item -ItemType Directory -Force -Path "$targetDir/scripts/docs" | Out-Null
+Copy-Item "$docsSrc/docs-integrity.ps1"                "$targetDir/scripts/docs/docs-integrity.ps1"
+
+# Copy workflow script
+$workflowSrc = Join-Path (Join-Path $scriptDir 'workflow') 'powershell'
+New-Item -ItemType Directory -Force -Path "$targetDir/scripts/workflow" | Out-Null
+Copy-Item "$workflowSrc/workflow.ps1"                   "$targetDir/scripts/workflow/workflow.ps1"
 
 $tdSource = "$scriptDir/tool-discovery/$Language/tool-discovery.md"
 if (Test-Path $tdSource) {
@@ -79,4 +87,18 @@ if (Test-Path $tdSource) {
     Write-Warning "No tool-discovery spec found for '$Language'. Add one to .sda/resources/$Language/ later."
 }
 
-Write-Host "SDA scaffolding complete: $targetDir/"
+# --- Remove artifacts retired by earlier versions ---
+# Setup only creates and copies, so a path that moved or was replaced leaves a
+# stale copy behind in an existing install. Each entry is a shipped location.
+$legacyPaths = @(
+    "$targetDir/scripts/decisions"                     # docs-integrity moved to scripts/docs/
+    "$targetDir/resources/design/design-report-schema.md"  # replaced by design-record-schema.md
+)
+foreach ($legacy in $legacyPaths) {
+    if (Test-Path $legacy) {
+        Remove-Item -Recurse -Force $legacy
+        Write-Output "Removed retired path: $legacy"
+    }
+}
+
+Write-Output "SDA scaffolding complete: $targetDir/"

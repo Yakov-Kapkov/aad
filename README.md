@@ -37,7 +37,7 @@ Reusable skills that extend agent capabilities.
 
 | Skill | Description |
 |---|---|
-| [`repo-ai-friendly`](skills/repo-ai-friendly/README.md) | Makes a repository AI-friendly — authors routing readmes (AGENTS.md/CLAUDE.md) and a global + per-layer docs/ tree (architecture, vocabulary, decisions, coding standards, CLI) |
+| [`repo-ai-friendly`](skills/repo-ai-friendly/README.md) | Makes a repository AI-friendly — authors routing readmes (AGENTS.md/CLAUDE.md) and a global + per-layer docs/ tree (architecture, vocabulary, requirements, decisions, coding standards, CLI) |
 | [`software-design-best-practices`](skills/software-design-best-practices/README.md) | Route-table skill mapping topic areas (web API, database, UI, layers) to language-agnostic design best-practice files — consulted at spec-creation and implementation time |
 | [`standards-compliance`](skills/standards-compliance/README.md) | Enforces project coding standards on all produced code changes — resolves conflicts between task specs and standards |
 | [`troubleshooting`](skills/troubleshooting/) | Troubleshooting dictionary for unexpected command results — test failures, build errors, lint violations, runtime exceptions |
@@ -50,7 +50,7 @@ Multi-agent tool suites.
 
 | Tool | Description |
 |---|---|
-| [`sda`](tools/sda/README.md) | Software Development Assistant — coordinated agents and skills for specification-driven development (sda-ba user story → setup → design → task → qa-spec → dev → qa) |
+| [`sda`](tools/sda/README.md) | Software Development Assistant — coordinated agents and skills for specification-driven development (sda-ba user story → setup → design → task → qa-spec → dev → qa). Planning artifacts live in numbered workflow containers (`.sda/workflows/<NNN>. <slug>/`) whose stage is held by a state script and run by the `sda-workflow` advisor |
 
 ---
 

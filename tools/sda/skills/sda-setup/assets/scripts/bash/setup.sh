@@ -35,9 +35,12 @@ cp "$ASSETS_DIR/qa/qa-task-schema.md"                "$TARGET_DIR/resources/qa/q
 mkdir -p "$TARGET_DIR/resources/toolscan"
 cp "$ASSETS_DIR/toolscan/project-tools-schema.md"    "$TARGET_DIR/resources/toolscan/project-tools-schema.md"
 mkdir -p "$TARGET_DIR/resources/design"
-cp "$ASSETS_DIR/design/design-report-schema.md"  "$TARGET_DIR/resources/design/design-report-schema.md"
+cp "$ASSETS_DIR/design/design-record-schema.md"  "$TARGET_DIR/resources/design/design-record-schema.md"
 mkdir -p "$TARGET_DIR/resources/ba"
 cp "$ASSETS_DIR/ba/user-story-schema.md"            "$TARGET_DIR/resources/ba/user-story-schema.md"
+mkdir -p "$TARGET_DIR/resources/workflow"
+cp "$ASSETS_DIR/workflow/workflow-schema.md"        "$TARGET_DIR/resources/workflow/workflow-schema.md"
+cp "$ASSETS_DIR/workflow/escalation-brief-schema.md" "$TARGET_DIR/resources/workflow/escalation-brief-schema.md"
 
 TC_SOURCE="$ASSETS_DIR/tool-catalog/$LANGUAGE/tool-catalog.md"
 if [ -f "$TC_SOURCE" ]; then
@@ -83,10 +86,16 @@ chmod +x "$TARGET_DIR/scripts/toolscan/cleanup-project-tools.sh"
 chmod +x "$TARGET_DIR/scripts/toolscan/get-timestamp.sh"
 chmod +x "$TARGET_DIR/scripts/toolscan/probe-validators.sh"
 
-DECISIONS_SRC="$ASSETS_DIR/decisions/bash"
-mkdir -p "$TARGET_DIR/scripts/decisions"
-cp "$DECISIONS_SRC/docs-integrity.sh"              "$TARGET_DIR/scripts/decisions/docs-integrity.sh"
-chmod +x "$TARGET_DIR/scripts/decisions/docs-integrity.sh"
+DOCS_SRC="$ASSETS_DIR/docs/bash"
+mkdir -p "$TARGET_DIR/scripts/docs"
+cp "$DOCS_SRC/docs-integrity.sh"                  "$TARGET_DIR/scripts/docs/docs-integrity.sh"
+chmod +x "$TARGET_DIR/scripts/docs/docs-integrity.sh"
+
+# Copy workflow script
+WORKFLOW_SRC="$ASSETS_DIR/workflow/bash"
+mkdir -p "$TARGET_DIR/scripts/workflow"
+cp "$WORKFLOW_SRC/workflow.sh"                     "$TARGET_DIR/scripts/workflow/workflow.sh"
+chmod +x "$TARGET_DIR/scripts/workflow/workflow.sh"
 
 TD_SOURCE="$ASSETS_DIR/tool-discovery/$LANGUAGE/tool-discovery.md"
 if [ -f "$TD_SOURCE" ]; then
@@ -94,5 +103,19 @@ if [ -f "$TD_SOURCE" ]; then
 else
   echo "WARNING: No tool-discovery spec found for '$LANGUAGE'. Add one to .sda/resources/$LANGUAGE/ later."
 fi
+
+# --- Remove artifacts retired by earlier versions ---
+# Setup only creates and copies, so a path that moved or was replaced leaves a
+# stale copy behind in an existing install. Each entry is a shipped location.
+LEGACY_PATHS=(
+  "$TARGET_DIR/scripts/decisions"                        # docs-integrity moved to scripts/docs/
+  "$TARGET_DIR/resources/design/design-report-schema.md"  # replaced by design-record-schema.md
+)
+for legacy in "${LEGACY_PATHS[@]}"; do
+  if [ -e "$legacy" ]; then
+    rm -rf "$legacy"
+    echo "Removed retired path: $legacy"
+  fi
+done
 
 echo "SDA scaffolding complete: $TARGET_DIR/"

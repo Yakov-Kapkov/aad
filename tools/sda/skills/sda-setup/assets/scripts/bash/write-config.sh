@@ -52,6 +52,11 @@ SHIPPED = {
     "listQaSecrets": (".sda/scripts/qa/list-qa-secrets.ps1", ".sda/scripts/qa/list-qa-secrets.sh"),
     "qaSessionInit": (".sda/scripts/qa/qa-session-init.ps1", ".sda/scripts/qa/qa-session-init.sh"),
     "invokeHttp":    (".sda/scripts/qa/invoke-http.ps1",     ".sda/scripts/qa/invoke-http.sh"),
+    # docsIntegrity: the first pair is the pre-rename location — kept so existing
+    # installs migrate to the new folder instead of keeping a stale path.
+    "docsIntegrity": (".sda/scripts/decisions/docs-integrity.ps1", ".sda/scripts/decisions/docs-integrity.sh",
+                      ".sda/scripts/docs/docs-integrity.ps1",      ".sda/scripts/docs/docs-integrity.sh"),
+    "workflow":      (".sda/scripts/workflow/workflow.ps1",  ".sda/scripts/workflow/workflow.sh"),
 }
 PLATFORM = {
     "taskState":     ".sda/scripts/dev/task-state.sh",
@@ -59,6 +64,8 @@ PLATFORM = {
     "listQaSecrets": ".sda/scripts/qa/list-qa-secrets.sh",
     "qaSessionInit": ".sda/scripts/qa/qa-session-init.sh",
     "invokeHttp":    ".sda/scripts/qa/invoke-http.sh",
+    "docsIntegrity": ".sda/scripts/docs/docs-integrity.sh",
+    "workflow":      ".sda/scripts/workflow/workflow.sh",
 }
 scripts = config.setdefault("scripts", {})
 for key, platform_value in PLATFORM.items():

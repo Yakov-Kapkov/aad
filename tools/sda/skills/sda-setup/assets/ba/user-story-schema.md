@@ -1,12 +1,17 @@
 # User Story Schema
 
 A User Story has two layers: one **Actor statement** (Layer 1), then machine-readable
-**Gherkin scenarios** (Layer 2), plus local NFRs attached to specific scenarios.
+**Gherkin scenarios** (Layer 2), plus the NFR requirement entries the story is subject to.
 
 ## Template
 
 ````markdown
 # User Story: {slug}
+
+## Context
+{Omit entirely for a standalone story.}
+- **Workflow:** {id}. {slug}
+- **Requirements:** [{FEATURE-SLUG}-{NNN}]({path})
 
 ## Actor statement
 As a {role}, I want {action}, so that {benefit}.
@@ -34,8 +39,11 @@ When {action}
 Then {outcome}
 ```
 
-## Local NFRs
-- **LNFR-1** — The system shall {quality} {threshold} under {condition} — measured by {how} — applies to FR-{n}
+## NFRs
+{Cite the NFR requirement entries this story is subject to. A story constrains
+behaviour, so it names the FRs each entry applies to — the entry itself carries
+the metric, threshold, and method. Omit the section entirely if none.}
+- [{FEATURE-SLUG}-NFR-{NNN}]({path}) — constrains FR-{n}
 ````
 
 ## Scenario Outline (edge families)
@@ -82,6 +90,11 @@ Scenario Outline: Withdrawal rejected at balance limits (edge)
 - **`Given` = context only.** No user interaction in `Given` steps.
 - **Edge-case families** (multiple boundary values) → one `Scenario Outline` with an `Examples` table, not near-duplicate scenarios.
 - Each scenario is unambiguous and independently testable.
-- **Local NFRs are measurable** — threshold + measurement method + `applies to FR-{n}`.
+- **NFRs are cited, never authored here.** The requirement entry owns the metric,
+  threshold, and measurement method; the story links the entry and names the FRs it
+  constrains.
+- **`## Context` is the first section** — workflow id + slug, and relative links to the
+  requirement entries the story covers. Links are relative, so they resolve from the story's
+  own folder. Omit the section entirely for a standalone story — never write an empty header.
 - Entity doc — describes only the User Story document; it names no agent, phase, or
-  workflow.
+  pipeline role.

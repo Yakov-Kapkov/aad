@@ -34,12 +34,20 @@ scripts:
   # Bash:       .sda/scripts/qa/invoke-http.sh
   invokeHttp: .sda/scripts/qa/invoke-http.ps1
 
-  # Full path to the docs-integrity script. Called by sda-docs-check to verify
-  # decision-doc links, orphans, and duplicate index rows.
+  # Full path to the docs-integrity script. Called by sda-docs-check with a
+  # decisions/requirements root (links, orphans, duplicates, one-way .sda/ rule)
+  # or a single document path (links, code fence, non-.md path).
   # Set automatically by setup.
-  # PowerShell: .sda/scripts/decisions/docs-integrity.ps1
-  # Bash:       .sda/scripts/decisions/docs-integrity.sh
-  docsIntegrity: .sda/scripts/decisions/docs-integrity.ps1
+  # PowerShell: .sda/scripts/docs/docs-integrity.ps1
+  # Bash:       .sda/scripts/docs/docs-integrity.sh
+  docsIntegrity: .sda/scripts/docs/docs-integrity.ps1
+
+  # Full path to the workflow script. Creates and maintains workflow
+  # containers and their workflow.json state under paths.workflows.
+  # Set automatically by setup.
+  # PowerShell: .sda/scripts/workflow/workflow.ps1
+  # Bash:       .sda/scripts/workflow/workflow.sh
+  workflow: .sda/scripts/workflow/workflow.ps1
 
 # user — sda-design and sda-dev-task pressure-test YOUR proposed approach and never design for you
 # ai   — they may propose the design approach themselves (legacy behaviour)
@@ -69,6 +77,11 @@ paths:
   # Root folder for User Stories authored by sda-ba (user-story.md). Defaults
   # to .sda/stories if omitted. sda-ba writes here when no output path is given.
   userStories: .sda/stories
+
+  # Root folder for workflow containers (.sda/workflows/<NNN>. <slug>/), each
+  # holding a user story, a design record, and its task folders. Defaults to
+  # .sda/workflows if omitted.
+  workflows: .sda/workflows
 
 tests:
   coverage:
