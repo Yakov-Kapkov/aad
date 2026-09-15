@@ -1,0 +1,5 @@
+# Bash scripts must be LF in every checkout. With core.autocrlf=true a Windows
+# checkout materialises them as CRLF, and bash then reads the trailing CR as part
+# of the token — the shebang and every command line break. Installed copies
+# (setup.sh -> .sda/scripts/) inherit whatever the checkout had.
+*.sh text eol=lf

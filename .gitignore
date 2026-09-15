@@ -1,1 +1,5 @@
 ﻿.vscode/*
+
+# Scratch root shared by every test: one subfolder per test, removed on a
+# passing run and kept on failure. Tests write nowhere else.
+/.test-scratch/

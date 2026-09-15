@@ -90,6 +90,11 @@ the default copy logic. Any extra arguments (`ScriptArgs`) are passed through.
 | Tool | `tools/{name}/_installation/powershell/install.ps1` |
 
 Custom skill scripts receive: `-DestFolder <path> [-ScriptArgs <string>]`
+
+## Tests are never installed
+
+Both installers prune files named `_*.Tests.*` from the installed copy — at any depth, and on
+both the default and custom paths. Tests live beside the code they test and are development-only.
 Custom tool scripts receive: `-TargetBase <path> [-AgentFilter <list>] [-ScriptArgs <string>]`
 
 ## Common Parameters

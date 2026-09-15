@@ -44,7 +44,21 @@ This repo contains only static Markdown, PowerShell/Batch scripts, and JSON conf
 
 Each agent, skill, or tool lives in its own subfolder. Do not merge unrelated components into a single directory.
 
-### 5. Boundaries
+### 5. Tests Are Development-Only
+
+Tests live beside the code they test, named `_<subject>.Tests.<ext>` — the leading underscore and
+the `.Tests.` segment mark them as not-for-shipping.
+
+- **Never shipped**: the skill installers prune `_*.Tests.*` from the installed copy, and no
+  installer copies one into a project's `.sda/`.
+- **One scratch folder**: a test that writes files writes **only** under
+  `.test-scratch/<test-name>/` — one shared, gitignored root with one subfolder per test.
+- A test creates and deletes its **own** subfolder, never the shared root or a sibling's.
+- Scratch is removed on a passing run and kept on failure, so a failed run can be inspected.
+- Nothing outside `.test-scratch/` is written by a test: no temp files beside sources, no
+  fixtures in the repo root.
+
+### 6. Boundaries
 
 - ✅ **Always do**: Update docs when changing components, follow existing patterns, keep files concise.
 - ⚠️ **Ask first**: Adding a new top-level folder, removing an existing component, changing the repo structure.

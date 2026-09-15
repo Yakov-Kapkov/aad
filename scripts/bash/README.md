@@ -90,6 +90,11 @@ the default copy logic. Arguments after `--` are passed through.
 | Tool | `tools/{name}/_installation/bash/install.sh` |
 
 Custom skill scripts receive: `<dest-folder> [extra args...]`
+
+## Tests are never installed
+
+Both installers prune files named `_*.Tests.*` from the installed copy — at any depth, and on
+both the default and custom paths. Tests live beside the code they test and are development-only.
 Custom tool scripts receive: `<target-base> [-a <filter>] [extra args...]`
 
 ## Common Options

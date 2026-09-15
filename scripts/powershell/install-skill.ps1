@@ -8,6 +8,9 @@
     with -DestFolder and any additional arguments (ScriptArgs). Otherwise
     the skill folder is copied as-is.
 
+    Either way, development-only test files ('_*.Tests.*') are pruned from the
+    installed copy - tests never ship.
+
 .PARAMETER TargetBase
     Path to the .copilot folder (e.g. C:\Users\USERNAME\.copilot).
 
@@ -47,7 +50,18 @@ if (-not (Test-Path $SkillSrc)) {
     return
 }
 
-# ── Custom install script? ───────────────────────────────────────────────────
+# Tests never ship: '_<subject>.Tests.<ext>' is development-only. They sit beside
+# the code they test, at any depth, so the installed copy is pruned rather than
+# filtered at the top level only. A skill's own _installation script does its own
+# copying, so the prune runs on both paths.
+$TestPattern = '_*.Tests.*'
+function Remove-TestFiles([string]$Dest) {
+    if (-not (Test-Path $Dest)) { return }
+    Get-ChildItem $Dest -Recurse -File | Where-Object { $_.Name -like $TestPattern } |
+        ForEach-Object { Remove-Item $_.FullName -Force }
+}
+
+# ── Custom install script? ───────────────────────────────────────────────
 $CustomScript = Join-Path $SkillSrc '_installation\powershell\install.ps1'
 if (Test-Path $CustomScript) {
     Write-Host "=== Installing skill: $Name (custom) ==="
@@ -56,6 +70,7 @@ if (Test-Path $CustomScript) {
     } else {
         & $CustomScript -DestFolder $SkillDst
     }
+    Remove-TestFiles $SkillDst
     Write-Host "  Done.`n"
     return
 }
@@ -76,8 +91,11 @@ New-Item -ItemType Directory -Path $SkillDst -Force | Out-Null
 Get-ChildItem $SkillSrc -Exclude '_installation' | ForEach-Object {
     Copy-Item $_.FullName -Destination $SkillDst -Recurse -Force
 }
+
+Remove-TestFiles $SkillDst
+
 Get-ChildItem $SkillSrc -Recurse -File | Where-Object {
-    $_.FullName -notlike "$SkillSrc\_installation\*"
+    $_.FullName -notlike "$SkillSrc\_installation\*" -and $_.Name -notlike $TestPattern
 } | ForEach-Object {
     $Rel = $_.FullName.Substring($SkillSrc.Length + 1)
     Write-Host "    $Rel"
