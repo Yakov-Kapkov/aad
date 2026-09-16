@@ -32,6 +32,37 @@ Docs paths come from the AI readmes, not config: read the global AI readme
 (repo root) first, then each layer's readme, to discover its documentation
 tree before verifying.
 
+## Tool use — read/search for everything except one script
+
+`execute` is reserved for `{scripts.docsIntegrity}`: once per root in
+Stage 2, once per design record in Stage 5. Run nothing else.
+
+| Need | Tool |
+|---|---|
+| Enumerate a docs tree or folder | recursive directory listing / glob search |
+| Check a file exists | read it — missing = absent |
+| Read an index, decision, readme, or doc | read the file |
+| Find every mention of a feature, spec, or layer | grep |
+| Compare a decision against the code it governs | read both and compare; delegate broad reads to `sda-code-explore` |
+
+Never improvise shell commands — no ad-hoc `git` diff or tree listing,
+no directory-listing one-liners, no `npx prettier`, no BOM or
+line-ending (CR/LF) audits. Those checks are out of scope: git history
+is not needed to verify what is on disk, and formatting/byte-level
+concerns belong elsewhere.
+
+## .sda dependencies
+
+`.sda/` is a dot-prefixed folder that may be hidden from search tools.
+Access all files below by exact path from the repo root — never search for them.
+
+| File | Path |
+|---|---|
+| docs-integrity script | `{scripts.docsIntegrity}` — default `.sda/scripts/docs/docs-integrity.ps1` (`.sh` on Bash) |
+| design record (Stage 5) | caller-supplied `.md` path — never searched for |
+
+The script path is injected at session start by the read-config hook.
+
 ## Input — scope
 
 | Scope | Runs | Use when |
