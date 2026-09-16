@@ -249,7 +249,18 @@ Options:
 - {option} — {action to run after the user picks it}
 ```
 
-After the user answers, run the action for the chosen option.
+Single-select by default. Add `Multi: true` for a multi-select
+question — the user may pick several options:
+
+```
+[ASK]
+Multi: true
+Question: {one-line question}
+Options:
+- {option} — {action to run if this option is selected}
+```
+
+After the user answers, run the action for each chosen option.
 
 ## Communication style — mandatory
 
@@ -494,7 +505,7 @@ paths, Related tests (when listed), and Changes (no scenarios, no Test
    - **Unit type** — `tests required` (default), `tests only`,
      `integration only`, `refactoring`, or `docs`.
    - **Follow-up refactor grouping** — re-entering from Phase 6's
-     "Fix all": combine all *simple* refactoring follow-ups into one
+     follow-up selection: combine all *simple* refactoring follow-ups into one
      `refactoring` unit (one unit total). Simple = mechanical and
      localized (rename, extract, dedup, import rewrite). Split out
      only a concern that is complex or spans unrelated subsystems.
@@ -946,6 +957,18 @@ Triggered when `sda-dev-quality` flags a regression (test failure not in baselin
 
 ✅ **Task completed**</title>
 
+### Follow-up opportunity types
+
+Group every collected follow-up under exactly one type:
+
+| Type | Collected from | Example |
+|---|---|---|
+| **Refactoring** | Phase 4·U/4·X pre-existing issues; Phase 5 skipped coverage gates | `{file}` `{symbol}`: {violation}; coverage gap accepted |
+| **Docs** | Deferred docs-tree / readme work | missing `index.md`; stale decision doc |
+| **Behavior change** | Open deviations from `task.md`, assumptions, or deferred functional work | "assumed X — verify later" |
+
+Omit any empty group when presenting.
+
 ### Control flow
 
 1. **When `{state-tracking}`:** Run `task-state` `-Command get`
@@ -972,16 +995,24 @@ Triggered when `sda-dev-quality` flags a regression (test failure not in baselin
 
    You pass facts; `sda-scribe` formats and writes `dev-report.md`. Do not
    write the file yourself.
-4. **Follow-up opportunities** — if any were collected (from Phase 4·U/4·X
-   or Phase 5), output the Result, then:
+4. **Follow-up opportunities** — if any were collected, group them by
+   [type](#follow-up-opportunity-types), output the Result, then ask
+   which groups to fix. Multi-select; one option per non-empty group.
+   Re-entering Phase 1 passes only the selected groups' items as the
+   ad-hoc request — do NOT write code directly.
 
    ```
    [ASK]
-   Question: Follow-up opportunities found — how to address?
+   Multi: true
+   Question: Follow-up opportunities found — which groups to fix?
    Options:
-   - Fix all — re-enter Phase 1 (ad-hoc mode); do NOT write code directly
-   - Defer — end task
+   - Refactoring — add the Refactoring items to the request
+   - Docs — add the Docs items to the request
+   - Behavior change — add the Behavior change items to the request
    ```
+
+   Omit the option for any empty group. Selecting every non-empty
+   group = fix all. No groups selected → end the response (defer all).
 
 <result>
 
@@ -1002,7 +1033,14 @@ Done.
 ---
 
 ## 💡 Follow-up opportunities
+**Refactoring**
 - {file} `{symbol}`: {violation}
 
-(Omit this section if neither the refactor phases nor Phase 5 found pre-existing issues.)
+**Docs**
+- {file}: {gap}
+
+**Behavior change**
+- {change}: {deviation}
+
+(Omit this section when none were collected. Omit any empty group.)
 </result>
