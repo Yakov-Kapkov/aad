@@ -9,7 +9,8 @@
     only writer of workflow.json; folders and state are never hand-edited.
 
     Commands:
-      init      Create a workflow folder, its tasks/ folder, and workflow.json.
+      init      Create a workflow folder, its tasks/ folder, and workflow.json,
+                at story by default or the -At stage.
       list      One line per workflow; marks the deepest open escalation.
       current   Print the stage, any open escalation, and artifact gaps.
       read      Print workflow.json, or one field with -Field.
@@ -19,12 +20,14 @@
 
     Output contract:
       mutation  ok: workflow '<folder>' <verb> <subject> -> '<stage>'
-      status    key=value lines (current)
+      status    header line, key=value lines, and a derived stages table (current)
       raw       pretty-printed JSON, or the bare field value (read)
       failure   error=<X cannot do Y because Z>, exit code 1
 
-    The stage order is story -> design -> tasks -> ready. Every stage produces
-    one artifact, and advance refuses to leave a stage whose artifact is absent.
+    The stage order is story -> design -> tasks -> ready. A container starts at
+    story by default; -At design or -At tasks skips the stages before it, which
+    then produce no artifact. Every stage from the start onward produces one
+    artifact, and advance refuses to leave a stage whose artifact is absent.
     While any escalation is open, advance is refused and only resolve clears it.
 
 .PARAMETER Command
@@ -33,8 +36,12 @@
 .PARAMETER Slug
     Workflow folder name, numeric id, or slug.
 
+.PARAMETER At
+    (init only) The stage to create the container at: story, design, or tasks.
+    Defaults to story. Stages before it are skipped.
+
 .PARAMETER Field
-    (read only) One of: id, slug, created, stage, notes.
+    (read only) One of: id, slug, created, stage, start, notes.
 
 .PARAMETER To
     (escalate only) The stage to move back to. Defaults to one stage back.
@@ -62,6 +69,9 @@
     workflow.ps1 init -Slug const-refactoring
 
 .EXAMPLE
+    workflow.ps1 init -Slug const-refactoring -At design
+
+.EXAMPLE
     workflow.ps1 escalate -Slug 001 -Reason "outbox replaced by direct write" `
         -Brief ".sda/workflows/001. const-refactoring/escalations/001. 2026-09-15_14-20-tasks-to-design.md"
 
@@ -76,6 +86,8 @@ param(
     [string] $Command,
 
     [string] $Slug,
+
+    [string] $At,
 
     [string] $Field,
 
@@ -96,6 +108,7 @@ Set-StrictMode -Version Latest
 $ErrorActionPreference = 'Stop'
 
 $StageNames = @('story', 'design', 'tasks', 'ready')
+$StartableStages = @('story', 'design', 'tasks')
 $StageArtifacts = @{
     'story'  = 'user-story.md'
     'design' = 'design.md'
@@ -218,6 +231,13 @@ function Read-State([string]$folder) {
     if ((Get-StageIndex $state.stage) -lt 0) {
         Fail "workflow cannot be read because $file has an unknown stage '$($state.stage)'"
     }
+
+    $startProp = $state.PSObject.Properties['start']
+    if ($null -ne $startProp -and -not [string]::IsNullOrEmpty([string]$startProp.Value)) {
+        if ([array]::IndexOf($StartableStages, [string]$startProp.Value) -lt 0) {
+            Fail "workflow cannot be read because $file has an unknown start stage '$($startProp.Value)'"
+        }
+    }
     return $state
 }
 
@@ -291,6 +311,11 @@ switch ($Command) {
             Fail "init cannot create '$Slug' because the slug must be kebab-case (lowercase letters, digits, single hyphens)"
         }
 
+        $StartStage = if ($At) { $At } else { 'story' }
+        if ([array]::IndexOf($StartableStages, $StartStage) -lt 0) {
+            Fail "init cannot create '$Slug' because '$StartStage' is not a valid start stage (story, design, or tasks)"
+        }
+
         $folders = @(Get-WorkflowFolders)
         foreach ($f in $folders) {
             if ($f.Name.Substring(5) -ceq $Slug) {
@@ -319,11 +344,12 @@ switch ($Command) {
             id      = $id
             slug    = $Slug
             created = (Get-Date -Format 'yyyy-MM-dd')
-            stage   = 'story'
+            stage   = $StartStage
+            start   = $StartStage
             notes   = [object[]]@()
         }
         Write-State $folder $state
-        Write-Output "ok: workflow '$folderName' created -> 'story'"
+        Write-Output "ok: workflow '$folderName' created -> '$StartStage'"
     }
 
     'list' {
@@ -355,6 +381,11 @@ switch ($Command) {
             exit 0
         }
 
+        if ($Field -eq 'start' -and $null -eq $state.PSObject.Properties['start']) {
+            Write-Output 'story'
+            exit 0
+        }
+
         $prop = $state.PSObject.Properties[$Field]
         if ($null -eq $prop) {
             Fail "read cannot print '$Field' because '$Field' is not a workflow field"
@@ -373,17 +404,43 @@ switch ($Command) {
         $folderName = Split-Path $folder -Leaf
         $index = Get-StageIndex $state.stage
 
-        Write-Output "ok: workflow '$folderName'"
-        Write-Output "stage=$($state.stage)"
+        $startName = 'story'
+        $startProp = $state.PSObject.Properties['start']
+        if ($null -ne $startProp -and -not [string]::IsNullOrEmpty([string]$startProp.Value)) {
+            $startName = [string]$startProp.Value
+        }
+        $startIndex = Get-StageIndex $startName
+        $deepest = Get-DeepestOpen $state
 
-        # Artifact gaps up to and including the current stage. 'ready' has none.
-        for ($i = 0; $i -le $index; $i++) {
+        Write-Output "workflow '$folderName'"
+        Write-Output "start=$startName"
+        Write-Output "stage=$($state.stage)"
+        Write-Output 'stages'
+        foreach ($stageName in $StageNames) {
+            $i = Get-StageIndex $stageName
+            if ($i -eq $index) {
+                $status = 'processing'
+            } elseif ($null -ne $deepest -and $deepest.from -eq $stageName) {
+                $status = 'pending'
+            } elseif ($i -lt $startIndex -and $i -lt $index) {
+                $status = 'skipped'
+            } elseif ($i -lt $index) {
+                $status = 'done'
+            } else {
+                $status = '-'
+            }
+            Write-Output ('  ' + $stageName.PadRight(6) + " [ $status ]")
+        }
+
+        # Artifact gaps from the start to the current stage. 'ready' has none.
+        $from = $startIndex
+        if ($index -lt $from) { $from = $index }
+        for ($i = $from; $i -le $index; $i++) {
             $name = $StageNames[$i]
             if ($name -eq 'ready') { continue }
             if (-not (Test-StageArtifact $folder $name)) { Write-Output "gap=$name" }
         }
 
-        $deepest = Get-DeepestOpen $state
         if ($null -eq $deepest) {
             Write-Output 'escalation=none'
         } else {

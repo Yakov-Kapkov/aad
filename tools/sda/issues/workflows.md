@@ -1,6 +1,6 @@
 # Workflows — Design Note
 
-**Status:** design locked 2026-09-15 (rev 5 — the `sda-workflow` advisor) · tranches 1–10 implemented · **script twins verified 2026-09-15** (60-case differential harness: identical output and exit codes) 
+**Status:** design locked 2026-09-15 (rev 6 — optional start stage) · tranches 1–10 implemented · **script twins verified 2026-09-17** (89-step differential harness: identical output and exit codes) 
 **Scope:** `tools/sda` (+ `skills/repo-ai-friendly` as a dependency; `skills/sda-setup` assets)
 **Origin:** the `sdlc/` folder is a parallel evolution branch kept for reference. Its
 **state discipline** (state = data + transition script; one writer; housekeeper vs advisor)
@@ -32,7 +32,7 @@ A **workflow** is a numbered container for one requirement's planning artifacts,
 | One owner per artifact | story → `sda-ba`, design → `sda-design`, tasks → `sda-dev-task`. Others read-only. |
 | Renewable = idempotent overwrite | Workflow mode reads the existing artifact at session start and updates it in place. **No timestamped folders** in workflow mode. |
 | `design.md` is handoff context | Purpose: let `sda-dev-task` design tasks without re-deriving architecture. Approach + scope + pointers — never a restatement. Content rules in §6. |
-| Every stage produces its artifact | No stage is skipped. A design pass with nothing to decide renews `design.md` with what was considered and why it stands. |
+| Every stage from `start` onward produces its artifact | Stages before `start` are skipped and produce nothing. A design pass with nothing to decide renews `design.md` with what was considered and why it stands. |
 | Link direction is one-way | Durable docs never link into `.sda`; transient artifacts link to durable docs. |
 | Workflows are opt-in containers | Standalone single-agent use is fully supported and unchanged. |
 | Numbering | `<NNN>. <slug>`, zero-padded, matches the existing task-folder convention. Highest existing prefix + 1. |
@@ -180,10 +180,10 @@ Installed to `.sda/scripts/workflow/workflow.ps1` / `.sh` (registered as `script
 Flags are `--flag` in bash, `-Flag` in PowerShell.
 
 ```
-{workflow} init     --slug <slug>
+{workflow} init     --slug <slug> [--at <story|design|tasks>]
 {workflow} list
 {workflow} current  --slug <folder>
-{workflow} read     --slug <folder> [--field <id|slug|created|stage|notes>]
+{workflow} read     --slug <folder> [--field <id|slug|created|stage|start|notes>]
 {workflow} advance  --slug <folder>
 {workflow} escalate --slug <folder> [--to <stage>] --reason <text> --brief <path>
 {workflow} resolve  --slug <folder> --id <E#> --report <text>
@@ -194,13 +194,13 @@ Flags are `--flag` in bash, `-Flag` in PowerShell.
 | Kind | Shape |
 |---|---|
 | mutation — `init`, `advance`, `escalate`, `resolve` | `ok: workflow '<slug>' <verb> <subject> -> '<stage>'` |
-| status — `current` | `key=value` lines |
+| status — `current` | a header line, `key=value` lines, and a derived `stages` table |
 | raw — `read` | pretty-printed JSON, or the bare field value |
 | failure | `error=<X cannot do Y because Z>` and exit 1 |
 
 ```
-ok: workflow '001. const-refactoring' created -> 'story'
-ok: workflow '001. const-refactoring' advanced 'story' -> 'design'
+ok: workflow '001. const-refactoring' created -> 'design'
+ok: workflow '001. const-refactoring' advanced 'design' -> 'tasks'
 ok: workflow '001. const-refactoring' escalated 'tasks' -> 'story'
 ok: workflow '001. const-refactoring' resolved 'E1' -> 'design'
 error=advance cannot move from 'design' because escalation E1 is open; run 'current', then 'resolve' E1
@@ -212,20 +212,20 @@ where the workflow now is.
 ### Container consistency
 
 Every command that reads state verifies the container first: `workflow.json`
-exists, parses, carries `id`, `slug`, `created`, and `stage`, and holds a known
-`stage`. An inconsistent container stops the command with an `error=` line
-rather than yielding an empty field or a partial answer. `list` verifies **every**
-container before printing anything, so one corrupted folder cannot leave a
-half-list behind.
+exists, parses, carries `id`, `slug`, `created`, and `stage`, holds a known
+`stage`, and — when present — carries a known `start`. An inconsistent container
+stops the command with an `error=` line rather than yielding an empty field or a
+partial answer. `list` verifies **every** container before printing anything, so
+one corrupted folder cannot leave a half-list behind.
 
 ### Commands
 
 | Command | Effect | Refused when |
 |---|---|---|
-| `init --slug` | creates `<root>/<NNN>. <slug>/`, its `tasks/` and `escalations/` folders, and `workflow.json` at stage `story` | slug is not kebab-case; the slug is taken; numbering is exhausted |
+| `init --slug [--at]` | creates `<root>/<NNN>. <slug>/`, its `tasks/` and `escalations/` folders, and `workflow.json` at the start stage (`story` by default) | slug is not kebab-case; `--at` is not `story`/`design`/`tasks`; the slug is taken; numbering is exhausted |
 | `list` | verifies every container, then prints one line per workflow and marks the deepest open escalation | any container is inconsistent — no `workflow.json`, invalid JSON, a missing field, or an unknown stage |
-| `current --slug` | prints `stage=`, the open escalation block, and any artifact gap | — |
-| `read --slug [--field]` | the whole state, or one field; `--field notes` gives full history | the field is unknown |
+| `current --slug` | prints `start=`, `stage=`, the derived `stages` table, any artifact gap, and the open escalation block | — |
+| `read --slug [--field]` | the whole state, or one field (`start` defaults to `story` when absent); `--field notes` gives full history | the field is unknown |
 | `advance --slug` | stage + 1 | an escalation is open; already at `ready`; the current stage's artifact is absent |
 | `escalate --slug [--to] --reason --brief` | stage − N (default 1); records one escalation with a new id and the brief's path | `--to` is not earlier than the current stage; the current stage is `story`; `--reason` is missing; `--brief` is missing, does not exist, or does not sit in `<wf>/escalations/` |
 | `resolve --slug --id --report` | closes the deepest open escalation; stage + 1 | no such id; the id is not the deepest open one; `--report` is missing |
@@ -233,8 +233,23 @@ half-list behind.
 ### `current`
 
 ```
-ok: workflow '001. const-refactoring'
-stage=design
+workflow '001. const-refactoring'
+start=design
+stage=tasks
+stages
+  story   [ skipped ]
+  design  [ done ]
+  tasks   [ processing ]
+  ready   [ - ]
+escalation=none
+```
+
+Each stage renders one of `processing` (current), `pending` (the stage whose raise is
+open), `done` (passed), `skipped` (before `start`, never entered), or `-` (ahead). The
+`stages` table is **derived** — it is never stored; `workflow.json` keeps only the pointer,
+`start`, and the `notes` log. With an open escalation the block below the table is:
+
+```
 escalation=E1
 owner=design
 raisedBy=tasks
@@ -551,6 +566,7 @@ need the repo's own tables — they stay with the agent. `.md` links are navigat
 | 42 | Slug validation (`init`) and slug resolution (`--slug <slug>`) are **case-sensitive** in both twins — only `[a-z0-9]` and single hyphens. PowerShell's `-match`/`-eq` are case-insensitive by default, so the twin needs `-cnotmatch`/`-ceq`; Windows' case-insensitive filesystem must not leak into the contract |
 | 43 | Every failure, including CLI misuse, prints `error=<X cannot do Y because Z>` and exits 1 (34) — no `usage` block, no raw parameter-binding error. A PowerShell `ValidateSet` or a mandatory parameter pre-empts the script's own check, so validation happens in the body, never in the param block |
 | 44 | A container is read only after it is verified **consistent**: `workflow.json` present, parseable, carrying `id`, `slug`, `created`, `stage`, and a known stage. `list` verifies every container **before printing**, so a corrupted folder stops the command instead of leaving a partial answer — a half-list would read as a complete one |
+| 45 | A workflow may start at `design` or `tasks` for pure technical work with no user-visible change: `init --at <stage>` records `start`, and the stages before it are **skipped** — they produce no artifact and `current` shows them `skipped`, never `gap=`. The escalation floor stays `story`, so a skipped stage is re-opened by escalating into it and then needs its artifact (amends 27; extends 44's consistency check to `start`) |
 
 ## 11. Deferred
 

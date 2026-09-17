@@ -74,7 +74,7 @@ Planning artifacts live in a **workflow**: a numbered container for one requirem
 ```
 .sda/workflows/
   001. const-refactoring/
-    workflow.json          script-written state (stage + escalation log)
+    workflow.json          script-written state (stage + start + escalation log)
     user-story.md          owner: sda-ba
     design.md              owner: sda-design
     tasks/                 owner: sda-dev-task
@@ -82,10 +82,12 @@ Planning artifacts live in a **workflow**: a numbered container for one requirem
     escalations/           one evidence brief per escalation
 ```
 
-Create one with `/sda.workflow.init`, then start `sda-ba` on it in its own session. The
+Create one with `/sda.workflow.init`, then start the owning agent on it in its own session. The
 `sda-workflow` agent is the advisor surface: it reports where a container sits, names the next
 action and its owning agent, and runs `init`, `advance`, and a user-requested `escalate`.
-The stage machine is `story → design → tasks → ready`: `advance` moves
+The stage machine is `story → design → tasks → ready`: `init` starts at `story` by default, or at
+`design` / `tasks` for pure technical work that has no user-visible change — the stages before the
+start are skipped and produce no artifact. `advance` moves
 forward exactly one stage, and `escalate` moves back — recording why, plus a **brief** holding the
 evidence — when the current stage cannot finish on the artifacts it was given. The script refuses
 a raise without a brief, so the blocked stage writes it first (`sda-scribe` numbers and names it);
@@ -261,7 +263,7 @@ All pipeline agents are user-invokable and used as needed.
 | `sda.setup` | Sets up SDA tool — scaffolds `.sda/` and scans the project toolchain |
 | `sda.setup.no-scan` | Sets up SDA tool — scaffolds `.sda/` without a toolchain scan |
 | `sda.design.reconcile` | Reconciles design docs with code — finds and fixes inconsistencies across the AI readme, global + per-layer docs, and decision docs |
-| `sda.workflow.init` | Creates a workflow container for one requirement, then names the `sda-ba` session to start |
+| `sda.workflow.init` | Creates a workflow container for one requirement, then names the start stage's session to run |
 | `sda.workflow.status` | Reports where the workflow containers sit, ending with the single next action and the agent that owns it |
 | `sda.workflow.advance` | Moves a workflow forward one stage, after showing the state and confirming |
 | `sda.workflow.escalate` | Sends a workflow back a stage — elicits what is wrong, writes the evidence brief, then raises |
@@ -507,8 +509,9 @@ the shared, gitignored test scratch root — and is removed on a green run, so a
 two temp roots and their step-by-step transcripts are still there to inspect. It needs Git Bash
 and `jq`, and skips with a message when either is missing.
 
-Covered today: the stage machine and its artifact gate, the escalation brief gate, `--to` jumps,
-displayed open-ness and LIFO unwind, container-consistency verification, and CLI misuse.
+Covered today: the stage machine and its artifact gate, non-`story` start stages and the skipped
+prefix, the escalation brief gate, `--to` jumps, displayed open-ness and LIFO unwind,
+container-consistency verification, and CLI misuse.
 
 ---
 

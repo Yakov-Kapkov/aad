@@ -6,7 +6,8 @@
 # workflow.json; folders and state are never hand-edited.
 #
 # Commands:
-#   init      Create a workflow folder, its tasks/ folder, and workflow.json.
+#   init      Create a workflow folder, its tasks/ folder, and workflow.json,
+#             at story by default or the --at stage.
 #   list      One line per workflow; marks the deepest open escalation.
 #   current   Print the stage, any open escalation, and artifact gaps.
 #   read      Print workflow.json, or one field with --field.
@@ -20,15 +21,17 @@
 #   raw       pretty-printed JSON, or the bare field value (read)
 #   failure   error=<X cannot do Y because Z>, exit code 1
 #
-# The stage order is story -> design -> tasks -> ready. Every stage produces one
+# The stage order is story -> design -> tasks -> ready. A container starts at
+# story by default; --at design or --at tasks skips the stages before it, which
+# then produce no artifact. Every stage from the start onward produces one
 # artifact, and advance refuses to leave a stage whose artifact is absent. While
 # any escalation is open, advance is refused and only resolve clears it.
 #
 # Usage:
-#   workflow.sh init     --slug <slug>
+#   workflow.sh init     --slug <slug> [--at <story|design|tasks>]
 #   workflow.sh list
 #   workflow.sh current  --slug <folder>
-#   workflow.sh read     --slug <folder> [--field <id|slug|created|stage|notes>]
+#   workflow.sh read     --slug <folder> [--field <id|slug|created|stage|start|notes>]
 #   workflow.sh advance  --slug <folder>
 #   workflow.sh escalate --slug <folder> [--to <stage>] --reason <text> --brief <path>
 #   workflow.sh resolve  --slug <folder> --id <E#> --report <text>
@@ -43,6 +46,7 @@ set -uo pipefail
 ROOT=".sda/workflows"
 COMMAND="${1:-}"
 SLUG=""
+AT=""
 FIELD=""
 TO=""
 REASON=""
@@ -65,6 +69,7 @@ shift || true
 while [ $# -gt 0 ]; do
   case "$1" in
     --slug)   SLUG="${2:-}";   shift 2 ;;
+    --at)     AT="${2:-}";     shift 2 ;;
     --field)  FIELD="${2:-}";  shift 2 ;;
     --to)     TO="${2:-}";     shift 2 ;;
     --reason) REASON="${2:-}"; shift 2 ;;
@@ -118,6 +123,14 @@ verify_state() {
   value="$(jq -r '.stage' "$file")"
   [ "$(stage_index "$value")" -ge 0 ] \
     || fail "workflow cannot be read because $file has an unknown stage '$value'"
+
+  start="$(jq -r '.start // empty' "$file")"
+  if [ -n "$start" ]; then
+    case "$start" in
+      story|design|tasks) ;;
+      *) fail "workflow cannot be read because $file has an unknown start stage '$start'" ;;
+    esac
+  fi
 }
 
 # One folder name per line, <NNN>. <slug> only, in numeric order.
@@ -214,6 +227,13 @@ case "$COMMAND" in
     [[ "$SLUG" =~ ^[a-z0-9]+(-[a-z0-9]+)*$ ]] \
       || fail "init cannot create '$SLUG' because the slug must be kebab-case (lowercase letters, digits, single hyphens)"
 
+    start="$AT"
+    [ -n "$start" ] || start="story"
+    case "$start" in
+      story|design|tasks) ;;
+      *) fail "init cannot create '$SLUG' because '$start' is not a valid start stage (story, design, or tasks)" ;;
+    esac
+
     while IFS= read -r name; do
       if [ "${name:5}" = "$SLUG" ]; then
         fail "init cannot create '$SLUG' because $name already uses that slug"
@@ -235,12 +255,12 @@ case "$COMMAND" in
     mkdir -p "$folder/tasks" "$folder/escalations" \
       || fail "init cannot create '$SLUG' because $folder could not be created"
 
-    jq -n --arg id "$id" --arg slug "$SLUG" --arg created "$(date +%F)" \
-      '{id: $id, slug: $slug, created: $created, stage: "story", notes: []}' \
+    jq -n --arg id "$id" --arg slug "$SLUG" --arg created "$(date +%F)" --arg start "$start" \
+      '{id: $id, slug: $slug, created: $created, stage: $start, start: $start, notes: []}' \
       > "$folder/workflow.json" \
       || fail "init cannot create '$SLUG' because $folder/workflow.json could not be written"
 
-    printf "ok: workflow '%s. %s' created -> 'story'\n" "$id" "$SLUG"
+    printf "ok: workflow '%s. %s' created -> '%s'\n" "$id" "$SLUG" "$start"
     ;;
 
   list)
@@ -289,6 +309,7 @@ case "$COMMAND" in
 
     case "$FIELD" in
       id|slug|created|stage) jq -r --arg f "$FIELD" '.[$f]' "$file" ;;
+      start)                 jq -r '.start // "story"' "$file" ;;
       notes)                 jq '.notes' "$file" ;;
       *)                     fail "read cannot print '$FIELD' because '$FIELD' is not a workflow field" ;;
     esac
@@ -302,13 +323,38 @@ case "$COMMAND" in
     verify_state "$folder"
 
     stage="$(jq -r '.stage' "$file")"
+    start="$(jq -r '.start // "story"' "$file")"
     index="$(stage_index "$stage")"
+    start_index="$(stage_index "$start")"
+    ejson="$(open_escalation "$file")"
 
-    printf "ok: workflow '%s'\n" "$(basename "$folder")"
+    printf "workflow '%s'\n" "$(basename "$folder")"
+    printf 'start=%s\n' "$start"
     printf 'stage=%s\n' "$stage"
+    printf 'stages\n'
 
-    # Artifact gaps up to and including the current stage. 'ready' has none.
     i=0
+    while [ "$i" -le 3 ]; do
+      name="$(stage_name "$i")"
+      if [ "$i" -eq "$index" ]; then
+        status="processing"
+      elif [ "$ejson" != "null" ] && [ "$(printf '%s' "$ejson" | jq -r '.from')" = "$name" ]; then
+        status="pending"
+      elif [ "$i" -lt "$start_index" ] && [ "$i" -lt "$index" ]; then
+        status="skipped"
+      elif [ "$i" -lt "$index" ]; then
+        status="done"
+      else
+        status="-"
+      fi
+      printf '  %-6s [ %s ]\n' "$name" "$status"
+      i=$((i + 1))
+    done
+
+    # Artifact gaps from the start to the current stage. 'ready' has none.
+    lo="$start_index"
+    [ "$index" -lt "$lo" ] && lo="$index"
+    i="$lo"
     while [ "$i" -le "$index" ]; do
       name="$(stage_name "$i")"
       if [ "$name" != "ready" ] && ! artifact_present "$folder" "$name"; then
@@ -317,7 +363,6 @@ case "$COMMAND" in
       i=$((i + 1))
     done
 
-    ejson="$(open_escalation "$file")"
     if [ "$ejson" = "null" ]; then
       printf 'escalation=none\n'
     else

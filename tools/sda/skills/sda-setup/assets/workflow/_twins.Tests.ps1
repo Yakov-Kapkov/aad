@@ -15,7 +15,8 @@
     Every step is declared once, in bash flag syntax; the PowerShell arguments
     are derived (--slug -> -Slug). '@ROOT' expands to the container root.
 
-    Coverage: the stage machine and its artifact gate; the escalation brief gate
+    Coverage: the stage machine and its artifact gate; non-story start stages
+    and the skipped prefix; the escalation brief gate
     (missing, absent, outside escalations/); --to jumps; derived open-ness; LIFO
     unwind; resolve advancing exactly one stage; brief=- on a pre-brief state;
     and CLI misuse.
@@ -239,6 +240,26 @@ $steps = @(
     @{ id = 'S67'; label = 'escalate: unknown target stage';      args = @('escalate', '--slug', '001', '--to', 'bogus', '--reason', 'r', '--brief', '@ROOT/001. alpha/escalations/001. fig.md'); expectLines = 2 }
     @{ id = 'S68'; label = 'no command at all';                   args = @(); expectLines = 2 }
     @{ id = 'S69'; label = 'unknown command';                     args = @('frobnicate'); expectLines = 2 }
+    @{ id = 'S70'; label = 'init: --at design';                   args = @('init', '--slug', 'tech-a', '--at', 'design') }
+    @{ id = 'S71'; label = 'current: design origin, skipped story'; args = @('current', '--slug', '006') }
+    @{ id = 'S72'; label = 'read: start field = design';          args = @('read', '--slug', '006', '--field', 'start') }
+    @{ id = 'S73'; label = 'advance: design origin, design.md absent'; args = @('advance', '--slug', '006') }
+    @{ id = 'S74'; label = 'fixture: 006/design.md';              fs = '006. tech-a/design.md' }
+    @{ id = 'S75'; label = 'advance: design -> tasks';            args = @('advance', '--slug', '006') }
+    @{ id = 'S76'; label = 'current: no gap=story at tasks';      args = @('current', '--slug', '006') }
+    @{ id = 'S77'; label = 'fixture: 006 escalation brief';       fs = '006. tech-a/escalations/001. fig.md' }
+    @{ id = 'S78'; label = 'escalate: design origin into skipped story'; args = @('escalate', '--slug', '006', '--to', 'story', '--reason', 'needs a story after all', '--brief', '@ROOT/006. tech-a/escalations/001. fig.md') }
+    @{ id = 'S79'; label = 'current: re-opened story needs artifact'; args = @('current', '--slug', '006') }
+    @{ id = 'S80'; label = 'advance: re-opened story artifact absent'; args = @('advance', '--slug', '006') }
+    @{ id = 'S81'; label = 'resolve: re-opened story -> design';  args = @('resolve', '--slug', '006', '--id', 'E1', '--report', 'story added') }
+    @{ id = 'S82'; label = 'init: --at tasks';                    args = @('init', '--slug', 'tech-b', '--at', 'tasks') }
+    @{ id = 'S83'; label = 'current: tasks origin, two skipped';  args = @('current', '--slug', '007') }
+    @{ id = 'S84'; label = 'fixture: 007/tasks/001. x/task.md';   fs = '007. tech-b/tasks/001. x/task.md' }
+    @{ id = 'S85'; label = 'advance: tasks -> ready';             args = @('advance', '--slug', '007') }
+    @{ id = 'S86'; label = 'current: ready, skipped story+design'; args = @('current', '--slug', '007') }
+    @{ id = 'S87'; label = 'read: default start is story';        args = @('read', '--slug', '001', '--field', 'start') }
+    @{ id = 'S88'; label = 'init: --at ready refused';            args = @('init', '--slug', 'tech-c', '--at', 'ready'); expectLines = 2 }
+    @{ id = 'S89'; label = 'init: --at bogus refused';            args = @('init', '--slug', 'tech-c', '--at', 'bogus'); expectLines = 2 }
 )
 
 # A state file written before briefs existed: no 'brief' property at all.

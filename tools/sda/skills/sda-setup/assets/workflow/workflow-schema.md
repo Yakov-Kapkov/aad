@@ -34,6 +34,7 @@ moves the pointer back, is recorded in `notes`, and keeps its evidence in
   "slug": "const-refactoring",
   "created": "2026-09-14",
   "stage": "story",
+  "start": "story",
   "notes": []
 }
 ```
@@ -63,7 +64,17 @@ moves the pointer back, is recorded in `notes`, and keeps its evidence in
   artifact exists.
 - `escalate` moves back one or more stages; `resolve` moves forward exactly one.
 - While any escalation is open, `advance` is refused.
-- `story` is the first stage; `ready` is terminal.
+- `story` is the first stage by default — a container may start later (see
+  `start`). `ready` is terminal.
+
+### `start`
+- The stage the container was created at: `story` (default), `design`, or
+  `tasks`. `ready` is never a valid start.
+- Stages before `start` are **skipped** — they produce no artifact, and
+  `current` reports no `gap=` for them. If an escalation later moves the
+  pointer back into a skipped stage, that stage becomes real and requires its
+  artifact before `advance` can leave it.
+- Absent on containers written before it existed; treated as `story`.
 
 ### `notes`
 - Append-only. Entries are never edited, reordered, or removed.
@@ -86,9 +97,9 @@ moves the pointer back, is recorded in `notes`, and keeps its evidence in
 ### Artifacts
 - `user-story.md` (story), `design.md` (design), and `tasks/` (tasks). `ready`
   has no artifact of its own.
-- Every stage produces its artifact; no stage can be passed over. A design pass
-  with nothing to decide renews `design.md` with what was considered and why it
-  stands.
+- Every stage from `start` onward produces its artifact; a stage can be passed
+  over only by starting the container after it. A design pass with nothing to
+  decide renews `design.md` with what was considered and why it stands.
 - An absent artifact for the current stage blocks `advance`, and `current`
   reports it as a `gap=` line.
 - `tasks/` is created with the container and may stay empty; `tasks` counts as
@@ -104,6 +115,8 @@ moves the pointer back, is recorded in `notes`, and keeps its evidence in
 ### Consistency
 - A container is consistent only when `workflow.json` exists, parses, carries
   `id`, `slug`, `created`, and `stage`, and holds a known `stage`.
+- A present `start` must be a known start stage (`story`, `design`, or
+  `tasks`); when absent it is treated as `story`.
 - The script verifies this before it reads state and stops on the first
   inconsistent container with an `error=` line — never a partial answer.
 - `list` verifies every container before printing anything, so a corrupted one

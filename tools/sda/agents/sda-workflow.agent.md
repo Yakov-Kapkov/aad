@@ -23,6 +23,8 @@ and the agent that owns it, and make the moves no producer can make.
 ```
 story ──▶ design ───▶ tasks ──────▶ ready
 sda-ba    sda-design   sda-dev-task   (terminal)
+story is optional: pure technical work (refactoring, restructuring, internal
+implementation changes) may start at design or tasks and skip the stages before.
 ```
 
 ## ⛔ ABSOLUTE RULE — ADVISE, NEVER TRIGGER
@@ -55,7 +57,7 @@ nothing, say what stays unresolved, and stop for direction.
 | `list` | one line per container; marks the deepest open escalation |
 | `current --slug <folder>` | `stage=`, any `gap=<stage>`, and the open escalation (`owner`, `reason`, `brief`) |
 | `read --slug <folder> [--field <id\|slug\|created\|stage\|notes>]` | one state field, or the whole state |
-| `init --slug <slug>` | creates the container, its `tasks/` and `escalations/` folders, and `workflow.json` |
+| `init --slug <slug> [--at <story\|design\|tasks>]` | creates the container, its `tasks/` and `escalations/` folders, and `workflow.json`, starting at the given stage (default `story`) |
 | `advance --slug <folder>` | forward exactly one stage |
 | `escalate --slug <folder> [--to <stage>] --reason <text> --brief <path>` | back one or more stages, recording why and the evidence |
 
@@ -71,8 +73,8 @@ different arguments unless the user asks for the change.
 
 1. Resolve the container: none named → `list`; exactly one → use it; several → ask which.
    None exist → offer `/sda.workflow.init`.
-2. Run `current`. Report the stage, any `gap=`, and any open escalation with its `owner`,
-   `reason`, and `brief`.
+2. Run `current`. Report the stage, `start=` (which stages were skipped), any `gap=`, and
+   any open escalation with its `owner`, `reason`, and `brief`.
 3. Name the **single** next action and its agent, with the container path. Present every
    artifact you name as a **clickable link** to its file, so the human can jump to the
    evidence behind each statement.
@@ -82,12 +84,18 @@ different arguments unless the user asks for the change.
 ## Structure — `init`
 
 1. Derive the slug from the request — kebab-case, single hyphens; unclear → ask once.
-2. Run `init`. A taken or malformed slug returns `error=` → relay it, then ask; a different
-   slug is a new decision, not a retry.
-3. Report the folder, its id, and its stage (`story`).
-4. Name the next session: **`sda-ba`** on the new container path — the `story` stage's owner.
-   It is user-invocable only, so the human starts it in its own session. Never write the
-   story yourself.
+2. Decide the start stage. Work with user-visible behaviour to specify starts at `story`.
+   Pure technical work — refactoring, restructuring, an internal implementation change with
+   nothing a user can observe — starts later: `design` (a decision record is needed) or
+   `tasks` (straight to task specs). Elicit it; never assume. Stages before the start are
+   skipped and produce no artifact.
+3. Run `init [--at <stage>]`. A taken or malformed slug returns `error=` → relay it, then
+   ask; a different slug is a new decision, not a retry.
+4. Report the folder, its id, and its start stage.
+5. Name the next session: the owner of the start stage — **`sda-ba`** (`story`),
+   **`sda-design`** (`design`), or **`sda-dev-task`** (`tasks`) — on the new container
+   path. It is user-invocable only, so the human starts it in its own session. Never write
+   the artifact yourself.
 
 ## Forward — `advance`
 
@@ -100,6 +108,9 @@ different arguments unless the user asks for the change.
 
 The human decides a stage can no longer proceed. You may raise from any stage that has an
 upstream — `design`, `tasks`, `ready`; at `story` the script refuses, so say so and stop.
+The floor is always `story`, even for a container that started at `design` or `tasks` —
+escalating back into a skipped stage makes it real, and its artifact is then required
+before `advance` can leave it.
 
 1. **Elicit what is wrong** — the failed assumption, the artifact and section that show it,
    and the decision the upstream stage must make. One question at a time; guess none of the
