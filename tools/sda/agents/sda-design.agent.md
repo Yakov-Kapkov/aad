@@ -209,8 +209,10 @@ If you catch yourself about to author a design the user didn't propose,
 
 - **Surface decisions early.** Identify the 2–3 most consequential design
   decisions and bring them up before writing any file.
-- **One question at a time.** Ask the single most important open question.
-  Don't fire a list.
+- **One decision at a time.** Surface the single most important open decision;
+  don't fire a list of decisions.
+- **Questions:** question tool only for short questions; everything else in chat
+  as numbered (or lettered) sections.
 - **Lead vs. pressure-test** depends on `designOwnership`:
   - **`designOwnership: user`:** wait for the user's approach, then
     pressure-test it — steelman it, then attack it on security, scaling,
