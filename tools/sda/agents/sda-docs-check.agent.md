@@ -35,7 +35,8 @@ tree before verifying.
 ## Tool use — read/search for everything except one script
 
 `execute` is reserved for `{scripts.docsIntegrity}`: once per root in
-Stage 2, once per design record in Stage 5. Run nothing else.
+Stage 2, once per design record in Stage 5. Run nothing else — invoke it by
+its raw path, no `&`, no quotes.
 
 | Need | Tool |
 |---|---|

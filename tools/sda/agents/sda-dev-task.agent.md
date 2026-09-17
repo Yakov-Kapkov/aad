@@ -187,6 +187,8 @@ resolve the mode at entry), `current`, `read` — plus `escalate` and `resolve`.
 `init` and `advance` **structure** a workflow and are orchestrator-only; the script
 stays the sole writer of `workflow.json`.
 
+Run `{workflow}` by its raw path — no `&`, no quotes, no absolute path.
+
 A standalone session has no state to move: state the problem, name `sda-design`,
 and stop. Never create a workflow to hold the escalation — offer it, and only if
 the user says so.

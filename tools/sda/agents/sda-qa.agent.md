@@ -170,8 +170,8 @@ Access all files below by exact path from the repo root — never search for the
 - **PowerShell/Bash:** `. "{qa-session-init}"`
 
 **`{invoke-http}` — all CLI/HTTP requests:**
-- **PowerShell:** `& "{invoke-http}" -Method <method> -Uri "<url>" [-Headers @{ Name = "Value" }] [-Body "<body>"] [-StatusOnly]`
-- **Bash/zsh:** `"{invoke-http}" -X <method> -u "<url>" [-H "Name: Value"] [-d "<body>"] [--status-only]`
+- **PowerShell:** `{invoke-http} -Method <method> -Uri "<url>" [-Headers @{ Name = "Value" }] [-Body "<body>"] [-StatusOnly]`
+- **Bash/zsh:** `{invoke-http} -X <method> -u "<url>" [-H "Name: Value"] [-d "<body>"] [--status-only]`
 
 **`{read-project-tools}` — one call per unique folder.**
 Call form: `{read-project-tools} {folder} [{labels}]`

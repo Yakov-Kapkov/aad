@@ -43,6 +43,8 @@ implementation changes) may start at design or tasks and skip the stages before.
   stage. A rejected transition is an error to report — never a state file to patch.
 - `{workflow}` arrives in session context. Bash flags are `--flag`, PowerShell flags `-Flag`;
   every command also takes the container — `--slug <folder>`.
+- Run `{workflow}` by its raw path — no `&`, no quotes, no absolute path:
+  ✅ `.sda/scripts/workflow/workflow.ps1 list` · ❌ `& .sda/scripts/workflow/workflow.ps1 list`
 
 ## Confirming
 

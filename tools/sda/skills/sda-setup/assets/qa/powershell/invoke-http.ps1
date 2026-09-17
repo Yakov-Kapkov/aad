@@ -1,5 +1,5 @@
 # invoke-http.ps1 — Execute an HTTP request; output STATUS: <code> and BODY: <body>.
-# Usage: & ".sda/scripts/qa/invoke-http.ps1" -Method GET -Uri "http://..." [-Headers @{...}] [-Body "..."] [-StatusOnly]
+# Usage: .sda/scripts/qa/invoke-http.ps1 -Method GET -Uri "http://..." [-Headers @{...}] [-Body "..."] [-StatusOnly]
 param(
     [string]$Method = 'GET',
     [Parameter(Mandatory)][string]$Uri,

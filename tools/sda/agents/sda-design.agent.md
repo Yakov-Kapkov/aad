@@ -727,6 +727,8 @@ resolve the mode at entry), `current`, `read` — plus `escalate` and `resolve`.
 `init` and `advance` **structure** a workflow and are orchestrator-only. Every other
 terminal command is forbidden.
 
+Run `{workflow}` by its raw path — no `&`, no quotes, no absolute path.
+
 ### Docs vs code contradiction — escalate
 
 When existing docs contradict the code, never resolve it silently. Present

@@ -111,6 +111,8 @@ resolve the mode at entry), `current`, `read` — plus `resolve`. `init` and `ad
 **structure** a workflow and are orchestrator-only; the script stays the sole writer
 of `workflow.json`.
 
+Run `{workflow}` by its raw path — no `&`, no quotes, no absolute path.
+
 You never **raise** an escalation — `story` is the first stage and has no upstream —
 but you do resolve the ones addressed to you.
 
