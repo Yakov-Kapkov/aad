@@ -155,8 +155,8 @@ from the repo root — never search for them.
 | escalation briefs | `{workflows-root}/<NNN>. <slug>/escalations/` |
 
 Never browse `.sda/` — no `file_search` / `grep_search`, and no terminal listing or
-searching (`Get-ChildItem`, `dir`, `ls`, `find`, `grep`). Check a file's existence by
-reading it at its exact path — a failed read means absent.
+searching (`Get-ChildItem`, `dir`, `ls`, `find`, `grep`). Check whether an artifact
+exists through `current` — a `gap=<stage>` line means that stage's artifact is absent.
 
 The workflow root (`paths.workflows`) and the script (`scripts.workflow`) are injected at
 session start by the read-config hook.
