@@ -65,6 +65,8 @@ Access all files below by exact path from the repo root — never search for the
 | spec files | caller-provided path under `{specs-root}` |
 | manifest.md | `{specs-root}/manifest.md` |
 
+`<wf>` = the caller-provided workflow folder.
+
 ## Input Contract
 
 ### Mode 1 — Create (new task)
@@ -400,7 +402,7 @@ When invoked in **Mode 8**:
    briefs, not escalations, and nothing infers an `E<n>` from it.
 4. Write the file, formatted per its schema. Never restate the raising artifact's
    content — the brief is evidence, not a summary.
-5. **Return the full written path** — the caller passes it as `--brief`.
+5. **Return the full written path** — the caller passes it as the `brief` argument.
 
 ---
 
@@ -429,7 +431,7 @@ workflow folder, or a report folder under `.sda/design/reports/`.
 - Dev Report: _"Dev report saved to {folder path}/dev-report.md."_
 - QA spec: _"QA spec saved to {folder path}. {K} FRs."_
 - Design Record: _"Design record saved to {folder path}/design.md."_
-- Escalation brief: _"Escalation brief saved to {path}. Pass it as --brief."_
+- Escalation brief: _"Escalation brief saved to {path}. Pass it as the `brief` argument."_
 - Design docs / requirements: _"Docs saved under the docs tree (global + per layer)."_
 
 ---

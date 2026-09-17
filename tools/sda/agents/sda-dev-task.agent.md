@@ -27,7 +27,7 @@ else.
 ## .sda dependencies
 
 `.sda/` is a dot-prefixed folder that may be hidden from search tools.
-Access all `.sda/` files by exact path from the repo root — never search for them.
+Access all files below by exact path from the repo root — never search for them.
 
 | File | Path |
 |---|---|
@@ -36,7 +36,8 @@ Access all `.sda/` files by exact path from the repo root — never search for t
 | design record | `<wf>/design.md` — workflow mode only |
 
 The task folder is `<wf>/tasks/<NNN>. <slug>/` (workflow) or
-`{tasks-root}/<NNN>. <slug>/` (standalone). The workflow root (`paths.workflows`,
+`{tasks-root}/<NNN>. <slug>/` (standalone). `<wf>` = the workflow container —
+`{workflows-root}/<NNN>. <slug>`. The workflow root (`paths.workflows`,
 default `.sda/workflows`) and the workflow script (`scripts.workflow`) are injected
 at session start by the read-config hook.
 
@@ -159,16 +160,16 @@ Escalation is a **workflow-mode** operation. While one is open, `advance` is ref
    and section that show it, and what must be re-decided — into the workflow's
    `escalations/` folder. The script refuses a raise without a brief, so this is
    blocking: on failure retry, and after 3 attempts stop and report to the user.
-3. Run `{workflow} escalate --slug <folder> --reason "<what broke · what must be
-   re-decided>" --brief "<path returned by sda-scribe>"`. That moves back one stage;
-   add `--to story` when the story's FRs or NFRs are themselves insufficient — the
-   stage parks at each intermediate stage on the way down.
+3. Run `{workflow} escalate` with `slug` = the container, `reason` = "<what broke · what
+   must be re-decided>", `brief` = "<path returned by sda-scribe>". That moves back one
+   stage; add `to` = `story` when the story's FRs or NFRs are themselves insufficient —
+   the stage parks at each intermediate stage on the way down.
 4. Report the outcome (`ok: …` / `error=…`) with the new stage, then hand back to
    `sda-design` (or `sda-ba`, for a story escalation).
 
 **Resolving one addressed to you.** When told to address an escalation:
 
-1. `{workflow} current --slug <folder>` — if `owner` is not `tasks`, say so and stop;
+1. `{workflow} current` with `slug` = the container — if `owner` is not `tasks`, say so and stop;
    another stage must resolve it first.
 2. Read the brief at the `brief=` path, then the part of the design it cites. A brief
    that does not say what must be re-decided is a question to ask, never a gap to fill
@@ -177,8 +178,8 @@ Escalation is a **workflow-mode** operation. While one is open, `advance` is ref
    you found, and what you propose to change in `task.md` — or that nothing changes and
    why. Task-scoped design is yours to write; the resolution is still the user's to approve.
 4. Renew `task.md` against the resolution.
-5. `{workflow} resolve --slug <folder> --id <E#> --report "<what changed · where ·
-   what the downstream must redo>"`, then report the outcome.
+5. `{workflow} resolve` with `slug` = the container, `id` = the escalation id,
+   `report` = "<what changed · where · what the downstream must redo>", then report the outcome.
 
 ### Terminal — the `{workflow}` script only
 
@@ -187,7 +188,23 @@ resolve the mode at entry), `current`, `read` — plus `escalate` and `resolve`.
 `init` and `advance` **structure** a workflow and are orchestrator-only; the script
 stays the sole writer of `workflow.json`.
 
-Run `{workflow}` by its raw path — no `&`, no quotes, no absolute path.
+**Never browse `.sda/`.** No `file_search` / `grep_search`, and no terminal listing or
+searching (`Get-ChildItem`, `dir`, `ls`, `find`, `grep`). Check your deliverables —
+`task.md` and `state.json` — by reading them at their exact paths; a failed read means absent.
+
+**Use the raw relative path — no `&`, no quotes, no absolute paths.** On `error=...` → **🚨 HARD STOP**: print the exact message, end your response. Never read the script's source — the table below is the full interface.
+
+| Placeholder | Session context key |
+|---|---|
+| `{workflow}` | `scripts.workflow` |
+
+| Command | PowerShell | Bash/zsh |
+|---|---|---|
+| `list` | `{workflow} list` | `{workflow} list` |
+| `current` | `{workflow} current -slug <folder>` | `{workflow} current --slug <folder>` |
+| `read` | `{workflow} read -slug <folder> [-field <id\|slug\|created\|stage\|start\|notes>]` | `{workflow} read --slug <folder> [--field <id\|slug\|created\|stage\|start\|notes>]` |
+| `escalate` | `{workflow} escalate -slug <folder> [-to <stage>] -reason <text> -brief <path>` | `{workflow} escalate --slug <folder> [--to <stage>] --reason <text> --brief <path>` |
+| `resolve` | `{workflow} resolve -slug <folder> -id <E#> -report <text>` | `{workflow} resolve --slug <folder> --id <E#> --report <text>` |
 
 A standalone session has no state to move: state the problem, name `sda-design`,
 and stop. Never create a workflow to hold the escalation — offer it, and only if

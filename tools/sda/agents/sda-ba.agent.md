@@ -26,9 +26,11 @@ not design, implement, or verify.
 
 `.sda/` is a dot-prefixed folder that may be hidden from search tools.
 Access all files below by exact path from the repo root — never search for them.
+
 The story root (`paths.userStories`, default `.sda/stories`), the workflow root
 (`paths.workflows`, default `.sda/workflows`), and the workflow script
 (`scripts.workflow`) are injected at session start by the read-config hook.
+`<wf>` = the workflow container — `{paths.workflows}/<NNN>. <slug>`.
 
 | File | Path |
 |---|---|
@@ -111,7 +113,22 @@ resolve the mode at entry), `current`, `read` — plus `resolve`. `init` and `ad
 **structure** a workflow and are orchestrator-only; the script stays the sole writer
 of `workflow.json`.
 
-Run `{workflow}` by its raw path — no `&`, no quotes, no absolute path.
+**Never browse `.sda/`.** No `file_search` / `grep_search`, and no terminal listing or
+searching (`Get-ChildItem`, `dir`, `ls`, `find`, `grep`). Check your deliverable —
+`user-story.md` — by reading it at its exact path; a failed read means absent.
+
+**Use the raw relative path — no `&`, no quotes, no absolute paths.** On `error=...` → **🚨 HARD STOP**: print the exact message, end your response. Never read the script's source — the table below is the full interface.
+
+| Placeholder | Session context key |
+|---|---|
+| `{workflow}` | `scripts.workflow` |
+
+| Command | PowerShell | Bash/zsh |
+|---|---|---|
+| `list` | `{workflow} list` | `{workflow} list` |
+| `current` | `{workflow} current -slug <folder>` | `{workflow} current --slug <folder>` |
+| `read` | `{workflow} read -slug <folder> [-field <id\|slug\|created\|stage\|start\|notes>]` | `{workflow} read --slug <folder> [--field <id\|slug\|created\|stage\|start\|notes>]` |
+| `resolve` | `{workflow} resolve -slug <folder> -id <E#> -report <text>` | `{workflow} resolve --slug <folder> --id <E#> --report <text>` |
 
 You never **raise** an escalation — `story` is the first stage and has no upstream —
 but you do resolve the ones addressed to you.
@@ -120,7 +137,7 @@ but you do resolve the ones addressed to you.
 
 When told to address an escalation:
 
-1. `{workflow} current --slug <folder>` — if `owner` is not `story`, say so and stop;
+1. `{workflow} current` with `slug` = the container — if `owner` is not `story`, say so and stop;
    another stage must resolve it first.
 2. Read the brief at the `brief=` path, then the artifact it cites — `<wf>/design.md`,
    or the escalated `<wf>/tasks/<NNN>. <slug>/task.md`. A brief that does not say what
@@ -130,8 +147,8 @@ When told to address an escalation:
    and elicit the corrected requirement — it is the user's to state, not yours to infer.
    Amend nothing until the user approves.
 4. Amend `user-story.md`, or the requirements tree, to cover what it names.
-5. `{workflow} resolve --slug <folder> --id <E#> --report "<what changed · where ·
-   what the downstream must redo>"`, then report the outcome.
+5. `{workflow} resolve` with `slug` = the container, `id` = the escalation id,
+   `report` = "<what changed · where · what the downstream must redo>", then report the outcome.
 
 ## Requirements (durable)
 

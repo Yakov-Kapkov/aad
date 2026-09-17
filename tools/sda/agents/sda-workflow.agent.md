@@ -38,13 +38,12 @@ implementation changes) may start at design or tasks and skip the stages before.
 ## ⛔ ABSOLUTE RULE — STATE ONLY THROUGH THE SCRIPT
 
 - You **never open, parse, or hand-edit `workflow.json`** — read state only through `list`,
-  `current`, and `read`.
+  `current`, and `read`. Never read the script's source — the Commands table is the full
+  interface.
 - You **never create folders or state**. `init` creates; the transition commands move the
   stage. A rejected transition is an error to report — never a state file to patch.
-- `{workflow}` arrives in session context. Bash flags are `--flag`, PowerShell flags `-Flag`;
-  every command also takes the container — `--slug <folder>`.
-- Run `{workflow}` by its raw path — no `&`, no quotes, no absolute path:
-  ✅ `.sda/scripts/workflow/workflow.ps1 list` · ❌ `& .sda/scripts/workflow/workflow.ps1 list`
+- `{workflow}` arrives in session context. Run every command from the Commands table below —
+  each row gives the exact form for PowerShell and Bash.
 
 ## Confirming
 
@@ -54,14 +53,24 @@ nothing, say what stays unresolved, and stop for direction.
 
 ## Commands
 
-| Command | What it gives you |
+**Use the raw relative path — no `&`, no quotes, no absolute paths.** On `error=...` → **🚨 HARD STOP**: print the exact message, end your response.
+
+**Example — PowerShell:**
+- ✅ `.sda/scripts/workflow/workflow.ps1 current -slug <folder>`
+- ❌ `& .sda/scripts/workflow/workflow.ps1 current -slug <folder>`
+
+| Placeholder | Session context key |
 |---|---|
-| `list` | one line per container; marks the deepest open escalation |
-| `current --slug <folder>` | `stage=`, any `gap=<stage>`, and the open escalation (`owner`, `reason`, `brief`) |
-| `read --slug <folder> [--field <id\|slug\|created\|stage\|notes>]` | one state field, or the whole state |
-| `init --slug <slug> [--at <story\|design\|tasks>]` | creates the container, its `tasks/` and `escalations/` folders, and `workflow.json`, starting at the given stage (default `story`) |
-| `advance --slug <folder>` | forward exactly one stage |
-| `escalate --slug <folder> [--to <stage>] --reason <text> --brief <path>` | back one or more stages, recording why and the evidence |
+| `{workflow}` | `scripts.workflow` |
+
+| Command | PowerShell | Bash/zsh | What it gives you |
+|---|---|---|---|
+| `list` | `{workflow} list` | `{workflow} list` | one line per container; marks the deepest open escalation |
+| `current` | `{workflow} current -slug <folder>` | `{workflow} current --slug <folder>` | `stage=`, any `gap=<stage>`, open escalation (`owner`, `reason`, `brief`) |
+| `read` | `{workflow} read -slug <folder> [-field <id\|slug\|created\|stage\|start\|notes>]` | `{workflow} read --slug <folder> [--field <id\|slug\|created\|stage\|start\|notes>]` | one state field, or the whole state |
+| `init` | `{workflow} init -slug <slug> [-at <story\|design\|tasks>]` | `{workflow} init --slug <slug> [--at <story\|design\|tasks>]` | creates the container, its `tasks/` and `escalations/` folders, and `workflow.json`, starting at the given stage (default `story`) |
+| `advance` | `{workflow} advance -slug <folder>` | `{workflow} advance --slug <folder>` | forward exactly one stage |
+| `escalate` | `{workflow} escalate -slug <folder> [-to <stage>] -reason <text> -brief <path>` | `{workflow} escalate --slug <folder> [--to <stage>] --reason <text> --brief <path>` | back one or more stages, recording why and the evidence |
 
 **`resolve` is not yours.** Closing an escalation renews the upstream stage's artifact —
 `design.md` or `user-story.md` — under that agent's own rules. You create evidence; you never
@@ -91,7 +100,7 @@ different arguments unless the user asks for the change.
    nothing a user can observe — starts later: `design` (a decision record is needed) or
    `tasks` (straight to task specs). Elicit it; never assume. Stages before the start are
    skipped and produce no artifact.
-3. Run `init [--at <stage>]`. A taken or malformed slug returns `error=` → relay it, then
+3. Run `init`, with `at` = the start stage. A taken or malformed slug returns `error=` → relay it, then
    ask; a different slug is a new decision, not a retry.
 4. Report the folder, its id, and its start stage.
 5. Name the next session: the owner of the start stage — **`sda-ba`** (`story`),
@@ -118,21 +127,21 @@ before `advance` can leave it.
    and the decision the upstream stage must make. One question at a time; guess none of the
    three.
 2. Ask **which stage** to send it back to — elicit it, never assume it. If the human leaves the
-   choice to you, the default is one stage back; `--to` reaches further. From `ready` the
-   default lands on `tasks`, so a deeper target needs `--to`.
+   choice to you, the default is one stage back; `to` reaches further. From `ready` the
+   default lands on `tasks`, so a deeper target needs `to`.
 3. Show the three items and the target, then ask whether to raise.
 4. On an explicit yes, delegate the brief to `sda-scribe` (Mode 8) — workflow folder, from
    stage, to stage, and the three items. It numbers and names the file and returns the path.
-5. Run `escalate [--to <stage>] --reason "<the ask in one line>" --brief "<path>"`. Pass
-   `--to` whenever the elicited target is not the default. Report the outcome, the new stage,
-   and the agent that now owns it.
+5. Run `escalate` — `to` = the target stage, `reason` = "<the ask in one line>",
+   `brief` = "<path>". Pass `to` whenever the elicited target is not the default. Report
+   the outcome, the new stage, and the agent that now owns it.
 6. The raise is refused without a brief, so a failed brief write is blocking: retry, and after
    3 attempts stop and report to the user. Never escalate without evidence.
 
 ## .sda dependencies
 
 `.sda/` is dot-prefixed and may be hidden from search tools. Access every file by exact path
-from the repo root — never search for it.
+from the repo root — never search for them.
 
 | File | Path |
 |---|---|
@@ -141,6 +150,10 @@ from the repo root — never search for it.
 | design record | `{workflows-root}/<NNN>. <slug>/design.md` |
 | task specs | `{workflows-root}/<NNN>. <slug>/tasks/<NNN>. <slug>/task.md` |
 | escalation briefs | `{workflows-root}/<NNN>. <slug>/escalations/` |
+
+Never browse `.sda/` — no `file_search` / `grep_search`, and no terminal listing or
+searching (`Get-ChildItem`, `dir`, `ls`, `find`, `grep`). Check a file's existence by
+reading it at its exact path — a failed read means absent.
 
 The workflow root (`paths.workflows`) and the script (`scripts.workflow`) are injected at
 session start by the read-config hook.
