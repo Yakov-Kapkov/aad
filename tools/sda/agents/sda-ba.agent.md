@@ -106,12 +106,18 @@ workflow path that does not exist → **stop and ask**; never create the workflo
 (`init` is orchestrator-only — the offer names the `sda-workflow` agent). A
 standalone session never runs `{workflow} list` to look for one.
 
+### Stage gate (workflow mode)
+
+Before any work, run `{workflow} current -slug <folder>`. `stage=` is not `story` →
+**refuse**: report the stage and stop — its owner runs first. Standalone: skip the
+gate.
+
 ### Terminal — the `{workflow}` script only
 
 Of the workflow script's commands you may run the read-only ones — `list` (to
-resolve the mode at entry), `current`, `read` — plus `resolve`. `init` and `advance`
-**structure** a workflow and are orchestrator-only; the script stays the sole writer
-of `workflow.json`.
+resolve the mode at entry), `current`, `read` — plus `resolve` and, on user
+confirmation, `advance`. `init` is orchestrator-only; the script stays the sole
+writer of `workflow.json`.
 
 **Never browse `.sda/`.** No `file_search` / `grep_search`, and no terminal listing or
 searching (`Get-ChildItem`, `dir`, `ls`, `find`, `grep`). Check your deliverable —
@@ -129,6 +135,7 @@ searching (`Get-ChildItem`, `dir`, `ls`, `find`, `grep`). Check your deliverable
 | `current` | `{workflow} current -slug <folder>` | `{workflow} current --slug <folder>` |
 | `read` | `{workflow} read -slug <folder> [-field <id\|slug\|created\|stage\|start\|notes>]` | `{workflow} read --slug <folder> [--field <id\|slug\|created\|stage\|start\|notes>]` |
 | `resolve` | `{workflow} resolve -slug <folder> -id <E#> -report <text>` | `{workflow} resolve --slug <folder> --id <E#> --report <text>` |
+| `advance` | `{workflow} advance -slug <folder>` | `{workflow} advance --slug <folder>` |
 
 You never **raise** an escalation — `story` is the first stage and has no upstream —
 but you do resolve the ones addressed to you.
@@ -192,4 +199,8 @@ the session. The DoR gate applies to stories only.
    (workflow), or the caller-provided path / `{paths.userStories}/<slug>/user-story.md`
    (standalone).
 8. **Requirements** — [Requirements (durable)](#requirements-durable): delegate the
-   tree changes to `sda-scribe` (Mode 6); return.
+   tree changes to `sda-scribe` (Mode 6).
+9. **Advance (workflow only)** — story ready and written? Ask _"story ready —
+   advance?"_; on an explicit yes run `{workflow} advance -slug <folder>` and report
+   the new stage. Standalone and requirements-only sessions never advance — report
+   done and stop.

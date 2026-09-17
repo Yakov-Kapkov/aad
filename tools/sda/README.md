@@ -84,7 +84,7 @@ Planning artifacts live in a **workflow**: a numbered container for one requirem
 
 Create one with `/sda.workflow.init`, then start the owning agent on it in its own session. The
 `sda-workflow` agent is the advisor surface: it reports where a container sits, names the next
-action and its owning agent, and runs `init`, `advance`, and a user-requested `escalate`.
+action and its owning agent, and runs `init` and a user-requested `escalate`.
 The stage machine is `story → design → tasks → ready`: `init` starts at `story` by default, or at
 `design` / `tasks` for pure technical work that has no user-visible change — the stages before the
 start are skipped and produce no artifact. `advance` moves
@@ -92,10 +92,10 @@ forward exactly one stage, and `escalate` moves back — recording why, plus a *
 evidence — when the current stage cannot finish on the artifacts it was given. The script refuses
 a raise without a brief, so the blocked stage writes it first (`sda-scribe` numbers and names it);
 the target stage reads the brief, then the artifact it cites, renews its own artifact, and closes
-the escalation with `resolve`. While an escalation is open, `advance` is refused. Producers may run
-the read-only commands (`list`, `current`, `read`) plus `escalate`/`resolve`; the `sda-workflow`
-advisor owns `init` and `advance`, and may raise a user-requested escalation from any stage with an
-upstream.
+the escalation with `resolve`. While an escalation is open, `advance` is refused. Producers run
+the read-only commands (`list`, `current`, `read`) plus `escalate`/`resolve`, and advance their own
+stage on user confirmation; the `sda-workflow` advisor owns `init`, and may raise a user-requested
+escalation from any stage with an upstream.
 
 `sda-ba`, `sda-design`, and `sda-dev-task` default to workflow mode and fall back to standalone
 paths when the requirement has no container. Standalone use is unchanged.
@@ -406,7 +406,7 @@ The `models` section in `project-config.json` controls which AI model each agent
 
 | Key | Role | Default |
 |---|---|---|
-| `sda-workflow` | Workflow advisor: container position, next action, `init` / `advance` / `escalate` | `Claude Sonnet` |
+| `sda-workflow` | Workflow advisor: container position, next action, `init` / `escalate` (`advance` on request) | `Claude Sonnet` |
 | `sda-toolscan` | Scans project toolchain | `Claude Haiku` |
 | `sda-ba` | Authors User Stories from raw requirements | `Claude Sonnet` |
 | `sda-dev-task` | Designs task specifications | `Claude Sonnet` |
@@ -450,7 +450,7 @@ Written by the `sda-setup` skill. Stores project-level settings injected into ea
 | `scripts.docsIntegrity` | `string` | `.sda/scripts/docs/docs-integrity.ps1` | Path to the docs-integrity script. Called by sda-docs-check with a decisions/requirements root (links, orphans, duplicates, one-way `.sda/` rule) or a single document path (links, code fence, non-`.md` path). Use the `.sh` variant on Bash/Unix. |
 | `scripts.invokeHttp` | `string` | `.sda/scripts/qa/invoke-http.ps1` | Path to the HTTP helper script. Called by sda-qa for every CLI/HTTP request; outputs `STATUS: N` and `BODY: ...`; supports `-StatusOnly` / `--status-only`. Use the `.sh` variant on Bash/Unix. |
 | `scripts.unitFileSize` | `string` | `.sda/scripts/dev/unit-file-size.ps1` | Path to the file line-count script. Called by `sda-dev-task` (Phase 6) and `sda-dev-task-verifier` (Check 1) to measure source file volume. Use the `.sh` variant on Bash/Unix. |
-| `scripts.workflow` | `string` | `.sda/scripts/workflow/workflow.ps1` | Path to the workflow state script — the only writer of `workflow.json`. Run by the `sda-workflow` advisor and the `/sda.workflow.*` prompts; read-only commands plus `escalate`/`resolve` are run by sda-ba, sda-design, and sda-dev-task. `escalate` also takes the path of the escalation brief, which must already exist. Use the `.sh` variant on Bash/Unix. |
+| `scripts.workflow` | `string` | `.sda/scripts/workflow/workflow.ps1` | Path to the workflow state script — the only writer of `workflow.json`. Run by the `sda-workflow` advisor and the `/sda.workflow.*` prompts; read-only commands plus `escalate`/`resolve`/`advance` are run by sda-ba, sda-design, and sda-dev-task. `escalate` also takes the path of the escalation brief, which must already exist. Use the `.sh` variant on Bash/Unix. |
 | `devTaskUnitSizeLimit` | `number` | `1000` | Maximum total lines across existing Source+Test files in any single unit. Units exceeding this limit require splitting in `sda-dev-task`. |
 | `tests.coverage.enabled` | `boolean` | `true` | Whether to run coverage checks in Phase 5 (Quality). When disabled, coverage gate is skipped entirely. |
 

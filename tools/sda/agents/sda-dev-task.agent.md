@@ -127,6 +127,12 @@ workflow path that does not exist → **stop and ask**; never create the workflo
 (`init` is orchestrator-only — the offer names the `sda-workflow` agent). A
 standalone session never runs `{workflow} list` to look for one.
 
+### Stage gate (workflow mode)
+
+Before any work, run `{workflow} current -slug <folder>`. `stage=` is not `tasks` →
+**refuse**: report the stage and stop — its owner runs first. Standalone: skip the
+gate.
+
 ### The design record is handoff context
 
 `sda-design` writes `design.md` so you can design tasks **without re-deriving the
@@ -184,9 +190,9 @@ Escalation is a **workflow-mode** operation. While one is open, `advance` is ref
 ### Terminal — the `{workflow}` script only
 
 Of the workflow script's commands you may run the read-only ones — `list` (to
-resolve the mode at entry), `current`, `read` — plus `escalate` and `resolve`.
-`init` and `advance` **structure** a workflow and are orchestrator-only; the script
-stays the sole writer of `workflow.json`.
+resolve the mode at entry), `current`, `read` — plus `escalate`, `resolve`, and,
+on user confirmation, `advance`. `init` is orchestrator-only; the script stays the
+sole writer of `workflow.json`.
 
 **Never browse `.sda/`.** No `file_search` / `grep_search`, and no terminal listing or
 searching (`Get-ChildItem`, `dir`, `ls`, `find`, `grep`). Check your deliverables —
@@ -205,6 +211,7 @@ searching (`Get-ChildItem`, `dir`, `ls`, `find`, `grep`). Check your deliverable
 | `read` | `{workflow} read -slug <folder> [-field <id\|slug\|created\|stage\|start\|notes>]` | `{workflow} read --slug <folder> [--field <id\|slug\|created\|stage\|start\|notes>]` |
 | `escalate` | `{workflow} escalate -slug <folder> [-to <stage>] -reason <text> -brief <path>` | `{workflow} escalate --slug <folder> [--to <stage>] --reason <text> --brief <path>` |
 | `resolve` | `{workflow} resolve -slug <folder> -id <E#> -report <text>` | `{workflow} resolve --slug <folder> --id <E#> --report <text>` |
+| `advance` | `{workflow} advance -slug <folder>` | `{workflow} advance --slug <folder>` |
 
 A standalone session has no state to move: state the problem, name `sda-design`,
 and stop. Never create a workflow to hold the escalation — offer it, and only if
@@ -917,3 +924,13 @@ will modify (observed during Phase 2 research), output a final block:
 
 Omit this block entirely if nothing was found. Do not add units or
 ask the user — this is passive documentation only.
+
+### Complete — advance (workflow mode)
+
+After the consistency check passes and the task is saved:
+
+1. Ask _"task ready — advance?"_
+2. On an explicit yes, run `{workflow} advance -slug <folder>` and report the
+   new stage.
+3. Standalone — report done and stop. A backlog task never advances — it has
+   no active state.

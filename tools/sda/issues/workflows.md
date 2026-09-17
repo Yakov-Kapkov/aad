@@ -63,23 +63,24 @@ is told a workflow path that does not exist **stops and asks** — it never crea
 | Layer | Component | Responsibility |
 |---|---|---|
 | Scaffold + state | `{workflow}` script | `init · list · current · read · advance · escalate · resolve` (§4). Only writer of `workflow.json`. Creates folders. Enforces direction, blocking, and artifact presence. Never triggers an agent. |
-| Invocation | `sda-workflow` agent + the `/sda.workflow.*` prompts | Reports position and the single next action, owns `init`/`advance`, and raises a user-requested escalation. Advises: never invokes a producer, never `resolve`s. |
+| Invocation | `sda-workflow` agent + the `/sda.workflow.*` prompts | Reports position and the single next action, owns `init`, and raises a user-requested escalation. Advises: never invokes a producer, never `resolve`s. |
 
 **Stage machine:** `story → design → tasks → ready`. Every stage produces one artifact
 (`user-story.md`, `design.md`, `tasks/`); `ready` is terminal and has none. `advance` moves
 exactly one stage forward and refuses to leave a stage whose artifact is absent.
 
-- **The orchestrator advances.** `advance` is the only forward motion and is orchestrator-only —
-  a producer never moves its own stage forward. So is `init`.
+- **A producer advances its own stage.** After finishing its artifact, a producer asks the user
+  and runs `advance` on an explicit yes — the script still refuses a stage whose artifact is
+  absent, or an open escalation. `init` stays orchestrator-only.
 - **A producer may raise and close escalations** as the orchestrator's proxy; the script stays
   the sole writer of `workflow.json` either way. All three producers hold `execute`:
   `sda-dev-task` and `sda-design` raise and close, `sda-ba` closes only (it has no upstream
   stage).
 - **`sda-workflow` is the orchestrator surface.** It holds `execute` too and is the only holder
-  of `init` and `advance`; it may raise a user-requested escalation from any stage with an
-  upstream, and never `resolve`s. Its prompts carry intent only and set
-  `agent: "sda-workflow"`, so the agent's hook injects `{workflow}` — no prompt reads
-  `project-config.json` itself.
+  of `init`; it may raise a user-requested escalation from any stage with an
+  upstream, and never `resolve`s. It runs `advance` only when the user asks it to. Its prompts
+  carry intent only and set `agent: "sda-workflow"`, so the agent's hook injects `{workflow}` —
+  no prompt reads `project-config.json` itself.
 - Implementation and QA progress stay per-task (`task.md` + `state.json`) — the workflow
   layer does not track runs.
 - Human-confirmed transitions: state changes are recorded by the script, never hand-edited.
@@ -144,8 +145,8 @@ backwards.
    (a change, or that nothing changes and why) — and address it only after the user approves.
 4. Renew this agent's own artifact.
 5. `resolve --id <E<n>> --report "<what changed · where · what the downstream must redo>"`.
-6. Report; the orchestrator then `advance`s, and the next stage reads the report plus the renewed
-   artifact.
+6. Report; `resolve` moved the stage forward one, and the next stage reads the report plus the
+   renewed artifact.
 
 A resolution need not change anything — *"design unaffected by the FR reword"* is a valid report.
 The point is that the intermediate stage is visited and says so.
@@ -567,6 +568,7 @@ need the repo's own tables — they stay with the agent. `.md` links are navigat
 | 43 | Every failure, including CLI misuse, prints `error=<X cannot do Y because Z>` and exits 1 (34) — no `usage` block, no raw parameter-binding error. A PowerShell `ValidateSet` or a mandatory parameter pre-empts the script's own check, so validation happens in the body, never in the param block |
 | 44 | A container is read only after it is verified **consistent**: `workflow.json` present, parseable, carrying `id`, `slug`, `created`, `stage`, and a known stage. `list` verifies every container **before printing**, so a corrupted folder stops the command instead of leaving a partial answer — a half-list would read as a complete one |
 | 45 | A workflow may start at `design` or `tasks` for pure technical work with no user-visible change: `init --at <stage>` records `start`, and the stages before it are **skipped** — they produce no artifact and `current` shows them `skipped`, never `gap=`. The escalation floor stays `story`, so a skipped stage is re-opened by escalating into it and then needs its artifact (amends 27; extends 44's consistency check to `start`) |
+| 46 | Producers advance their own stage: `sda-ba`, `sda-design`, and `sda-dev-task` run `advance` on user confirmation after finishing their artifact; `init` stays orchestrator-only. `sda-workflow` keeps `advance` only on request — it no longer owns it exclusively (amends 15, 40) |
 
 ## 11. Deferred
 

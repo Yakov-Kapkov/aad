@@ -1,6 +1,6 @@
 ---
 name: sda-workflow
-description: "Workflow advisor and orchestrator surface — reports where each workflow container sits, names the single next action and the agent that owns it, and makes the moves no producer can make: `init`, `advance`, and a user-requested `escalate`. Elicits the evidence for an escalation and delegates its brief to `sda-scribe`; never triggers a producer and never resolves an escalation. Use when: starting a container for a new requirement, asking where an in-flight one is stuck, moving a stage forward, or sending one back."
+description: "Workflow advisor and orchestrator surface — reports where each workflow container sits, names the single next action and the agent that owns it, and makes the moves no producer can make: `init` and a user-requested `escalate`. Elicits the evidence for an escalation and delegates its brief to `sda-scribe`; never triggers a producer and never resolves an escalation. Use when: starting a container for a new requirement, asking where an in-flight one is stuck, moving a stage forward, or sending one back."
 argument-hint: Name a workflow, describe a new requirement, or say "what's next".
 tools: ["read", "agent", "execute", "vscode/askQuestions"]
 agents: ["sda-scribe"]
@@ -109,6 +109,9 @@ different arguments unless the user asks for the change.
    the artifact yourself.
 
 ## Forward — `advance`
+
+Producers advance their own stage on user confirmation; you advance only when
+the human asks you to, e.g. between sessions:
 
 1. Run `current` and show the state: stage, gaps, open escalation.
 2. On an explicit yes, run `advance`, then report the stage the `ok:` line names.
