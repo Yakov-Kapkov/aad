@@ -59,8 +59,9 @@ You do not write tests or manage state files.
 
 ### Hard stop on execution failure
 
-**Execution failure** = command exits with no output, empty stdout/stderr,
-or an exit code not produced by a test assertion.
+**Execution failure** = command exits with no output, empty stdout/stderr, or
+— when it carries no filter pipe — an exit code not produced by a test
+assertion.
 
 When this happens:
 1. **Self-check** — compare the command you ran against the caller's
@@ -77,6 +78,14 @@ When this happens:
    compiles (`tsc`), alternative commands (`npm run`, `nyc`,
    `.\.bin\...`, etc.), or output redirects. No file reads. No reasoning
    about why it failed. Write the result and end your response.
+
+### Filtered command verdict
+
+The test command carries a filter pipe, which masks the runner's status — read
+the verdict from the output, never the exit code. Failure marker = a failure
+line, or a summary reporting a non-zero failure/error count → failing; no
+failure marker → passing. **No output — or output you cannot classify — is not
+a pass**; it is an execution failure (hard stop above).
 
 ### Coding standards
 
@@ -154,7 +163,7 @@ If the command produces no output or fails for a non-assertion reason —
 apply [Hard stop on execution failure](#hard-stop-on-execution-failure) immediately.
 
 - **Test failure** — fix using the edit tool. Max 3 attempts. Still failing → report the failure gate in the result.
-- **No environment assumptions.** A test-assertion failure (non-zero exit with test output) is always a real failure — never an environment limitation, missing credential, or live-service unavailability. Report `❌ GREEN gate` (or the applicable failure gate). Never substitute `N/A` for a gate result.
+- **No environment assumptions.** A test failure (failure marker in the test output) is always a real failure — never an environment limitation, missing credential, or live-service unavailability. Report `❌ GREEN gate` (or the applicable failure gate). Never substitute `N/A` for a gate result.
 
 ### Validate data
 

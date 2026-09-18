@@ -49,8 +49,9 @@ implement production code or manage state files.
 
 ### Hard stop on execution failure
 
-**Execution failure** = command exits with no output, empty stdout/stderr,
-or an exit code not produced by a test assertion.
+**Execution failure** = a command exits with no output, empty stdout/stderr, or
+— when it carries no filter pipe — an exit code not produced by a test
+assertion.
 
 When this happens:
 1. **Self-check** — compare the command you ran against the caller's
@@ -67,6 +68,14 @@ When this happens:
    compiles (`tsc`), alternative commands (`npm run`, `nyc`,
    `.\.bin\...`), or output redirection. No file reads. No reasoning
    about why it failed. Write the result and end your response.
+
+### Filtered command verdict
+
+The test command carries a filter pipe, which masks the runner's status — read
+the verdict from the output, never the exit code. Failure marker = a failure
+line, or a summary reporting a non-zero failure/error count → failing; no
+failure marker → passing. **No output — or output you cannot classify — is not
+a pass**; it is an execution failure (hard stop above).
 
 ### Coding standards
 

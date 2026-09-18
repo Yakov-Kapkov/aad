@@ -85,6 +85,15 @@ Use `read_file` and `list_dir` for file discovery.
 Piping command output through `Select-String` is allowed only as
 part of commands returned by `{read-project-tools}`.
 
+### Filtered command verdict
+
+A filter pipe masks the runner's status (`$?` on PowerShell, last pipe stage on
+bash/zsh) — judge by the output, never the exit code. Failure marker = a
+failure line, or a summary reporting a non-zero failure/error count → failed;
+no failure marker → passed. **No output — or output you cannot classify — is
+not a pass**: re-run the unfiltered label (`test-all` / `test-path`) and read
+its exit code and output.
+
 ### Terminal working directory
 
 Always use absolute paths for `cd` — never relative.
@@ -459,8 +468,8 @@ paths, Related tests (when listed), and Changes (no scenarios, no Test
    (one `test-all` per unique area, not per file) — **exclude `docs` units**
    (no runnable code). For each unique area,
    call `{read-project-tools} {area-workdir} ["test-all,filter-last-n,filter-test-output"]`.
-   **First pass:** run `test-all` with filter-last-n (`{N}` = `10`). Exit 0 → baseline is clear.
-   **On failure:** re-run with filter-test-output (`{N}` = `100`) to detect failing tests.
+   **First pass:** run `test-all` with filter-last-n (`{N}` = `10`). No failure marker + test summary → baseline is clear; no output → execution failure.
+   **On a failure marker:** re-run with filter-test-output (`{N}` = `100`) to detect failing tests.
    Merge all failing test names into `{baseline-failures}`. A fully-passing
    result across all areas → set `{baseline-failures}` = `[]`.
 4. **Extract unit inputs** for the **current unit only** from `task.md`:
@@ -515,8 +524,8 @@ paths, Related tests (when listed), and Changes (no scenarios, no Test
    Collect the unique areas from step 2 (one `test-all` per area, not per file) —
    **exclude `docs` units** (no runnable code).
    For each unique area, call `{read-project-tools} {area-workdir} ["test-all,filter-last-n,filter-test-output"]`.
-   **First pass:** run `test-all` with filter-last-n (`{N}` = `10`). Exit 0 → baseline is clear.
-   **On failure:** re-run with filter-test-output (`{N}` = `100`) to detect failing tests.
+   **First pass:** run `test-all` with filter-last-n (`{N}` = `10`). No failure marker + test summary → baseline is clear; no output → execution failure.
+   **On a failure marker:** re-run with filter-test-output (`{N}` = `100`) to detect failing tests.
    Merge all failing test names into `{baseline-failures}`. A fully-passing
    result across all areas → set `{baseline-failures}` = `[]`.
 

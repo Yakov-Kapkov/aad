@@ -231,7 +231,9 @@ Defines the structure and content rules for `project-tools.md` — the machine-r
 ```
 
 <!-- <command>: placeholder — substitute the actual command being filtered -->
-<!-- {stderr-redirect}: PowerShell → (empty — omit; `2>&1` causes spurious exit code 1 when libraries log stderr) | bash/zsh → ` 2>&1` -->
+<!-- {stderr-redirect}: PowerShell → ` 2>&1` | bash/zsh → ` 2>&1` — always emitted: runners write
+     failure detail to stderr, so a stdout-only pipe leaves the bulk of a failing run unfiltered.
+     No exit-status guard is appended — filtered commands are judged by their output, never their exit code. -->
 <!-- {last-n-lines-tool}: PowerShell → `Select-Object -Last` | bash/zsh → `tail -n` -->
 <!-- {test-lines-filter}: composed per area by sda-toolscan — from the `## Test output filter patterns`
      section in that area's language tool-discovery spec.

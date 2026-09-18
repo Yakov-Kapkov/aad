@@ -105,9 +105,15 @@ must use `filter-tool` (`{N}` = `10`). For test commands, use
 Skip the filter only for commands that are inherently concise
 (type-checking).
 
+**Judge filtered gates by output, not exit code.** The filter pipe masks the
+runner's status — apply each gate's pass condition to the returned output.
+Failure marker = a failure line, or a summary reporting a non-zero
+failure/error count. **No output is not proof of success** — re-run the
+unfiltered label and read its exit code before reporting ✅.
+
 **Escalate on failure — re-run with expanded `{N}`.** The small `{N}`
 above keeps passing runs clean but may trim error details on failure.
-When a filtered gate exits non-zero, re-run the same command with
+When a filtered gate reports a failure marker, re-run the same command with
 expanded `{N}` and use that output for the Flags section:
 - `filter-tool` → `{N}` = `50`
 - `filter-test-output` → `{N}` = `100`
@@ -191,8 +197,8 @@ Baseline failures are only needed for G3 regression classification.
 1. Store baseline failures from input as `{baseline-failures}`.
 2. **If no baseline provided:**
    - For each target area, call `{read-project-tools} {workdir} ["test-all,filter-last-n,filter-test-output"]`.
-   - **First pass:** Run `test-all` with filter-last-n (`{N}` = `10`). Exit 0 → baseline = `[]`.
-   - **If first pass fails:** Re-run with filter-test-output (`{N}` = `20`).
+   - **First pass:** Run `test-all` with filter-last-n (`{N}` = `10`). No failure marker → baseline = `[]`.
+   - **If a failure marker appears:** Re-run with filter-test-output (`{N}` = `20`).
    - Merge all failing test names into `{baseline-failures}`.
 
 ### Phase 4 — Run local gates per area
@@ -219,14 +225,14 @@ final report in Phase 6.
 4. **L3 — Tests:**
    - N/A if no `test-path`.
    - Fill `{path}` with area's target Test file paths.
-   - **First pass:** Run with filter-last-n (`{N}` = `10`). Exit 0 → pass.
-   - **If first pass fails:** Re-run with filter-test-output (`{N}` = `20`) for detailed output.
+   - **First pass:** Run with filter-last-n (`{N}` = `10`). No failure marker → pass.
+   - **If a failure marker appears:** Re-run with filter-test-output (`{N}` = `20`) for detailed output.
    - Pass condition: all green.
 
 5. **L4 — Coverage:**
    - ⏭️ Skip if `tests.coverage.enabled` is `false`. N/A if no `test-path-coverage`.
    - Fill `{path}` with area's target Test file paths. Apply filter-tool (`{N}` = `10`).
-   - Pass condition: exits 0.
+   - Pass condition: zero errors in the output.
 
 ### Phase 5 — Run global gates per area
 
@@ -252,8 +258,8 @@ final report in Phase 6.
 
 4. **G3 — Tests:**
    - N/A if no `test-all`.
-   - **First pass:** Run with filter-last-n (`{N}` = `10`). Exit 0 → pass.
-   - **If first pass fails:** Re-run with filter-test-output (`{N}` = `20`) for detailed output.
+   - **First pass:** Run with filter-last-n (`{N}` = `10`). No failure marker → pass.
+   - **If a failure marker appears:** Re-run with filter-test-output (`{N}` = `20`) for detailed output.
    - Pass condition: all green.
    - Classify failures against `{baseline-failures}`:
      - Name in baseline → pre-existing.
@@ -264,12 +270,12 @@ final report in Phase 6.
    - Apply [Decompose chained commands](#terminal-command-scope) — `precommit-all`
      often chains multiple tools with `;`. Run each segment as a
      separate call with `filter-tool` (`{N}` = `10`).
-   - Pass condition: all segments exit 0.
+   - Pass condition: every segment reports zero errors.
 
 6. **G5 — Build:**
    - N/A if no `build-all`.
    - Apply filter-tool (`{N}` = `10`).
-   - Pass condition: exits 0.
+   - Pass condition: zero errors in the output.
 
 ### Phase 6 — Produce final report
 
