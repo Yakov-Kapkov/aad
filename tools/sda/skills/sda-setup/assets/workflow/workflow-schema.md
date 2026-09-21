@@ -20,6 +20,7 @@ moves the pointer back, is recorded in `notes`, and keeps its evidence in
 {workflows-root}/
   001. const-refactoring/
     workflow.json
+    issue.md
     user-story.md
     design.md
     tasks/
@@ -97,6 +98,9 @@ moves the pointer back, is recorded in `notes`, and keeps its evidence in
 ### Artifacts
 - `user-story.md` (story), `design.md` (design), and `tasks/` (tasks). `ready`
   has no artifact of its own.
+- `issue.md` is the container's **entry artifact**, not a stage artifact: no stage owns it,
+  it produces no `gap=` line, and it never blocks `advance`. It is created with the
+  container.
 - Every stage from `start` onward produces its artifact; a stage can be passed
   over only by starting the container after it. A design pass with nothing to
   decide renews `design.md` with what was considered and why it stands.

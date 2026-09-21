@@ -55,7 +55,7 @@ if ($Action -eq 'uninstall') {
 
     # SDA prompts
     $PromptsDst = Join-Path $TargetBase 'prompts'
-    Get-ChildItem $PromptsDst -Filter 'sda_*.prompt.md' -File -ErrorAction SilentlyContinue | ForEach-Object {
+    Get-ChildItem $PromptsDst -Filter 'sda*.prompt.md' -File -ErrorAction SilentlyContinue | ForEach-Object {
         Remove-Item $_.FullName -Force
         Write-Host "  Removed prompts\$($_.Name)"
     }

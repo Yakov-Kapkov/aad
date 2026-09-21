@@ -75,12 +75,19 @@ Planning artifacts live in a **workflow**: a numbered container for one requirem
 .sda/workflows/
   001. const-refactoring/
     workflow.json          script-written state (stage + start + escalation log)
+    issue.md               entry artifact: container name, artifact paths, issue outline
     user-story.md          owner: sda-ba
     design.md              owner: sda-design
     tasks/                 owner: sda-dev-task
       001. ui-refactoring/
     escalations/           one evidence brief per escalation
 ```
+
+`init` also writes the container's **`issue.md`** — the entry artifact, holding the container
+name, the three artifact paths, and the issue in the user's own words: an outline, not a
+requirements spec, with no design or implementation detail. Every stage starts from it, so the
+work is never re-stated: `/sda.workflow.story.issue` (`sda-ba`),
+`/sda.workflow.design.issue` (`sda-design`), or `/sda.workflow.task.issue` (`sda-dev-task`).
 
 Create one with `/sda.workflow.init`, then start the owning agent on it in its own session. The
 `sda-workflow` agent is the advisor surface: it reports where a container sits, names the next
@@ -267,6 +274,9 @@ All pipeline agents are user-invokable and used as needed.
 | `sda.workflow.status` | Reports where the workflow containers sit, ending with the single next action and the agent that owns it |
 | `sda.workflow.advance` | Moves a workflow forward one stage, after showing the state and confirming |
 | `sda.workflow.escalate` | Sends a workflow back a stage — elicits what is wrong, writes the evidence brief, then raises |
+| `sda.workflow.story.issue` | Starts the story stage from the container's `issue.md` — switches to the sda-ba agent |
+| `sda.workflow.design.issue` | Starts the design stage from the container's `issue.md` — switches to the sda-design agent |
+| `sda.workflow.task.issue` | Starts the tasks stage from the container's `issue.md` — switches to the sda-dev-task agent |
 
 ---
 
@@ -369,6 +379,7 @@ All resources are read from a `.sda/` folder in the project root (may be git-ign
 | Design record (standalone) | `.sda/design/reports/<yyyy-MM-dd_HH-mm_<short-name>>/design.md` |
 | Workflow container | `.sda/workflows/<NNN>. <slug>/` |
 | Workflow state | `.sda/workflows/<NNN>. <slug>/workflow.json` |
+| Workflow entry artifact | `.sda/workflows/<NNN>. <slug>/issue.md` |
 | Escalation brief | `.sda/workflows/<NNN>. <slug>/escalations/<NNN>. <yyyy-MM-dd_HH-mm>-<from>-to-<to>.md` |
 | Workflow schema | `.sda/resources/workflow/workflow-schema.md` |
 | Escalation brief schema | `.sda/resources/workflow/escalation-brief-schema.md` |
@@ -389,11 +400,16 @@ The `models` section in `project-config.json` controls which AI model each agent
 "models": {
   "sda-workflow": "Claude Sonnet",
   "sda-toolscan": "Claude Haiku",
+  "sda-tool-installer": "Claude Haiku",
   "sda-ba": "Claude Sonnet",
+  "sda-design": "Claude Sonnet",
   "sda-dev-task": "Claude Sonnet",
+  "sda-qa-task": "Claude Sonnet",
   "sda-scribe": "Claude Haiku",
   "sda-dev-task-verifier": "Claude Sonnet",
   "sda-code-explore": "Claude Haiku",
+  "sda-web-explore": "Claude Haiku",
+  "sda-diagram-writer": "Claude Sonnet",
   "sda-dev": "Claude Sonnet",
   "sda-qa": "Claude Sonnet",
   "sda-test-writer": "Claude Sonnet",
@@ -406,13 +422,18 @@ The `models` section in `project-config.json` controls which AI model each agent
 
 | Key | Role | Default |
 |---|---|---|
-| `sda-workflow` | Workflow advisor: container position, next action, `init` / `escalate` (`advance` on request) | `Claude Sonnet` |
+| `sda-workflow` | Workflow advisor: container position, next action, `init` (writes the container's `issue.md`) / `escalate` (`advance` on request) | `Claude Sonnet` |
 | `sda-toolscan` | Scans project toolchain | `Claude Haiku` |
+| `sda-tool-installer` | Installs required development tools (delegated by sda-setup) | `Claude Haiku` |
 | `sda-ba` | Authors User Stories from raw requirements | `Claude Sonnet` |
+| `sda-design` | System + feature design; owns the doc tree and readmes | `Claude Sonnet` |
 | `sda-dev-task` | Designs task specifications | `Claude Sonnet` |
+| `sda-qa-task` | Authors the black-box QA acceptance spec | `Claude Sonnet` |
 | `sda-scribe` | Universal scribe: task.md, decision docs, design docs, contract specs, manifest.md | `Claude Haiku` |
 | `sda-dev-task-verifier` | Consistency + regression checks | `Claude Sonnet` |
 | `sda-code-explore` | Fast codebase exploration | `Claude Haiku` |
+| `sda-web-explore` | Web research — live API and library docs | `Claude Haiku` |
+| `sda-diagram-writer` | Renders Mermaid diagrams to `.md` files | `Claude Sonnet` |
 | `sda-dev` | Orchestrates TDD workflow | `Claude Sonnet` |
 | `sda-qa` | Runtime acceptance QA | `Claude Sonnet` |
 | `sda-test-writer` | Writes tests (RED phase) | `Claude Sonnet` |
@@ -450,7 +471,7 @@ Written by the `sda-setup` skill. Stores project-level settings injected into ea
 | `scripts.docsIntegrity` | `string` | `.sda/scripts/docs/docs-integrity.ps1` | Path to the docs-integrity script. Called by sda-docs-check with a decisions/requirements root (links, orphans, duplicates, one-way `.sda/` rule) or a single document path (links, code fence, non-`.md` path). Use the `.sh` variant on Bash/Unix. |
 | `scripts.invokeHttp` | `string` | `.sda/scripts/qa/invoke-http.ps1` | Path to the HTTP helper script. Called by sda-qa for every CLI/HTTP request; outputs `STATUS: N` and `BODY: ...`; supports `-StatusOnly` / `--status-only`. Use the `.sh` variant on Bash/Unix. |
 | `scripts.unitFileSize` | `string` | `.sda/scripts/dev/unit-file-size.ps1` | Path to the file line-count script. Called by `sda-dev-task` (Phase 6) and `sda-dev-task-verifier` (Check 1) to measure source file volume. Use the `.sh` variant on Bash/Unix. |
-| `scripts.workflow` | `string` | `.sda/scripts/workflow/workflow.ps1` | Path to the workflow state script — the only writer of `workflow.json`. Run by the `sda-workflow` advisor and the `/sda.workflow.*` prompts; read-only commands plus `escalate`/`resolve`/`advance` are run by sda-ba, sda-design, and sda-dev-task. `escalate` also takes the path of the escalation brief, which must already exist. Use the `.sh` variant on Bash/Unix. |
+| `scripts.workflow` | `string` | `.sda/scripts/workflow/workflow.ps1` | Path to the workflow state script — the only writer of `workflow.json`. Run by the `sda-workflow` advisor (`/sda.workflow.init` · `.status` · `.advance` · `.escalate`); read-only commands plus `escalate`/`resolve`/`advance` are run by sda-ba, sda-design, and sda-dev-task. `escalate` also takes the path of the escalation brief, which must already exist. Use the `.sh` variant on Bash/Unix. |
 | `devTaskUnitSizeLimit` | `number` | `1000` | Maximum total lines across existing Source+Test files in any single unit. Units exceeding this limit require splitting in `sda-dev-task`. |
 | `tests.coverage.enabled` | `boolean` | `true` | Whether to run coverage checks in Phase 5 (Quality). When disabled, coverage gate is skipped entirely. |
 

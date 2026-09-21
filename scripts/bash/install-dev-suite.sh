@@ -70,7 +70,7 @@ if [ "$ACTION" = "uninstall" ]; then
     fi
 
     # SDA prompts
-    for f in "$TARGET_BASE/prompts"/sda_*.prompt.md; do
+    for f in "$TARGET_BASE/prompts"/sda*.prompt.md; do
         [ -f "$f" ] && rm -f "$f" && echo "  Removed prompts/$(basename "$f")"
     done
     # commit prompts
