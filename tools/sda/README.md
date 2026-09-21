@@ -80,6 +80,8 @@ Planning artifacts live in a **workflow**: a numbered container for one requirem
     design.md              owner: sda-design
     tasks/                 owner: sda-dev-task
       001. ui-refactoring/
+        task.md            owner: sda-dev-task
+        dev-report.md      owner: sda-dev
     escalations/           one evidence brief per escalation
 ```
 
@@ -87,14 +89,17 @@ Planning artifacts live in a **workflow**: a numbered container for one requirem
 name, the three artifact paths, and the issue in the user's own words: an outline, not a
 requirements spec, with no design or implementation detail. Every stage starts from it, so the
 work is never re-stated: `/sda.workflow.story.issue` (`sda-ba`),
-`/sda.workflow.design.issue` (`sda-design`), or `/sda.workflow.task.issue` (`sda-dev-task`).
+`/sda.workflow.design.issue` (`sda-design`), `/sda.workflow.task.issue` (`sda-dev-task`), or
+`/sda.workflow.dev.issue` (`sda-dev`).
 
 Create one with `/sda.workflow.init`, then start the owning agent on it in its own session. The
 `sda-workflow` agent is the advisor surface: it reports where a container sits, names the next
 action and its owning agent, and runs `init` and a user-requested `escalate`.
-The stage machine is `story → design → tasks → ready`: `init` starts at `story` by default, or at
-`design` / `tasks` for pure technical work that has no user-visible change — the stages before the
-start are skipped and produce no artifact. `advance` moves
+The stage machine is `story → design → tasks → dev → ready`: `init` starts at `story` by default,
+or at `design` / `tasks` for pure technical work that has no user-visible change — the stages
+before the start are skipped and produce no artifact. `dev` is the implementation stage, and it
+counts as complete only when **every** task folder holds its `dev-report.md`, so a container with
+an unimplemented task cannot reach `ready`. `advance` moves
 forward exactly one stage, and `escalate` moves back — recording why, plus a **brief** holding the
 evidence — when the current stage cannot finish on the artifacts it was given. The script refuses
 a raise without a brief, so the blocked stage writes it first (`sda-scribe` numbers and names it);
@@ -105,7 +110,10 @@ stage on user confirmation; the `sda-workflow` advisor owns `init`, and may rais
 escalation from any stage with an upstream.
 
 `sda-ba`, `sda-design`, and `sda-dev-task` default to workflow mode and fall back to standalone
-paths when the requirement has no container. Standalone use is unchanged.
+paths when the requirement has no container. `sda-dev` joins a container only when the session
+names one: as the `dev` stage's owner it implements **one task folder per session** — the first
+that still owes a `dev-report.md` — and advances the container to `ready` once every task folder
+holds one. Standalone use is unchanged.
 
 ### Capture the requirement — `sda-ba`
 
@@ -146,6 +154,11 @@ Fix the bug where createOrder throws when quantity is 0.
 ```
 
 `sda-dev` runs the TDD loop (RED → GREEN → refactor) and enforces the quality gates. It delegates test writing and coding to subagents to keep each context small and reasoning sharp.
+
+With a workflow container, start it from the container's `issue.md` with `/sda.workflow.dev.issue`:
+it implements **one task folder per session** — the first that still owes a `dev-report.md` —
+writes that task's `dev-report.md` beside its `task.md`, and advances the container to `ready`
+only once every task folder has one. Each remaining folder gets its own session.
 
 ### 3. Design — `sda-design`
 
@@ -227,7 +240,7 @@ finds — it reports, and leaves routing (sda-dev-task vs ad-hoc sda-dev) to you
 | `sda-design` | System architecture + feature design — components, contracts, diagrams, decision docs | Claude Sonnet 4.6 | read, search, agent, execute |
 | `sda-dev-task` | Designs atomic task specs (`task.md`) with test scenarios and implementation plans | project config | read, search, agent, execute |
 | `sda-qa-task` | Authors the black-box acceptance spec (`qa-task.md`) — coupled (from a finalized task) or standalone | Claude Sonnet 4.6 | read, search, agent |
-| `sda-dev` | TDD implementation orchestrator — delegates RED/GREEN to subagents to keep context small; routes `docs` units to sda-scribe + sda-docs-check | project config | read, edit, execute, agent |
+| `sda-dev` | TDD implementation orchestrator — delegates RED/GREEN to subagents to keep context small; routes `docs` units to sda-scribe + sda-docs-check; owns the workflow's `dev` stage | project config | read, edit, execute, agent |
 | `sda-qa` | Runtime acceptance QA — starts the app, drives a real browser/CLI through the functional requirements, writes `qa-report.md` (read-only on source) | Claude Sonnet 4.6 | read, edit, search, execute, browser, web |
 
 ### Subagents (invoked by pipeline agents)
@@ -277,6 +290,7 @@ All pipeline agents are user-invokable and used as needed.
 | `sda.workflow.story.issue` | Starts the story stage from the container's `issue.md` — switches to the sda-ba agent |
 | `sda.workflow.design.issue` | Starts the design stage from the container's `issue.md` — switches to the sda-design agent |
 | `sda.workflow.task.issue` | Starts the tasks stage from the container's `issue.md` — switches to the sda-dev-task agent |
+| `sda.workflow.dev.issue` | Starts the dev stage from the container's `issue.md` — switches to the sda-dev agent |
 
 ---
 
@@ -380,6 +394,7 @@ All resources are read from a `.sda/` folder in the project root (may be git-ign
 | Workflow container | `.sda/workflows/<NNN>. <slug>/` |
 | Workflow state | `.sda/workflows/<NNN>. <slug>/workflow.json` |
 | Workflow entry artifact | `.sda/workflows/<NNN>. <slug>/issue.md` |
+| Dev report (workflow) | `.sda/workflows/<NNN>. <slug>/tasks/<NNN>. <slug>/dev-report.md` — the `dev` stage's artifact |
 | Escalation brief | `.sda/workflows/<NNN>. <slug>/escalations/<NNN>. <yyyy-MM-dd_HH-mm>-<from>-to-<to>.md` |
 | Workflow schema | `.sda/resources/workflow/workflow-schema.md` |
 | Escalation brief schema | `.sda/resources/workflow/escalation-brief-schema.md` |
@@ -464,14 +479,14 @@ Written by the `sda-setup` skill. Stores project-level settings injected into ea
 | `paths.issues` | `string` | `.sda/issues` | Root folder for standalone QA work (no task): each `<NNN>-<slug>/` holds a `qa-task.md` authored by sda-qa-task and the `qa-report.md` written by sda-qa. |
 | `paths.secrets` | `string` | `.sda/secrets` | Git-ignored folder holding `qa.secrets.env` credentials used by sda-qa. |
 | `paths.userStories` | `string` | `.sda/stories` | Root folder for User Stories authored by sda-ba. Written by sda-ba when no output path is given. |
-| `paths.workflows` | `string` | `.sda/workflows` | Root folder for workflow containers. Read by sda-ba, sda-design, and sda-dev-task to resolve workflow vs standalone mode. |
+| `paths.workflows` | `string` | `.sda/workflows` | Root folder for workflow containers. Read by sda-ba, sda-design, sda-dev-task, and sda-dev to resolve workflow vs standalone mode. |
 | `scripts.loadQaSecrets` | `string` | `.sda/scripts/qa/load-qa-secrets.ps1` | Path to the QA secrets loader script (legacy — superseded by `qaSessionInit`). Still used as a fallback when `qaSessionInit` is absent. Use the `.sh` variant on Bash/Unix. |
 | `scripts.listQaSecrets` | `string` | `.sda/scripts/qa/list-qa-secrets.ps1` | Path to the QA secrets lister script. Called by sda-qa-task to discover existing credential key names. Use the `.sh` variant on Bash/Unix. |
 | `scripts.qaSessionInit` | `string` | `.sda/scripts/qa/qa-session-init.ps1` | Path to the QA session init script. Dot-sourced by sda-qa at Phase 2; sets UTF-8 encoding and loads credentials. Outputs a combined summary and `var_name \| is_empty` table. Use the `.sh` variant on Bash/Unix. |
 | `scripts.docsIntegrity` | `string` | `.sda/scripts/docs/docs-integrity.ps1` | Path to the docs-integrity script. Called by sda-docs-check with a decisions/requirements root (links, orphans, duplicates, one-way `.sda/` rule) or a single document path (links, code fence, non-`.md` path). Use the `.sh` variant on Bash/Unix. |
 | `scripts.invokeHttp` | `string` | `.sda/scripts/qa/invoke-http.ps1` | Path to the HTTP helper script. Called by sda-qa for every CLI/HTTP request; outputs `STATUS: N` and `BODY: ...`; supports `-StatusOnly` / `--status-only`. Use the `.sh` variant on Bash/Unix. |
 | `scripts.unitFileSize` | `string` | `.sda/scripts/dev/unit-file-size.ps1` | Path to the file line-count script. Called by `sda-dev-task` (Phase 6) and `sda-dev-task-verifier` (Check 1) to measure source file volume. Use the `.sh` variant on Bash/Unix. |
-| `scripts.workflow` | `string` | `.sda/scripts/workflow/workflow.ps1` | Path to the workflow state script — the only writer of `workflow.json`. Run by the `sda-workflow` advisor (`/sda.workflow.init` · `.status` · `.advance` · `.escalate`); read-only commands plus `escalate`/`resolve`/`advance` are run by sda-ba, sda-design, and sda-dev-task. `escalate` also takes the path of the escalation brief, which must already exist. Use the `.sh` variant on Bash/Unix. |
+| `scripts.workflow` | `string` | `.sda/scripts/workflow/workflow.ps1` | Path to the workflow state script — the only writer of `workflow.json`. Run by the `sda-workflow` advisor (`/sda.workflow.init` · `.status` · `.advance` · `.escalate`); read-only commands plus `escalate`/`resolve`/`advance` are run by sda-ba, sda-design, sda-dev-task, and sda-dev. `escalate` also takes the path of the escalation brief, which must already exist. Use the `.sh` variant on Bash/Unix. |
 | `devTaskUnitSizeLimit` | `number` | `1000` | Maximum total lines across existing Source+Test files in any single unit. Units exceeding this limit require splitting in `sda-dev-task`. |
 | `tests.coverage.enabled` | `boolean` | `true` | Whether to run coverage checks in Phase 5 (Quality). When disabled, coverage gate is skipped entirely. |
 
@@ -530,7 +545,7 @@ the shared, gitignored test scratch root — and is removed on a green run, so a
 two temp roots and their step-by-step transcripts are still there to inspect. It needs Git Bash
 and `jq`, and skips with a message when either is missing.
 
-Covered today: the stage machine and its artifact gate, non-`story` start stages and the skipped
+Covered today: the stage machine and its artifact gate, the per-task `dev` gate, non-`story` start stages and the skipped
 prefix, the escalation brief gate, `--to` jumps, displayed open-ness and LIFO unwind,
 container-consistency verification, and CLI misuse.
 

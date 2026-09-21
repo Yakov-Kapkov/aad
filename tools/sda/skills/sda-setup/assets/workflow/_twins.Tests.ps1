@@ -15,11 +15,11 @@
     Every step is declared once, in bash flag syntax; the PowerShell arguments
     are derived (--slug -> -Slug). '@ROOT' expands to the container root.
 
-    Coverage: the stage machine and its artifact gate; non-story start stages
-    and the skipped prefix; the escalation brief gate
-    (missing, absent, outside escalations/); --to jumps; derived open-ness; LIFO
-    unwind; resolve advancing exactly one stage; brief=- on a pre-brief state;
-    and CLI misuse.
+    Coverage: the stage machine and its artifact gate; the per-task dev gate
+    (partial and complete); non-story start stages and the skipped prefix; the
+    escalation brief gate (missing, absent, outside escalations/); --to jumps;
+    derived open-ness; LIFO unwind; resolve advancing exactly one stage; brief=-
+    on a pre-brief state; and CLI misuse.
 
     Run from anywhere:  powershell -NoProfile -File _twins.Tests.ps1
     Exit code 0 = twins agree; 1 = divergences (transcripts kept for inspection).
@@ -194,9 +194,13 @@ $steps = @(
     @{ id = 'S21'; label = 'advance: design -> tasks';            args = @('advance', '--slug', '001') }
     @{ id = 'S22'; label = 'advance: tasks/ is empty';            args = @('advance', '--slug', '001') }
     @{ id = 'S23'; label = 'fixture: 001/tasks/001. ui/task.md';  fs = '001. alpha/tasks/001. ui/task.md' }
-    @{ id = 'S24'; label = 'advance: tasks -> ready';             args = @('advance', '--slug', '001') }
-    @{ id = 'S25'; label = 'advance: already at ready';           args = @('advance', '--slug', '001') }
-    @{ id = 'S26'; label = 'current: ready, no gaps';             args = @('current', '--slug', '001') }
+    @{ id = 'S24'; label = 'advance: tasks -> dev';               args = @('advance', '--slug', '001') }
+    @{ id = 'S25'; label = 'advance: dev, no dev-report.md';      args = @('advance', '--slug', '001'); expectLines = 2 }
+    @{ id = 'S26'; label = 'current: dev, gap + missing';         args = @('current', '--slug', '001') }
+    @{ id = 'S26a'; label = 'fixture: 001 dev-report.md';         fs = '001. alpha/tasks/001. ui/dev-report.md' }
+    @{ id = 'S26b'; label = 'advance: dev -> ready';              args = @('advance', '--slug', '001') }
+    @{ id = 'S26c'; label = 'current: ready, no gaps';            args = @('current', '--slug', '001') }
+    @{ id = 'S26d'; label = 'advance: already at ready';          args = @('advance', '--slug', '001'); expectLines = 2 }
     @{ id = 'S27'; label = 'escalate from story refused';         args = @('escalate', '--slug', '002', '--reason', 'r', '--brief', '@ROOT/002. beta/escalations/001. x.md') }
     @{ id = 'S28'; label = 'escalate: brief outside refused';     args = @('escalate', '--slug', '001', '--reason', 'r', '--brief', '@ROOT/002. beta/escalations/001. x.md') }
     @{ id = 'S29'; label = 'escalate: brief absent refused';      args = @('escalate', '--slug', '001', '--reason', 'r', '--brief', '@ROOT/001. alpha/escalations/999. nope.md') }
@@ -255,11 +259,35 @@ $steps = @(
     @{ id = 'S82'; label = 'init: --at tasks';                    args = @('init', '--slug', 'tech-b', '--at', 'tasks') }
     @{ id = 'S83'; label = 'current: tasks origin, two skipped';  args = @('current', '--slug', '007') }
     @{ id = 'S84'; label = 'fixture: 007/tasks/001. x/task.md';   fs = '007. tech-b/tasks/001. x/task.md' }
-    @{ id = 'S85'; label = 'advance: tasks -> ready';             args = @('advance', '--slug', '007') }
-    @{ id = 'S86'; label = 'current: ready, skipped story+design'; args = @('current', '--slug', '007') }
+    @{ id = 'S85'; label = 'advance: tasks -> dev';               args = @('advance', '--slug', '007') }
+    @{ id = 'S86'; label = 'current: dev, skipped story+design';  args = @('current', '--slug', '007') }
     @{ id = 'S87'; label = 'read: default start is story';        args = @('read', '--slug', '001', '--field', 'start') }
     @{ id = 'S88'; label = 'init: --at ready refused';            args = @('init', '--slug', 'tech-c', '--at', 'ready'); expectLines = 2 }
     @{ id = 'S89'; label = 'init: --at bogus refused';            args = @('init', '--slug', 'tech-c', '--at', 'bogus'); expectLines = 2 }
+    @{ id = 'S90'; label = 'init: --at dev refused';              args = @('init', '--slug', 'tech-d', '--at', 'dev'); expectLines = 2 }
+    @{ id = 'S91'; label = 'init: --at tasks for the dev gate';   args = @('init', '--slug', 'dev-gate', '--at', 'tasks') }
+    @{ id = 'S92'; label = 'current: two skipped stages';         args = @('current', '--slug', '008') }
+    @{ id = 'S93'; label = 'fixture: 008 first task.md';          fs = '008. dev-gate/tasks/001. first/task.md' }
+    @{ id = 'S94'; label = 'fixture: 008 second task.md';         fs = '008. dev-gate/tasks/002. second/task.md' }
+    @{ id = 'S95'; label = 'advance: tasks -> dev';               args = @('advance', '--slug', '008') }
+    @{ id = 'S96'; label = 'current: dev, both reports missing';  args = @('current', '--slug', '008') }
+    @{ id = 'S97'; label = 'advance: dev needs both reports';     args = @('advance', '--slug', '008'); expectLines = 2 }
+    @{ id = 'S98'; label = 'fixture: 008 first dev-report.md';    fs = '008. dev-gate/tasks/001. first/dev-report.md' }
+    @{ id = 'S99'; label = 'advance: dev needs the second';       args = @('advance', '--slug', '008'); expectLines = 2 }
+    @{ id = 'S100'; label = 'current: dev, one report missing';   args = @('current', '--slug', '008') }
+    @{ id = 'S101'; label = 'fixture: 008 second dev-report.md';  fs = '008. dev-gate/tasks/002. second/dev-report.md' }
+    @{ id = 'S102'; label = 'advance: dev -> ready';              args = @('advance', '--slug', '008') }
+    @{ id = 'S103'; label = 'current: ready, no gaps';            args = @('current', '--slug', '008') }
+    @{ id = 'S104'; label = 'advance: already at ready';          args = @('advance', '--slug', '008'); expectLines = 2 }
+    @{ id = 'S105'; label = 'fixture: 008 first brief';           fs = '008. dev-gate/escalations/001. fig.md' }
+    @{ id = 'S106'; label = 'escalate: ready -> dev (default)';   args = @('escalate', '--slug', '008', '--reason', 'implementation found a design gap', '--brief', '@ROOT/008. dev-gate/escalations/001. fig.md') }
+    @{ id = 'S107'; label = 'current: owner=dev, ready pending';  args = @('current', '--slug', '008') }
+    @{ id = 'S108'; label = 'fixture: 008 second brief';          fs = '008. dev-gate/escalations/002. fig.md' }
+    @{ id = 'S109'; label = 'escalate: dev -> tasks (default)';   args = @('escalate', '--slug', '008', '--reason', 'task spec incomplete', '--brief', '@ROOT/008. dev-gate/escalations/002. fig.md') }
+    @{ id = 'S110'; label = 'current: deepest is E2 at tasks';    args = @('current', '--slug', '008') }
+    @{ id = 'S111'; label = 'resolve E2 -> dev';                  args = @('resolve', '--slug', '008', '--id', 'E2', '--report', 'task.md renewed') }
+    @{ id = 'S112'; label = 'resolve E1 -> ready';                args = @('resolve', '--slug', '008', '--id', 'E1', '--report', 'design unaffected') }
+    @{ id = 'S113'; label = 'current: clear at ready';            args = @('current', '--slug', '008') }
 )
 
 # A state file written before briefs existed: no 'brief' property at all.

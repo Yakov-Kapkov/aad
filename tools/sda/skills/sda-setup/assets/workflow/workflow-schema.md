@@ -8,7 +8,7 @@ It lives at `{workflows-root}/<NNN>. <slug>/`. `{workflows-root}` defaults to
 `.sda/workflows`.
 
 `workflow.json` is written only by the workflow script; every field below is
-script-owned. Progress runs `story → design → tasks → ready`; an escalation
+script-owned. Progress runs `story → design → tasks → dev → ready`; an escalation
 moves the pointer back, is recorded in `notes`, and keeps its evidence in
 `escalations/`.
 
@@ -25,6 +25,8 @@ moves the pointer back, is recorded in `notes`, and keeps its evidence in
     design.md
     tasks/
       001. ui-refactoring/
+        task.md
+        dev-report.md
     escalations/
       001. 2026-09-15_14-20-tasks-to-design.md
 ```
@@ -60,17 +62,18 @@ moves the pointer back, is recorded in `notes`, and keeps its evidence in
 - `yyyy-MM-dd`.
 
 ### `stage`
-- One of `story`, `design`, `tasks`, `ready` — in that order.
+- One of `story`, `design`, `tasks`, `dev`, `ready` — in that order.
 - `advance` moves exactly one stage forward, and only after the current stage's
   artifact exists.
 - `escalate` moves back one or more stages; `resolve` moves forward exactly one.
 - While any escalation is open, `advance` is refused.
 - `story` is the first stage by default — a container may start later (see
-  `start`). `ready` is terminal.
+  `start`). `dev` is the implementation stage: every task folder must hold its
+  `dev-report.md` before the pointer can leave it. `ready` is terminal.
 
 ### `start`
 - The stage the container was created at: `story` (default), `design`, or
-  `tasks`. `ready` is never a valid start.
+  `tasks`. `dev` and `ready` are never a valid start.
 - Stages before `start` are **skipped** — they produce no artifact, and
   `current` reports no `gap=` for them. If an escalation later moves the
   pointer back into a skipped stage, that stage becomes real and requires its
@@ -97,7 +100,11 @@ moves the pointer back, is recorded in `notes`, and keeps its evidence in
 
 ### Artifacts
 - `user-story.md` (story), `design.md` (design), and `tasks/` (tasks). `ready`
-  has no artifact of its own.
+  has no artifact of its own — it is terminal.
+- `dev`'s artifact is one `dev-report.md` per task folder under `tasks/`, written
+  beside that task's `task.md`. The stage counts as produced only when **every**
+  task folder holds one, so a container with an unimplemented task cannot leave
+  `dev`.
 - `issue.md` is the container's **entry artifact**, not a stage artifact: no stage owns it,
   it produces no `gap=` line, and it never blocks `advance`. It is created with the
   container.
@@ -105,7 +112,9 @@ moves the pointer back, is recorded in `notes`, and keeps its evidence in
   over only by starting the container after it. A design pass with nothing to
   decide renews `design.md` with what was considered and why it stands.
 - An absent artifact for the current stage blocks `advance`, and `current`
-  reports it as a `gap=` line.
+  reports it as a `gap=` line. A partial `dev` gap is followed by a
+  `missing=<folder>, <folder>` line naming the task folders still without a
+  report, so the implementation stage can act without searching `.sda/`.
 - `tasks/` is created with the container and may stay empty; `tasks` counts as
   produced only when it holds at least one entry.
 

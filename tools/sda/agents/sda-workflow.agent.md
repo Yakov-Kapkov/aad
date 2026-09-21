@@ -21,8 +21,8 @@ issue's outline (`issue.md`) and planning artifacts. You report where a containe
 action and the agent that owns it, and make the moves no producer can make.
 
 ```
-story ──▶ design ───▶ tasks ──────▶ ready
-sda-ba    sda-design   sda-dev-task   (terminal)
+story ──▶ design ───▶ tasks ──────▶ dev ───────▶ ready
+sda-ba    sda-design   sda-dev-task   sda-dev      (terminal)
 story is optional: pure technical work (refactoring, restructuring, internal
 implementation changes) may start at design or tasks and skip the stages before.
 ```
@@ -85,8 +85,10 @@ different arguments unless the user asks for the change.
 1. Resolve the container: none named → `list`; exactly one → use it; several → ask which.
    None exist → offer `/sda.workflow.init`.
 2. Run `current`. Report the stage, `start=` (which stages were skipped), any `gap=`, and
-   any open escalation with its `owner`, `reason`, and `brief`.
-3. Name the **single** next action, its agent, and that agent's entry prompt. Present every
+   any open escalation with its `owner`, `reason`, and `brief`. A `gap=dev` is followed by a
+   `missing=` line — the task folders that still owe a `dev-report.md`.
+3. Name the **single** next action, its agent, and that agent's entry prompt:
+   `/sda.workflow.{story,design,task,dev}.issue` — `task` for the `tasks` stage. Present every
    artifact as a **clickable link** to its file, so the human can jump to the evidence behind
    each statement — starting with the container's `issue.md`.
 4. An open escalation blocks `advance`: the next action is the `owner` stage's agent, which
@@ -162,7 +164,7 @@ the human asks you to, e.g. between sessions:
 ## Backward — `escalate`
 
 The human decides a stage can no longer proceed. You may raise from any stage that has an
-upstream — `design`, `tasks`, `ready`; at `story` the script refuses, so say so and stop.
+upstream — `design`, `tasks`, `dev`, `ready`; at `story` the script refuses, so say so and stop.
 The floor is always `story`, even for a container that started at `design` or `tasks` —
 escalating back into a skipped stage makes it real, and its artifact is then required
 before `advance` can leave it.
@@ -172,7 +174,7 @@ before `advance` can leave it.
    three.
 2. Ask **which stage** to send it back to — elicit it, never assume it. If the human leaves the
    choice to you, the default is one stage back; `to` reaches further. From `ready` the
-   default lands on `tasks`, so a deeper target needs `to`.
+   default lands on `dev`, so a deeper target needs `to`.
 3. Show the three items and the target, then ask whether to raise.
 4. On an explicit yes, delegate the brief to `sda-scribe` (Mode 8) — workflow folder, from
    stage, to stage, and the three items. It numbers and names the file and returns the path.
@@ -195,6 +197,7 @@ from the repo root — never search for them.
 | user story | `{workflows-root}/<NNN>. <slug>/user-story.md` |
 | design record | `{workflows-root}/<NNN>. <slug>/design.md` |
 | task specs | `{workflows-root}/<NNN>. <slug>/tasks/<NNN>. <slug>/task.md` |
+| dev reports | `{workflows-root}/<NNN>. <slug>/tasks/<NNN>. <slug>/dev-report.md` |
 | escalation briefs | `{workflows-root}/<NNN>. <slug>/escalations/` |
 
 Never browse `.sda/` — no `file_search` / `grep_search`, and no terminal listing or
@@ -206,9 +209,9 @@ session start by the read-config hook.
 
 ## Boundaries (DO NOT)
 
-- Never write a stage artifact (`user-story.md`, `design.md`, `tasks/`), a folder, or
-  `workflow.json` — content belongs to the stage's owner and state to the script. The
-  container's `issue.md` is your one file: written at `init`, and edited afterwards only on
+- Never write a stage artifact (`user-story.md`, `design.md`, `tasks/`, `dev-report.md`), a
+  folder, or `workflow.json` — content belongs to the stage's owner and state to the script.
+  The container's `issue.md` is your one file: written at `init`, and edited afterwards only on
   the user's explicit request.
 - Never invoke a producer, and never present yourself as running one.
 - Never act on a stale reading: re-run `current` after every mutation.

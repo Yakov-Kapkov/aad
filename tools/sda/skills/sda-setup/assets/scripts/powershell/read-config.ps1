@@ -8,7 +8,7 @@ $ErrorActionPreference = 'Stop'
 # Per-agent key manifests — controls what each agent receives
 $agentKeys = @{
     'sda-ba'            = @('paths.userStories','paths.workflows','scripts.workflow')
-    'sda-dev'           = @('scripts.taskState','scripts.readProjectTools','standardsSkill','paths.specs','tests.coverage.enabled')
+    'sda-dev'           = @('scripts.taskState','scripts.readProjectTools','standardsSkill','paths.specs','paths.workflows','scripts.workflow','tests.coverage.enabled')
     'sda-dev-quality'   = @('scripts.readProjectTools','tests.coverage.enabled')
     'sda-dev-task'          = @('scripts.taskState','scripts.unitFileSize','devTaskUnitSizeLimit','designOwnership','standardsSkill','paths.specs','paths.tasks','paths.workflows','scripts.workflow')
     'sda-dev-task-verifier' = @('scripts.unitFileSize','devTaskUnitSizeLimit','paths.specs')

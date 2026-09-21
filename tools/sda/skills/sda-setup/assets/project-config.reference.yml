@@ -79,7 +79,8 @@ paths:
   userStories: .sda/stories
 
   # Root folder for workflow containers (.sda/workflows/<NNN>. <slug>/), each
-  # holding a user story, a design record, and its task folders. Defaults to
+  # holding a user story, a design record, its task folders, and one
+  # dev-report.md per task folder (the dev stage's artifact). Defaults to
   # .sda/workflows if omitted.
   workflows: .sda/workflows
 

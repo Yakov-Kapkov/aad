@@ -21,11 +21,13 @@
 #   raw       pretty-printed JSON, or the bare field value (read)
 #   failure   error=<X cannot do Y because Z>, exit code 1
 #
-# The stage order is story -> design -> tasks -> ready. A container starts at
-# story by default; --at design or --at tasks skips the stages before it, which
-# then produce no artifact. Every stage from the start onward produces one
-# artifact, and advance refuses to leave a stage whose artifact is absent. While
-# any escalation is open, advance is refused and only resolve clears it.
+# The stage order is story -> design -> tasks -> dev -> ready. A container starts
+# at story by default; --at design or --at tasks skips the stages before it,
+# which then produce no artifact. Every stage from the start onward produces one
+# artifact, and advance refuses to leave a stage whose artifact is absent. The
+# dev stage's artifact is one dev-report.md per task folder, so a container with
+# an unimplemented task cannot reach ready. While any escalation is open, advance
+# is refused and only resolve clears it.
 #
 # Usage:
 #   workflow.sh init     --slug <slug> [--at <story|design|tasks>]
@@ -88,7 +90,8 @@ stage_index() {
     story)  printf '0' ;;
     design) printf '1' ;;
     tasks)  printf '2' ;;
-    ready)  printf '3' ;;
+    dev)    printf '3' ;;
+    ready)  printf '4' ;;
     *)      printf '%s' '-1' ;;
   esac
 }
@@ -98,9 +101,13 @@ stage_name() {
     0) printf 'story' ;;
     1) printf 'design' ;;
     2) printf 'tasks' ;;
-    3) printf 'ready' ;;
+    3) printf 'dev' ;;
+    4) printf 'ready' ;;
   esac
 }
+
+# Index of the last stage. 'ready' has no artifact of its own.
+STAGE_LAST=4
 
 # A container is consistent only when its workflow.json exists, parses, carries
 # the four required fields, and holds a known stage. Verified before any command
@@ -164,23 +171,58 @@ next_escalation_id() {
   jq -r '([.notes[] | select(.type == "escalation")] | length) + 1 | "E\(.)"' "$1"
 }
 
-# 0 when the stage's artifact exists. 'ready' has no artifact of its own, and
-# 'tasks' counts only when the folder holds at least one entry.
+# One task folder name per line, in name order.
+task_folders() {
+  local dir="$1/tasks" name
+  [ -d "$dir" ] || return 0
+  for name in "$dir"/*/; do
+    [ -d "$name" ] || continue
+    basename "$name"
+  done | sort
+}
+
+# One task folder name per line for the folders that hold no dev-report.md.
+dev_missing() {
+  local dir="$1/tasks" name
+  while IFS= read -r name; do
+    [ -f "$dir/$name/dev-report.md" ] || printf '%s\n' "$name"
+  done < <(task_folders "$1")
+}
+
+# 0 when the stage's artifact exists. 'ready' has no artifact of its own;
+# 'tasks' counts only when the folder holds at least one entry; 'dev' counts
+# only when every task folder holds its dev-report.md, so the stage is complete
+# on the whole container rather than on the last task implemented.
 artifact_present() {
   local folder="$1"
   case "$2" in
     story)  [ -e "$folder/user-story.md" ] && return 0 ;;
     design) [ -e "$folder/design.md" ] && return 0 ;;
     tasks)  [ -d "$folder/tasks" ] && [ -n "$(ls -A "$folder/tasks" 2>/dev/null)" ] && return 0 ;;
+    dev)    [ -n "$(task_folders "$folder")" ] && [ -z "$(dev_missing "$folder")" ] && return 0 ;;
   esac
   return 1
 }
 
 artifact_label() {
-  case "$1" in
-    tasks)  printf 'the tasks/ folder has no task folder' ;;
-    story)  printf 'user-story.md does not exist' ;;
-    design) printf 'design.md does not exist' ;;
+  local folder="$1" total=0 count=0 names="" name
+  case "$2" in
+    story)  printf 'user-story.md does not exist; produce it first' ;;
+    design) printf 'design.md does not exist; produce it first' ;;
+    tasks)  printf 'the tasks/ folder has no task folder; produce it first' ;;
+    dev)
+      while IFS= read -r name; do total=$((total + 1)); done < <(task_folders "$folder")
+      if [ "$total" -eq 0 ]; then
+        printf 'the tasks/ folder has no task folder; produce it first'
+        return 0
+      fi
+      while IFS= read -r name; do
+        count=$((count + 1))
+        if [ -z "$names" ]; then names="$name"; else names="$names, $name"; fi
+      done < <(dev_missing "$folder")
+      printf '%s of %s task folders have no dev-report.md: %s; every task folder needs one first' \
+        "$count" "$total" "$names"
+      ;;
   esac
 }
 
@@ -334,7 +376,7 @@ case "$COMMAND" in
     printf 'stages\n'
 
     i=0
-    while [ "$i" -le 3 ]; do
+    while [ "$i" -le "$STAGE_LAST" ]; do
       name="$(stage_name "$i")"
       if [ "$i" -eq "$index" ]; then
         status="processing"
@@ -351,7 +393,9 @@ case "$COMMAND" in
       i=$((i + 1))
     done
 
-    # Artifact gaps from the start to the current stage. 'ready' has none.
+    # Artifact gaps from the start to the current stage. 'ready' has none. A
+    # 'dev' gap names the task folders still missing their dev-report.md,
+    # because .sda/ is unsearchable and the producer cannot list them.
     lo="$start_index"
     [ "$index" -lt "$lo" ] && lo="$index"
     i="$lo"
@@ -359,6 +403,13 @@ case "$COMMAND" in
       name="$(stage_name "$i")"
       if [ "$name" != "ready" ] && ! artifact_present "$folder" "$name"; then
         printf 'gap=%s\n' "$name"
+        if [ "$name" = "dev" ]; then
+          names=""
+          while IFS= read -r n; do
+            if [ -z "$names" ]; then names="$n"; else names="$names, $n"; fi
+          done < <(dev_missing "$folder")
+          [ -n "$names" ] && printf 'missing=%s\n' "$names"
+        fi
       fi
       i=$((i + 1))
     done
@@ -390,9 +441,9 @@ case "$COMMAND" in
     fi
 
     index="$(stage_index "$current")"
-    [ "$index" -lt 3 ] || fail "advance cannot move because the workflow is already at '$current'"
+    [ "$index" -lt "$STAGE_LAST" ] || fail "advance cannot move because the workflow is already at '$current'"
     artifact_present "$folder" "$current" \
-      || fail "advance cannot leave '$current' because $(artifact_label "$current"); produce it first"
+      || fail "advance cannot leave '$current' because $(artifact_label "$folder" "$current")"
 
     next="$(stage_name "$((index + 1))")"
     jq --arg s "$next" '.stage = $s' "$file" > "$file.tmp" \
@@ -476,7 +527,7 @@ case "$COMMAND" in
     stage="$(jq -r '.stage' "$file")"
     index="$(stage_index "$stage")"
     next="$stage"
-    if [ "$index" -lt 3 ]; then next="$(stage_name "$((index + 1))")"; fi
+    if [ "$index" -lt "$STAGE_LAST" ]; then next="$(stage_name "$((index + 1))")"; fi
 
     jq --arg i "$ID" --arg r "$REPORT" --arg d "$(date +%F)" --arg s "$next" \
       '.notes += [{type: "resolution", id: $i, report: $r, date: $d}] | .stage = $s' \
