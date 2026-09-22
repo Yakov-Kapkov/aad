@@ -211,8 +211,10 @@ that returned exactly 500 lines.
 ### Commands are immutable
 
 The test command, format-code command, type-check command, and validate-data commands arrive complete. Run each exactly
-as passed. Never extend, modify, re-wrap, or substitute them. The test
-command already includes any output filter pipe.
+as passed. Never extend, modify, re-wrap, or substitute them — in
+particular, never replace a runner or script invocation with a direct
+binary or entry-point call. The test command already includes any output
+filter pipe.
 
 Run every command in the shell named by `Shell`. Never translate a command
 to another shell's idioms — the passed command already uses the correct syntax.

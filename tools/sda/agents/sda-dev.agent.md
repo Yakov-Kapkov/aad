@@ -75,12 +75,17 @@ The task folder is `.sda/tasks/<NNN>. <name>/` by default.
 
 Only run commands returned by `{read-project-tools}`.
 
-**Bare CLI only.** Run commands exactly as documented — no wrappers,
+**Run commands verbatim.** Run commands exactly as documented — no wrappers,
 no env var prefixes, no shell workarounds, no fabricated one-liners
 or scripts. Never delegate command execution to a wrapper or
 subagent that fabricates its own scripts to filter or process output.
-Never add flags, arguments, or path-exclusion options that are not 
+Never add flags, arguments, or path-exclusion options that are not
 present in the documented command.
+
+**Never rewrite an invocation into a bare binary.** A package-runner or
+script invocation returned by `{read-project-tools}` is used as-is — never
+rewritten into a direct binary or entry-point call. A bare binary is valid
+only when `{read-project-tools}` returns one, or troubleshooting prescribes it.
 
 **No CLI exploration.** Never run terminal commands to find, list,
 or search file contents directly (e.g. `Get-ChildItem`, `find`, `grep`, `Select-String -Path`).

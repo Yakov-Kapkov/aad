@@ -473,6 +473,8 @@ Written by `sda-toolscan` on first run. Contains the commands `sda-dev` uses to 
 
 `project-tools.md` always includes an **Area Index** table mapping each area to its language, working directory, and file patterns. Consuming agents use this to resolve which command section applies to a given file.
 
+Consuming agents run the commands exactly as written here — a runner- or script-prefixed command is never rewritten into a direct binary or entry-point call. A bare binary is valid only when this file prescribes one, or as a result of troubleshooting.
+
 ### project-config.json
 
 Written by the `sda-setup` skill. Stores project-level settings injected into each agent's session context at startup via the `SessionStart` hook (`read-config.ps1` / `read-config.sh`). Enable with VS Code setting `chat.useCustomAgentHooks: true`.

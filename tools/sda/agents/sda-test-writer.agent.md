@@ -376,6 +376,7 @@ cd {absolute-working-dir}
   is given.
 - Run any command other than the provided test, type-check, format-code, and validate-data commands — in their exact form. Never strip, omit, or rewrite any part of a provided command, including its output pipe (e.g., `| Select-String`, `| grep`, `| Select-Object`).
 - Use terminal commands to write or create files — always use the `edit` tool for file writes.
-- Add wrappers, env var prefixes, or shell workarounds to commands.
+- Add wrappers, env var prefixes, or shell workarounds to commands — or
+  replace a runner or script invocation with a direct binary or entry-point call.
 - After execution failure: run any further terminal command or file
   read — see [Hard stop on execution failure](#hard-stop-on-execution-failure).

@@ -92,9 +92,12 @@ separators and run each segment as a separate terminal call,
 each with its own `filter-tool` (`{N}` = `10`). The gate result is
 the aggregate: all segments must pass.
 
-**Bare CLI only.** Except for decomposing chained commands above,
+**Run commands verbatim.** Except for decomposing chained commands above,
 run commands exactly as documented — no wrappers, no env var
 prefixes, no shell workarounds, no fabricated one-liners or scripts.
+Never rewrite a returned invocation into a direct binary or entry-point
+call; a bare binary is valid only when `{read-project-tools}` returns
+one, or troubleshooting prescribes it.
 Never add flags, arguments, or path-exclusion options that are not
 present in the documented command.
 
