@@ -59,9 +59,14 @@ You do not write tests or manage state files.
 
 ### Hard stop on execution failure
 
-**Execution failure** = command exits with no output, empty stdout/stderr, or
-— when it carries no filter pipe — an exit code not produced by a test
-assertion.
+**Execution failure** = the command did not run: a non-zero exit with empty
+output, or — **unfiltered only** — a non-zero exit not produced by a test
+assertion. **A filtered command is never judged by exit code** — the pipe masks
+the runner's status.
+
+**Empty output with exit code `0` is a pass** — silent tools (e.g. `tsc --noEmit`,
+formatters, linters) print nothing. Judge silence by exit code only; never
+treat it as a failure or a troubleshooting symptom.
 
 When this happens:
 1. **Self-check** — compare the command you ran against the caller's
@@ -85,7 +90,7 @@ The test command carries a filter pipe, which masks the runner's status — read
 the verdict from the output, never the exit code. Failure marker = a failure
 line, or a summary reporting a non-zero failure/error count → failing; no
 failure marker → passing. **No output — or output you cannot classify — is not
-a pass**; it is an execution failure (hard stop above).
+a pass** for a filtered command; it is an execution failure (hard stop above).
 
 ### Coding standards
 
@@ -153,7 +158,7 @@ to another shell's idioms — the passed command already uses the correct syntax
 
 If a type-check command was provided, run it exactly as passed.
 
-If the command produces no output or fails to execute — apply [Hard stop on execution failure](#hard-stop-on-execution-failure) immediately.
+If the command fails to execute — apply [Hard stop on execution failure](#hard-stop-on-execution-failure) immediately.
 
 - **Type errors** — fix using the edit tool. Do not introduce new behaviour. Max 3 attempts. Still failing → report `❌ Type gate` in result.
 
@@ -161,7 +166,7 @@ If the command produces no output or fails to execute — apply [Hard stop on ex
 
 Run the test command (see [Commands are immutable](#commands-are-immutable)).
 
-If the command produces no output or fails for a non-assertion reason —
+If the command fails to execute, or a filtered run produces no output —
 apply [Hard stop on execution failure](#hard-stop-on-execution-failure) immediately.
 
 - **Test failure** — fix using the edit tool. Max 3 attempts. Still failing → report the failure gate in the result.
@@ -171,7 +176,7 @@ apply [Hard stop on execution failure](#hard-stop-on-execution-failure) immediat
 
 If `Validate-data commands:` was provided, run each command exactly as passed, in order.
 
-If any command produces no output or fails to execute — apply [Hard stop on execution failure](#hard-stop-on-execution-failure) immediately.
+If any command fails to execute — apply [Hard stop on execution failure](#hard-stop-on-execution-failure) immediately.
 
 - **Format errors** — fix the data file using the edit tool. Re-run that command only. Max 3 attempts per file. Still failing → report `❌ Data gate` in result.
 
@@ -179,7 +184,7 @@ If any command produces no output or fails to execute — apply [Hard stop on ex
 
 If `Format-code command:` was provided, run it exactly as passed.
 
-If the command produces no output or fails to execute — apply [Hard stop on execution failure](#hard-stop-on-execution-failure) immediately.
+If the command fails to execute — apply [Hard stop on execution failure](#hard-stop-on-execution-failure) immediately.
 
 ### Terminal working directory
 

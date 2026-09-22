@@ -13,7 +13,7 @@ Read **only this table first**. Match the symptom keyword, then read only the li
 | Lint / Style Errors | import order, unused import, magic number | 37–43 |
 | Command Execution | env var not set, KeyError, empty config, dotenv | 45–49 |
 | Quality Gate Failures | coverage below threshold, coverage no output | 51–56 |
-| CLI Execution Errors | exit code 1, no output, npx fails, EDR, Windows | 58–62 |
+| CLI Execution Errors | exit code 1, npx fails, EDR block, Windows | 58–62 |
 
 ---
 
@@ -59,4 +59,4 @@ Read **only this table first**. Match the symptom keyword, then read only the li
 
 | Symptom | Cause | Fix |
 |---|---|---|
-| CLI command exits with code 1 and produces no test results or error message (Windows) | Corporate EDR blocked the multi-hop process tree spawned by `npx` or `npm run` (`npx → cmd.exe → tool.cmd → node → spawn → node`). Exit code may appear as `-1073740791` / `0xC0000409`. Intermittent — self-resolves in ~1–2 hours or on reboot. | Replace `npx {tool}` with `node node_modules/{tool}/bin/{entry}.js`. Find the entry point in `node_modules/{tool}/package.json → bin`. Common substitutions: `npx mocha … → node node_modules/mocha/bin/mocha.js …`; `npx jest … → node node_modules/jest/bin/jest.js …`; `npx tsc … → node node_modules/typescript/bin/tsc …`; `npx eslint … → node node_modules/eslint/bin/eslint.js …`; `npx prettier … → node node_modules/prettier/bin/prettier.cjs …`. `npm test` / `npm run` "run-all" scripts can stay as-is. Re-run once with the direct form. |
+| CLI command exits with a **non-zero** code and produces no test results or error message (Windows) — exit code 0 with empty output is a pass, not this entry | Corporate EDR blocked the multi-hop process tree spawned by `npx` or `npm run` (`npx → cmd.exe → tool.cmd → node → spawn → node`). Exit code may appear as `-1073740791` / `0xC0000409`. Intermittent — self-resolves in ~1–2 hours or on reboot. | **Confirm the non-zero exit code first.** Replace `npx {tool}` with `node node_modules/{tool}/bin/{entry}.js`. Find the entry point in `node_modules/{tool}/package.json → bin`. Common substitutions: `npx mocha … → node node_modules/mocha/bin/mocha.js …`; `npx jest … → node node_modules/jest/bin/jest.js …`; `npx tsc … → node node_modules/typescript/bin/tsc …`; `npx eslint … → node node_modules/eslint/bin/eslint.js …`; `npx prettier … → node node_modules/prettier/bin/prettier.cjs …`. `npm test` / `npm run` "run-all" scripts can stay as-is. Re-run once with the direct form. |

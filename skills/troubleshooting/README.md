@@ -32,7 +32,10 @@ Copy the `skills/troubleshooting/` folder into your target project's Copilot ski
 
 ## Usage
 
-The skill activates when a command (test run, build, lint, type check) produces an unexpected result. The agent consults the dictionary, matches the symptom, and applies the prescribed fix.
+The skill activates when a command returns a confirmed failure. The agent checks
+the exit code first — empty output with exit code `0` is a success for silent
+tools and ends the skill immediately. Only a confirmed non-zero exit code (from
+an unfiltered run) or unexpected output reaches a dictionary match.
 
 If no symptom matches, the agent diagnoses and solves normally — the dictionary is a shortcut, not a constraint.
 

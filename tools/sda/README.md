@@ -475,6 +475,8 @@ Written by `sda-toolscan` on first run. Contains the commands `sda-dev` uses to 
 
 Consuming agents run the commands exactly as written here — a runner- or script-prefixed command is never rewritten into a direct binary or entry-point call. A bare binary is valid only when this file prescribes one, or as a result of troubleshooting.
 
+Commands that are silent on success (type checkers, formatters, linters) are judged by exit code: no output with exit code `0` is a pass. Empty output is a failure signal only for filtered commands.
+
 ### project-config.json
 
 Written by the `sda-setup` skill. Stores project-level settings injected into each agent's session context at startup via the `SessionStart` hook (`read-config.ps1` / `read-config.sh`). Enable with VS Code setting `chat.useCustomAgentHooks: true`.

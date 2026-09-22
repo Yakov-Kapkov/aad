@@ -114,6 +114,10 @@ Failure marker = a failure line, or a summary reporting a non-zero
 failure/error count. **No output is not proof of success** — re-run the
 unfiltered label and read its exit code before reporting ✅.
 
+**Judge unfiltered gates by exit code.** A bare gate (L1/G1 types) that prints
+nothing and exits `0` is ✅ — empty output is a red flag only for a **filtered**
+command. Never re-run a bare gate for output.
+
 **Escalate on failure — re-run with expanded `{N}`.** The small `{N}`
 above keeps passing runs clean but may trim error details on failure.
 When a filtered gate reports a failure marker, re-run the same command with
