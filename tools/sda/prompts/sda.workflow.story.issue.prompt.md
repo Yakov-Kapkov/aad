@@ -1,8 +1,9 @@
 ---
-description: Generate the workflow's user story from its issue.md via switching to sda-ba agent
+description: Run the workflow's story stage from its issue.md via the sda-ba agent
 agent: sda-ba
 ---
 
-Please generate a user story for the current workflow based on this issue.md file.
+This is a workflow session — follow the `sda-workflow-guide` skill (stage card `story`).
 
-If the issue.md file is not provided, ask for it.
+Generate the user story for the workflow container named by the issue.md file.
+If issue.md is not provided, ask for it.

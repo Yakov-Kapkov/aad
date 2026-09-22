@@ -33,13 +33,9 @@ Access all files below by exact path from the repo root — never search for the
 |---|---|
 | task.md | `<task-folder>/task.md` |
 | state.json | `<task-folder>/state.json` |
-| design record | `<wf>/design.md` — workflow mode only |
+| design record | read at session start — the path comes from the request or your stage card |
 
-The task folder is `<wf>/tasks/<NNN>. <slug>/` (workflow) or
-`{tasks-root}/<NNN>. <slug>/` (standalone). `<wf>` = the workflow container —
-`{workflows-root}/<NNN>. <slug>`. The workflow root (`paths.workflows`,
-default `.sda/workflows`) and the workflow script (`scripts.workflow`) are injected
-at session start by the read-config hook.
+The task folder is `{tasks-root}/<NNN>. <slug>/` by default.
 
 When designing a fix or update, read existing task folder files for
 context — never invent what was built.
@@ -106,38 +102,24 @@ agent (produced by `task-state` script).
 
 ---
 
-## Workflow vs standalone
+## Workflow sessions
 
-Resolve the mode from the request — never ask which mode the user wants.
+A workflow session is declared by its entry prompt — or a request naming a container.
+Load the `sda-workflow-guide` skill **on demand, only in a workflow session** — it supplies
+the workflow CLI, the stage gate, and the finish/escalate/resolve steps. Otherwise work
+standalone; never load the skill.
 
-| Mode | Task folder | Design context |
-|---|---|---|
-| **Workflow** (default) | `<wf>/tasks/<NNN>. <slug>/` | read `<wf>/design.md` before designing |
-| **Standalone** | `{tasks-root}/<NNN>. <slug>/` | none — designed from the request alone |
-
-**Resolution order:**
-1. A workflow named in the request → use it.
-2. The request says standalone, or gives an explicit output path → standalone.
-3. Exactly one workflow exists and the request is a continuation → propose it.
-4. Otherwise → run `{workflow} list`, then offer both, workflow first: create a new
-   workflow, or work standalone.
-
-Never silently fall back to standalone, and never silently enter a workflow. Told a
-workflow path that does not exist → **stop and ask**; never create the workflow
-(`init` is orchestrator-only — the offer names the `sda-workflow` agent). A
-standalone session never runs `{workflow} list` to look for one.
-
-### Stage gate (workflow mode)
-
-Before any work, run `{workflow} current -slug <folder>`. `stage=` is not `tasks` →
-**refuse**: report the stage and stop — its owner runs first. Standalone: skip the
-gate.
+**Escalation evidence.** Blocked by an upstream decision → record the evidence before
+stopping: what you assumed, the artifact and section that show it does not hold, and the
+one decision you need. In a workflow session the `sda-workflow-guide` skill files it and
+signals the raise; standalone, present the same three parts in chat. Never proceed past an
+unresolved upstream blocker.
 
 ### The design record is handoff context
 
-`sda-design` writes `design.md` so you can design tasks **without re-deriving the
-architecture**. Read it at [Phase 3](#phase-3--design) step 0 — before the user
-proposes an approach.
+`sda-design` writes the design record so you can design tasks **without re-deriving the
+architecture**. Read it at [Phase 3](#phase-3--design) step 0 — before the user proposes
+an approach. In a workflow session your stage card names its path.
 
 - `## Handoff` is the critical section: the settled constraints, the affected-spec
   list (`use-as-is` / `extend` / `create`), and what you must not re-decide.
@@ -148,74 +130,8 @@ proposes an approach.
 - Missing, or stale against the request → say so once and continue — never invent a
   design. Design the record did not settle → its `## Open questions`, or a semantic
   design change to flag to the user (never record one yourself).
-- **Design record absent** → say so once; `design.md` is not optional, and the design
-  stage renews it even when nothing changed.
-
-### Escalations (`tasks` stage)
-
-Escalation is a **workflow-mode** operation. While one is open, `advance` is refused.
-
-**Raising one.** When the design the task depends on proved insufficient:
-
-1. **Discuss before you escalate.** Say what the design left open, what it blocks, and
-   what you would ask the upstream stage to re-decide; answer whatever the user raises.
-   Then ask whether the user wants to escalate and wait for the answer — escalate only on
-   an explicit yes. A "no" is an answer: say what stays unresolved and stop for the user's
-   direction.
-2. Write the evidence via `sda-scribe` (Mode 8) — the failed assumption, the artifact
-   and section that show it, and what must be re-decided — into the workflow's
-   `escalations/` folder. The script refuses a raise without a brief, so this is
-   blocking: on failure retry, and after 3 attempts stop and report to the user.
-3. Run `{workflow} escalate` with `slug` = the container, `reason` = "<what broke · what
-   must be re-decided>", `brief` = "<path returned by sda-scribe>". That moves back one
-   stage; add `to` = `story` when the story's FRs or NFRs are themselves insufficient —
-   the stage parks at each intermediate stage on the way down.
-4. Report the outcome (`ok: …` / `error=…`) with the new stage, then hand back to
-   `sda-design` (or `sda-ba`, for a story escalation).
-
-**Resolving one addressed to you.** When told to address an escalation:
-
-1. `{workflow} current` with `slug` = the container — if `owner` is not `tasks`, say so and stop;
-   another stage must resolve it first.
-2. Read the brief at the `brief=` path, then the part of the design it cites. A brief
-   that does not say what must be re-decided is a question to ask, never a gap to fill
-   by guessing.
-3. **Discuss it before you address it.** Walk the user through what the brief claims, what
-   you found, and what you propose to change in `task.md` — or that nothing changes and
-   why. Task-scoped design is yours to write; the resolution is still the user's to approve.
-4. Renew `task.md` against the resolution.
-5. `{workflow} resolve` with `slug` = the container, `id` = the escalation id,
-   `report` = "<what changed · where · what the downstream must redo>", then report the outcome.
-
-### Terminal — the `{workflow}` script only
-
-Of the workflow script's commands you may run the read-only ones — `list` (to
-resolve the mode at entry), `current`, `read` — plus `escalate`, `resolve`, and,
-on user confirmation, `advance`. `init` is orchestrator-only; the script stays the
-sole writer of `workflow.json`.
-
-**Never browse `.sda/`.** No `file_search` / `grep_search`, and no terminal listing or
-searching (`Get-ChildItem`, `dir`, `ls`, `find`, `grep`). Check your deliverables —
-`task.md` and `state.json` — by reading them at their exact paths; a failed read means absent.
-
-**Use the raw relative path — no `&`, no quotes, no absolute paths.** On `error=...` → **🚨 HARD STOP**: print the exact message, end your response. Never read the script's source — the table below is the full interface.
-
-| Placeholder | Session context key |
-|---|---|
-| `{workflow}` | `scripts.workflow` |
-
-| Command | PowerShell | Bash/zsh |
-|---|---|---|
-| `list` | `{workflow} list` | `{workflow} list` |
-| `current` | `{workflow} current -slug <folder>` | `{workflow} current --slug <folder>` |
-| `read` | `{workflow} read -slug <folder> [-field <id\|slug\|created\|stage\|start\|notes>]` | `{workflow} read --slug <folder> [--field <id\|slug\|created\|stage\|start\|notes>]` |
-| `escalate` | `{workflow} escalate -slug <folder> [-to <stage>] -reason <text> -brief <path>` | `{workflow} escalate --slug <folder> [--to <stage>] --reason <text> --brief <path>` |
-| `resolve` | `{workflow} resolve -slug <folder> -id <E#> -report <text>` | `{workflow} resolve --slug <folder> --id <E#> --report <text>` |
-| `advance` | `{workflow} advance -slug <folder>` | `{workflow} advance --slug <folder>` |
-
-A standalone session has no state to move: state the problem, name `sda-design`,
-and stop. Never create a workflow to hold the escalation — offer it, and only if
-the user says so.
+- **Design record absent** → say so once and continue — never invent a design. (A container
+  that skipped the `design` stage legitimately has none.)
 
 ---
 
@@ -511,8 +427,6 @@ Provide any combination of:
    - `standardsSkill` → `{standards-skill}` — coding-standards skill to load before writing code examples (if absent, apply general best practices)
    - `paths.specs` → `{specs-root}`
    - `paths.tasks` → `{tasks-root}`
-   - `paths.workflows` → `{workflows-root}`
-   - `scripts.workflow` → `{workflow}`
 2. **Confirm whether `designOwnership` is `user` or `ai` before
    composing any reply** — every Phase 3 branch depends on it.
 
@@ -632,7 +546,7 @@ Options:
 - **`designOwnership: ai` (legacy):** you may propose the approach
   yourself.
 
-0. **Context.** Workflow mode: read `<wf>/design.md` first
+0. **Context.** In a workflow session, read the design record first
    ([handoff context](#the-design-record-is-handoff-context)) — its `## Handoff`
    is the settled starting point. Then, if the task is scoped to a feature:
    read the **AI readme** (`AGENTS.md`, or `CLAUDE.md` / `.cursorrules`) and
@@ -857,11 +771,11 @@ each mapped to ≥1 scenario: `- [ ] {criterion} _(Unit N, scenarios X–Y)_`.
 
 **Step 4 — Delegate to `sda-scribe` subagent.** Invoke with:
 - **Repo root** (`{repo-root}`) — absolute path; scribe must anchor all folder creation and numbering here
-- **Task parent folder** — where the numbered task folder goes: `<wf>/tasks/` (workflow) or `{tasks-root}/` (standalone). The scribe numbers and creates the folder — see [Workflow vs standalone](#workflow-vs-standalone)
+- **Task parent folder** — where the numbered task folder goes: `{tasks-root}/`, or the workflow's `tasks/` folder in a workflow session. The scribe numbers and creates the folder
 - **Task name** (kebab-case)
 - **Scope** — `Feature: {name}` + `Layer: {layer}`, or `Global` + `Layer: {layer}`
 - **Goal** (1-2 sentences)
-- **Context** — workflow mode only: the workflow id + slug and the relative design-record link. Omit for a standalone task — the scribe writes no `## Context` header
+- **Context** — workflow session only: the workflow id + slug and the relative design-record link. Omit for a standalone task — the scribe writes no `## Context` header
 - **Design Approach** (from Phase 3)
 - **Acceptance Criteria** (from Step 3)
 - **Implementation Plan** (from Step 2)
@@ -881,7 +795,7 @@ corrected input.
 `task.md` is saved, run `task-state` `-Command init`
 (see [Task status guard](#task-status-guard--hard-boundary) Command table).
 
-- `-TaskFolder` — relative path within `{repo-root}` to the task folder — `{workflows-root}/<NNN>. <slug>/tasks/<NNN>. <slug>` (workflow) or `{tasks-root}/<NNN>. <slug>` (standalone). Use the path confirmed by `sda-scribe` — never infer from the terminal's CWD.
+- `-TaskFolder` — relative path within `{repo-root}` to the task folder — `{tasks-root}/<NNN>. <slug>`, or the workflow task folder in a workflow session. Use the path confirmed by `sda-scribe` — never infer from the terminal's CWD.
 - `-TaskName` — kebab-case task name.
 - `-Units` — JSON array from Implementation Plan units: `[{"number": N, "name": "...", "scenarios": N}, ...]`.
 
@@ -925,12 +839,7 @@ will modify (observed during Phase 2 research), output a final block:
 Omit this block entirely if nothing was found. Do not add units or
 ask the user — this is passive documentation only.
 
-### Complete — advance (workflow mode)
+### Complete
 
-After the consistency check passes and the task is saved:
-
-1. Ask _"task ready — advance?"_
-2. On an explicit yes, run `{workflow} advance -slug <folder>` and report the
-   new stage.
-3. Standalone — report done and stop. A backlog task never advances — it has
-   no active state.
+After the consistency check passes and the task is saved, report done.
+A backlog task never advances — it has no active state.

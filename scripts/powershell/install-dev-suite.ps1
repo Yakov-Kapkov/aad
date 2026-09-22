@@ -67,7 +67,7 @@ if ($Action -eq 'uninstall') {
 
     # Skills
     $SkillsDst = Join-Path $TargetBase 'skills'
-    foreach ($Skill in @('sda-setup', 'standards-compliance', 'troubleshooting', 'software-design-best-practices', 'repo-ai-friendly')) {
+    foreach ($Skill in @('sda-setup', 'sda-workflow-guide', 'standards-compliance', 'troubleshooting', 'software-design-best-practices', 'repo-ai-friendly')) {
         $Dir = Join-Path $SkillsDst $Skill
         if (Test-Path $Dir) { Remove-Item $Dir -Recurse -Force; Write-Host "  Removed skills\$Skill\" }
     }
@@ -89,6 +89,10 @@ $sdaToolArgs = @{ TargetBase = $TargetBase; Name = 'sda' }
 # ── sda-setup skill ─────────────────────────────────────────────────────────
 Write-Host "`n== Installing sda-setup skill ==" -ForegroundColor Yellow
 & (Join-Path $PSScriptRoot 'install-skill.ps1') -TargetBase $TargetBase -Name 'sda-setup' -SourcePath 'tools\sda\skills\sda-setup'
+
+# ── sda-workflow-guide skill ────────────────────────────────────────────────
+Write-Host "`n== Installing sda-workflow-guide skill ==" -ForegroundColor Yellow
+& (Join-Path $PSScriptRoot 'install-skill.ps1') -TargetBase $TargetBase -Name 'sda-workflow-guide' -SourcePath 'tools\sda\skills\sda-workflow-guide'
 
 # ── commit agent ─────────────────────────────────────────────────────────────
 Write-Host "`n== Installing commit agent ==" -ForegroundColor Yellow

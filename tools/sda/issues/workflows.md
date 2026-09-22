@@ -1,6 +1,6 @@
 # Workflows — Design Note
 
-**Status:** design locked 2026-09-21 (rev 8 — `dev` stage + per-task dev-report gate) · tranches 1–13 implemented · **script twins verified 2026-09-21** (117-step differential harness: identical output, exit codes, and `workflow.json` on both twins)
+**Status:** design locked 2026-09-21 (rev 8 — `dev` stage + per-task dev-report gate) · tranches 1–13 implemented · **script twins verified 2026-09-21** (117-step differential harness: identical output, exit codes, and `workflow.json` on both twins) · **rev 9 (2026-09-22): workflow knowledge extracted from producers into the `sda-workflow-guide` skill**
 **Scope:** `tools/sda` (+ `skills/repo-ai-friendly` as a dependency; `skills/sda-setup` assets)
 **Origin:** the `sdlc/` folder is a parallel evolution branch kept for reference. Its
 **state discipline** (state = data + transition script; one writer; housekeeper vs advisor)
@@ -41,29 +41,27 @@ A **workflow** is a numbered container for one requirement's planning artifacts,
 
 ## 2. Modes
 
-| Agent | Default | Workflow mode | Standalone mode |
-|---|---|---|---|
-| `sda-ba` | workflow | `<wf>/user-story.md` + requirements docs | `.sda/stories/<slug>/` (or chat-only) |
-| `sda-design` | workflow | read + renew `<wf>/design.md` | **`[ASK]`**: save (where?) or skip saving |
-| `sda-dev-task` | workflow | `<wf>/tasks/<NNN>. <slug>/` | `.sda/tasks/<NNN>. <slug>/` |
-| `sda-dev` | task / ad-hoc | the `dev` stage — one task folder per session, the first that still owes a `dev-report.md`, which it writes beside that task's `task.md` | `.sda/tasks/<NNN>. <slug>/`, report written when `{dev-report}` is true |
+A producer is in **workflow mode** only when the session declares a container — its entry prompt
+(`/sda.workflow.{story,design,task,dev}.issue`) or a request naming one. It then follows the
+**`sda-workflow-guide`** skill, which supplies the workflow CLI, the stage gate, the
+finish/escalate/resolve steps, and the per-stage cards below. Otherwise the session is
+**standalone** and the producer works its own default paths — its file carries no workflow logic.
 
-**Resolution order (all four):**
-1. Workflow named in the request → use it.
-2. Request says standalone / gives an explicit output path → standalone.
-3. Exactly one workflow exists and the request is a continuation → propose it.
-4. Otherwise → list workflows, then offer both, workflow first (the default):
-   create a new workflow, or work standalone.
+| Agent | Workflow artifact | Standalone artifact |
+|---|---|---|
+| `sda-ba` | `<wf>/user-story.md` + requirements docs | `.sda/stories/<slug>/user-story.md` (or chat-only) |
+| `sda-design` | read + renew `<wf>/design.md` | `.sda/design/reports/<yyyy-MM-dd_HH-mm_<short-name>>/design.md` — **`[ASK]`**: save or skip |
+| `sda-dev-task` | `<wf>/tasks/<NNN>. <slug>/` | `.sda/tasks/<NNN>. <slug>/` |
+| `sda-dev` | the `dev` stage — one task folder per session, the first that still owes a `dev-report.md`, which it writes beside that task's `task.md` | `.sda/tasks/<NNN>. <slug>/`, report written when `{dev-report}` is true |
 
-Never silently fall back to standalone, and never silently enter a workflow. A producer that
-is told a workflow path that does not exist **stops and asks** — it never creates the workflow.
+Never silently switch containers — not into a workflow, not out of one. A producer told a
+container that does not exist **stops and asks**; it never creates one (`init` is
+orchestrator-only). `sda-dev` enters a container only through its entry prompt — no container
+named means no container offered. It implements one task folder per session and advances only
+once none is left (52).
 
-`sda-dev` differs in one way: it enters a container **only** through that container's entry
-prompt — no container named means no container offered. It then implements one task folder — the
-first that still owes a `dev-report.md` — and advances only once none is left (52).
-
-`sda-design` needs two tool additions: `vscode/askQuestions` (the standalone save/skip gate) and
-`execute` (to record an escalation, or resolve one — §3).
+The stage cards live in the skill's `assets/`: `stage-story.md`, `stage-design.md`,
+`stage-tasks.md`, `stage-dev.md` — each naming its stage, artifact, input, and escalation targets.
 
 ## 3. Orchestration
 
@@ -71,7 +69,7 @@ first that still owes a `dev-report.md` — and advances only once none is left 
 |---|---|---|
 | Scaffold + state | `{workflow}` script | `init · list · current · read · advance · escalate · resolve` (§4). Only writer of `workflow.json`. Creates folders. Enforces direction, blocking, and artifact presence. Never triggers an agent. |
 | Invocation | `sda-workflow` agent + the `/sda.workflow.{init,status,advance,escalate}` prompts | Reports position and the single next action, owns `init` (which creates the container, then writes its `issue.md`), and raises a user-requested escalation. Advises: never invokes a producer, never `resolve`s. |
-| Stage entry | `/sda.workflow.story.issue` · `/sda.workflow.design.issue` · `/sda.workflow.task.issue` | One per stage, each setting `agent:` to that stage's owner and handing it the container's `issue.md`, so a session starts from the artifact instead of a re-typed requirement, and the owner resolves the container from it (48). |
+| Stage entry | `/sda.workflow.story.issue` · `/sda.workflow.design.issue` · `/sda.workflow.task.issue` · `/sda.workflow.dev.issue` | One per stage, each setting `agent:` to that stage's owner, declaring workflow mode, pointing at the `sda-workflow-guide` skill, and handing it the container's `issue.md` — so a session starts from the artifact instead of a re-typed requirement (48). |
 
 **Stage machine:** `story → design → tasks → dev → ready`. Every stage produces its artifact
 (`user-story.md`, `design.md`, `tasks/`, and one `dev-report.md` per task folder); `ready` is
@@ -79,11 +77,12 @@ terminal and has none. `advance` moves exactly one stage forward and refuses to 
 whose artifact is absent — for `dev` that means **every** task folder holds a report, so a
 container with an unimplemented task cannot reach `ready` (50, 51).
 
-- **A producer advances its own stage.** After finishing its artifact, a producer asks the user
-  and runs `advance` on an explicit yes — the script still refuses a stage whose artifact is
-  absent, or an open escalation. `init` stays orchestrator-only.
-- **A producer may raise and close escalations** as the orchestrator's proxy; the script stays
-  the sole writer of `workflow.json` either way. All four producers hold `execute`:
+- **A producer advances its own stage** per the skill. After finishing its artifact, a producer
+  asks the user and runs `advance` on an explicit yes — the script still refuses a stage whose
+  artifact is absent, or an open escalation. `init` stays orchestrator-only.
+- **A producer may raise and close escalations** as the orchestrator's proxy — its steps come from
+  the `sda-workflow-guide` skill; the script stays the sole writer of `workflow.json` either way.
+  All four producers hold `execute`:
   `sda-dev-task`, `sda-design`, and `sda-dev` raise, `sda-dev` also closes one that lands on
   `dev` (no downstream producer exists to), `sda-ba` closes only (it has no upstream stage).
 - **`sda-workflow` is the orchestrator surface.** It holds `execute` too and is the only holder
@@ -161,8 +160,8 @@ backwards.
 A resolution need not change anything — *"design unaffected by the FR reword"* is a valid report.
 The point is that the intermediate stage is visited and says so.
 
-Accepted cost: the retry rule is stated identically in the two raisers — the SDA install surface
-has no shared instructions file to hold it once.
+Resolved in rev 9: the retry rule now lives once, in the `sda-workflow-guide` skill — the
+producers no longer restate it.
 
 ### Out of workflow
 

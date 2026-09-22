@@ -15,7 +15,11 @@ sda-ba  →  sda-setup skill  →  sda-toolscan  →  sda-dev-task  →  sda-dev
 
 ### 1. Run install script
 
-Installs the **sda-setup** skill, SDA agents, and the [**Standards Compliance**](../../skills/standards-compliance/) and [**Repo AI-Friendly**](../../skills/repo-ai-friendly/) skills into your `.copilot` user folder.
+Installs the **sda-setup** skill, the **sda-workflow-guide** skill, SDA agents, and the
+supporting skills — [**Standards Compliance**](../../skills/standards-compliance/),
+[**Troubleshooting**](../../skills/troubleshooting/),
+[**Software Design Best Practices**](../../skills/software-design-best-practices/), and
+[**Repo AI-Friendly**](../../skills/repo-ai-friendly/) — into your `.copilot` user folder.
 
 | OS | Default install location |
 |---|---|
@@ -104,16 +108,16 @@ forward exactly one stage, and `escalate` moves back — recording why, plus a *
 evidence — when the current stage cannot finish on the artifacts it was given. The script refuses
 a raise without a brief, so the blocked stage writes it first (`sda-scribe` numbers and names it);
 the target stage reads the brief, then the artifact it cites, renews its own artifact, and closes
-the escalation with `resolve`. While an escalation is open, `advance` is refused. Producers run
-the read-only commands (`list`, `current`, `read`) plus `escalate`/`resolve`, and advance their own
-stage on user confirmation; the `sda-workflow` advisor owns `init`, and may raise a user-requested
-escalation from any stage with an upstream.
+the escalation with `resolve`. While an escalation is open, `advance` is refused.
 
-`sda-ba`, `sda-design`, and `sda-dev-task` default to workflow mode and fall back to standalone
-paths when the requirement has no container. `sda-dev` joins a container only when the session
-names one: as the `dev` stage's owner it implements **one task folder per session** — the first
-that still owes a `dev-report.md` — and advances the container to `ready` once every task folder
-holds one. Standalone use is unchanged.
+A stage agent works a workflow session by following the **`sda-workflow-guide`** skill: the
+stage-entry prompt declares the session and points at it. The skill carries the workflow CLI
+(`current`, `read`, `advance`, `escalate`, `resolve`), the stage gate, and the
+finish/escalate/resolve steps, plus one stage card per producer naming its artifact, input, and
+escalation targets — so the producers' own files carry none of that, just a dispatch line and the
+escalation-evidence rule. The `sda-workflow` advisor owns `init`, and may raise a user-requested
+escalation from any stage with an upstream. Standalone use is unchanged: a producer invoked
+without a workflow declaration works its own default paths.
 
 ### Capture the requirement — `sda-ba`
 
@@ -155,10 +159,11 @@ Fix the bug where createOrder throws when quantity is 0.
 
 `sda-dev` runs the TDD loop (RED → GREEN → refactor) and enforces the quality gates. It delegates test writing and coding to subagents to keep each context small and reasoning sharp.
 
-With a workflow container, start it from the container's `issue.md` with `/sda.workflow.dev.issue`:
-it implements **one task folder per session** — the first that still owes a `dev-report.md` —
-writes that task's `dev-report.md` beside its `task.md`, and advances the container to `ready`
-only once every task folder has one. Each remaining folder gets its own session.
+With a workflow container, start it from the container's `issue.md` with `/sda.workflow.dev.issue`
+— that session follows the `sda-workflow-guide` skill and implements **one task folder per
+session**: the first that still owes a `dev-report.md`, written beside its `task.md`. The
+container advances to `ready` only once every task folder has one; each remaining folder gets its
+own session.
 
 ### 3. Design — `sda-design`
 
@@ -271,6 +276,7 @@ All pipeline agents are user-invokable and used as needed.
 | Skill | Role |
 |---|---|
 | `sda-setup` | Scaffolds `.sda/` folder with resource files (bootstrap, tool-discovery, config example) |
+| `sda-workflow-guide` | Workflow-mode operating instructions for stage agents — the workflow CLI, the stage gate, finish/escalate/resolve steps, and one stage card per producer |
 
 ### Prompts
 
@@ -479,14 +485,14 @@ Written by the `sda-setup` skill. Stores project-level settings injected into ea
 | `paths.issues` | `string` | `.sda/issues` | Root folder for standalone QA work (no task): each `<NNN>-<slug>/` holds a `qa-task.md` authored by sda-qa-task and the `qa-report.md` written by sda-qa. |
 | `paths.secrets` | `string` | `.sda/secrets` | Git-ignored folder holding `qa.secrets.env` credentials used by sda-qa. |
 | `paths.userStories` | `string` | `.sda/stories` | Root folder for User Stories authored by sda-ba. Written by sda-ba when no output path is given. |
-| `paths.workflows` | `string` | `.sda/workflows` | Root folder for workflow containers. Read by sda-ba, sda-design, sda-dev-task, and sda-dev to resolve workflow vs standalone mode. |
+| `paths.workflows` | `string` | `.sda/workflows` | Root folder for workflow containers. Read by the `sda-workflow-guide` skill (in workflow sessions) and the `sda-workflow` advisor. |
 | `scripts.loadQaSecrets` | `string` | `.sda/scripts/qa/load-qa-secrets.ps1` | Path to the QA secrets loader script (legacy — superseded by `qaSessionInit`). Still used as a fallback when `qaSessionInit` is absent. Use the `.sh` variant on Bash/Unix. |
 | `scripts.listQaSecrets` | `string` | `.sda/scripts/qa/list-qa-secrets.ps1` | Path to the QA secrets lister script. Called by sda-qa-task to discover existing credential key names. Use the `.sh` variant on Bash/Unix. |
 | `scripts.qaSessionInit` | `string` | `.sda/scripts/qa/qa-session-init.ps1` | Path to the QA session init script. Dot-sourced by sda-qa at Phase 2; sets UTF-8 encoding and loads credentials. Outputs a combined summary and `var_name \| is_empty` table. Use the `.sh` variant on Bash/Unix. |
 | `scripts.docsIntegrity` | `string` | `.sda/scripts/docs/docs-integrity.ps1` | Path to the docs-integrity script. Called by sda-docs-check with a decisions/requirements root (links, orphans, duplicates, one-way `.sda/` rule) or a single document path (links, code fence, non-`.md` path). Use the `.sh` variant on Bash/Unix. |
 | `scripts.invokeHttp` | `string` | `.sda/scripts/qa/invoke-http.ps1` | Path to the HTTP helper script. Called by sda-qa for every CLI/HTTP request; outputs `STATUS: N` and `BODY: ...`; supports `-StatusOnly` / `--status-only`. Use the `.sh` variant on Bash/Unix. |
 | `scripts.unitFileSize` | `string` | `.sda/scripts/dev/unit-file-size.ps1` | Path to the file line-count script. Called by `sda-dev-task` (Phase 6) and `sda-dev-task-verifier` (Check 1) to measure source file volume. Use the `.sh` variant on Bash/Unix. |
-| `scripts.workflow` | `string` | `.sda/scripts/workflow/workflow.ps1` | Path to the workflow state script — the only writer of `workflow.json`. Run by the `sda-workflow` advisor (`/sda.workflow.init` · `.status` · `.advance` · `.escalate`); read-only commands plus `escalate`/`resolve`/`advance` are run by sda-ba, sda-design, sda-dev-task, and sda-dev. `escalate` also takes the path of the escalation brief, which must already exist. Use the `.sh` variant on Bash/Unix. |
+| `scripts.workflow` | `string` | `.sda/scripts/workflow/workflow.ps1` | Path to the workflow state script — the only writer of `workflow.json`. Run by the `sda-workflow` advisor (`/sda.workflow.init` · `.status` · `.advance` · `.escalate`), and by the `sda-workflow-guide` skill that stage agents follow in workflow sessions. `escalate` also takes the path of the escalation brief, which must already exist. Use the `.sh` variant on Bash/Unix. |
 | `devTaskUnitSizeLimit` | `number` | `1000` | Maximum total lines across existing Source+Test files in any single unit. Units exceeding this limit require splitting in `sda-dev-task`. |
 | `tests.coverage.enabled` | `boolean` | `true` | Whether to run coverage checks in Phase 5 (Quality). When disabled, coverage gate is skipped entirely. |
 

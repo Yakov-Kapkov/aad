@@ -88,9 +88,10 @@ different arguments unless the user asks for the change.
    any open escalation with its `owner`, `reason`, and `brief`. A `gap=dev` is followed by a
    `missing=` line — the task folders that still owe a `dev-report.md`.
 3. Name the **single** next action, its agent, and that agent's entry prompt:
-   `/sda.workflow.{story,design,task,dev}.issue` — `task` for the `tasks` stage. Present every
-   artifact as a **clickable link** to its file, so the human can jump to the evidence behind
-   each statement — starting with the container's `issue.md`.
+   `/sda.workflow.{story,design,task,dev}.issue` — `task` for the `tasks` stage. In that
+   session the producer follows the `sda-workflow-guide` skill. Present every artifact as a
+   **clickable link** to its file, so the human can jump to the evidence behind each statement —
+   starting with the container's `issue.md`.
 4. An open escalation blocks `advance`: the next action is the `owner` stage's agent, which
    resolves it. Say that instead of offering a move.
 

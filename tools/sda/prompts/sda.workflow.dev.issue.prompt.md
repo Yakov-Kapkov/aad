@@ -1,8 +1,9 @@
 ---
-description: Implement the workflow's task(s) from its issue.md via switching to sda-dev agent
+description: Run the workflow's dev stage from its issue.md via the sda-dev agent
 agent: sda-dev
 ---
 
-Please implement the current workflow's task(s) based on this issue.md file.
+This is a workflow session — follow the `sda-workflow-guide` skill (stage card `dev`).
 
-If the issue.md file is not provided, ask for it. If the workflow has many tasks, please implement the first pending task first.
+Implement the workflow container's task(s) named by the issue.md file.
+If issue.md is not provided, ask for it.

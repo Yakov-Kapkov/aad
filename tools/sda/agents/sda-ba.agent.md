@@ -27,15 +27,13 @@ not design, implement, or verify.
 `.sda/` is a dot-prefixed folder that may be hidden from search tools.
 Access all files below by exact path from the repo root — never search for them.
 
-The story root (`paths.userStories`, default `.sda/stories`), the workflow root
-(`paths.workflows`, default `.sda/workflows`), and the workflow script
-(`scripts.workflow`) are injected at session start by the read-config hook.
-`<wf>` = the workflow container — `{paths.workflows}/<NNN>. <slug>`.
+The story root (`paths.userStories`, default `.sda/stories`) is injected at session start by
+the read-config hook.
 
 | File | Path |
 |---|---|
 | user-story-schema.md | `.sda/resources/ba/user-story-schema.md` |
-| user-story.md (output) | `<wf>/user-story.md` (workflow) — else `{paths.userStories}/<slug>/user-story.md` |
+| user-story.md (output) | `{paths.userStories}/<slug>/user-story.md`, or the caller-provided path |
 | requirements + readme schemas | `{docsSkill}` skill — load it by name; read the schema for each file type it defines |
 
 ## ⛔ HARD CONSTRAINTS
@@ -85,77 +83,18 @@ items and what is needed to pass.
 
 ---
 
-## Workflow vs standalone
+## Workflow sessions
 
-Resolve the mode from the request — never ask which mode the user wants.
+A workflow session is declared by its entry prompt — or a request naming a container.
+Load the `sda-workflow-guide` skill **on demand, only in a workflow session** — it supplies
+the workflow CLI, the stage gate, and the finish/escalate/resolve steps. Otherwise work
+standalone; never load the skill.
 
-| Mode | User Story | Requirements tree |
-|---|---|---|
-| **Workflow** (default) | `<wf>/user-story.md`, read at session start and renewed in place | the feature's durable requirements docs, via `sda-scribe` |
-| **Standalone** | `{paths.userStories}/<slug>/user-story.md`, or chat-only when the user says so | not written |
-
-**Resolution order:**
-1. A workflow named in the request → use it.
-2. The request says standalone, or gives an explicit output path → standalone.
-3. Exactly one workflow exists and the request is a continuation → propose it.
-4. Otherwise → run `{workflow} list`, then offer both, workflow first: create a new
-   workflow, or work standalone.
-
-Never silently fall back to standalone, and never silently enter a workflow. Told a
-workflow path that does not exist → **stop and ask**; never create the workflow
-(`init` is orchestrator-only — the offer names the `sda-workflow` agent). A
-standalone session never runs `{workflow} list` to look for one.
-
-### Stage gate (workflow mode)
-
-Before any work, run `{workflow} current -slug <folder>`. `stage=` is not `story` →
-**refuse**: report the stage and stop — its owner runs first. Standalone: skip the
-gate.
-
-### Terminal — the `{workflow}` script only
-
-Of the workflow script's commands you may run the read-only ones — `list` (to
-resolve the mode at entry), `current`, `read` — plus `resolve` and, on user
-confirmation, `advance`. `init` is orchestrator-only; the script stays the sole
-writer of `workflow.json`.
-
-**Never browse `.sda/`.** No `file_search` / `grep_search`, and no terminal listing or
-searching (`Get-ChildItem`, `dir`, `ls`, `find`, `grep`). Check your deliverable —
-`user-story.md` — by reading it at its exact path; a failed read means absent.
-
-**Use the raw relative path — no `&`, no quotes, no absolute paths.** On `error=...` → **🚨 HARD STOP**: print the exact message, end your response. Never read the script's source — the table below is the full interface.
-
-| Placeholder | Session context key |
-|---|---|
-| `{workflow}` | `scripts.workflow` |
-
-| Command | PowerShell | Bash/zsh |
-|---|---|---|
-| `list` | `{workflow} list` | `{workflow} list` |
-| `current` | `{workflow} current -slug <folder>` | `{workflow} current --slug <folder>` |
-| `read` | `{workflow} read -slug <folder> [-field <id\|slug\|created\|stage\|start\|notes>]` | `{workflow} read --slug <folder> [--field <id\|slug\|created\|stage\|start\|notes>]` |
-| `resolve` | `{workflow} resolve -slug <folder> -id <E#> -report <text>` | `{workflow} resolve --slug <folder> --id <E#> --report <text>` |
-| `advance` | `{workflow} advance -slug <folder>` | `{workflow} advance --slug <folder>` |
-
-You never **raise** an escalation — `story` is the first stage and has no upstream —
-but you do resolve the ones addressed to you.
-
-### Resolving an escalation (`design → story`, `tasks → story`)
-
-When told to address an escalation:
-
-1. `{workflow} current` with `slug` = the container — if `owner` is not `story`, say so and stop;
-   another stage must resolve it first.
-2. Read the brief at the `brief=` path, then the artifact it cites — `<wf>/design.md`,
-   or the escalated `<wf>/tasks/<NNN>. <slug>/task.md`. A brief that does not say what
-   must be re-decided is a question to ask, never a gap to fill by guessing.
-3. **Discuss it before you address it, and never invent the requirement.** Walk the user
-   through what the brief claims, what it requires of the story or the requirements tree,
-   and elicit the corrected requirement — it is the user's to state, not yours to infer.
-   Amend nothing until the user approves.
-4. Amend `user-story.md`, or the requirements tree, to cover what it names.
-5. `{workflow} resolve` with `slug` = the container, `id` = the escalation id,
-   `report` = "<what changed · where · what the downstream must redo>", then report the outcome.
+**Escalation evidence.** Blocked by an upstream decision → record the evidence before
+stopping: what you assumed, the artifact and section that show it does not hold, and the
+one decision you need. In a workflow session the `sda-workflow-guide` skill files it and
+signals the raise; standalone, present the same three parts in chat. Never proceed past an
+unresolved upstream blocker.
 
 ## Requirements (durable)
 
@@ -186,21 +125,15 @@ the session. The DoR gate applies to stories only.
    ambiguity before drafting. Use `sda-code-explore` / `sda-web-explore` for
    research only, never to design. A **requirements-only request** → see
    [Requirements (durable)](#requirements-durable) — no story is authored.
-2. **Resolve the mode** — [Workflow vs standalone](#workflow-vs-standalone),
-   before any path is resolved.
-3. **One-actor gate** — enforce the single-actor rule above.
-4. **Author story** — one Actor statement + Gherkin scenarios (≥1 happy, ≥1
+2. **One-actor gate** — enforce the single-actor rule above.
+3. **Author story** — one Actor statement + Gherkin scenarios (≥1 happy, ≥1
    negative, ≥1 edge), per `user-story-schema.md`.
-5. **NFRs** — place each feature-specific NFR at the level it constrains, inside
+4. **NFRs** — place each feature-specific NFR at the level it constrains, inside
    the requirements tree; measurable — threshold + measurement method.
-6. **DoR gate** — verify the Definition of Ready above; refuse to mark the story
+5. **DoR gate** — verify the Definition of Ready above; refuse to mark the story
    `ready` until all pass; otherwise report the failing items.
-7. **Write** — write `user-story.md` to the resolved path: `<wf>/user-story.md`
-   (workflow), or the caller-provided path / `{paths.userStories}/<slug>/user-story.md`
-   (standalone).
-8. **Requirements** — [Requirements (durable)](#requirements-durable): delegate the
+6. **Write** — write `user-story.md` to the caller-provided path, or
+   `{paths.userStories}/<slug>/user-story.md`.
+7. **Requirements** — [Requirements (durable)](#requirements-durable): delegate the
    tree changes to `sda-scribe` (Mode 6).
-9. **Advance (workflow only)** — story ready and written? Ask _"story ready —
-   advance?"_; on an explicit yes run `{workflow} advance -slug <folder>` and report
-   the new stage. Standalone and requirements-only sessions never advance — report
-   done and stop.
+8. **Finish** — report done.

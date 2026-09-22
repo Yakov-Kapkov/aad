@@ -60,34 +60,18 @@ entering Feature mode.
 
 ---
 
-## Workflow vs standalone
+## Workflow sessions
 
-Resolve the mode from the request — never ask which mode the user wants. This is a
-separate axis from the altitude modes above: a session can be workflow or standalone
-at either altitude.
+A workflow session is declared by its entry prompt — or a request naming a container.
+Load the `sda-workflow-guide` skill **on demand, only in a workflow session** — it supplies
+the workflow CLI, the stage gate, and the finish/escalate/resolve steps. Otherwise work
+standalone; never load the skill.
 
-| Mode | `design.md` |
-|---|---|
-| **Workflow** (default) | `<wf>/design.md`, read at session start and renewed in place |
-| **Standalone** | placement is **`[ASK]`**ed at session end — never assumed |
-
-**Resolution order:**
-1. A workflow named in the request → use it.
-2. The request says standalone, or gives an explicit output path → standalone.
-3. Exactly one workflow exists and the request is a continuation → propose it.
-4. Otherwise → run `{workflow} list`, then offer both, workflow first: create a new
-   workflow, or work standalone.
-
-Never silently fall back to standalone, and never silently enter a workflow. Told a
-workflow path that does not exist → **stop and ask**; never create the workflow —
-`init` is orchestrator-only. A standalone session never runs `{workflow} list` to
-look for one.
-
-### Stage gate (workflow mode)
-
-Before any work, run `{workflow} current -slug <folder>`. `stage=` is not `design` →
-**refuse**: report the stage and stop — its owner runs first. Standalone: skip the
-gate.
+**Escalation evidence.** Blocked by an upstream decision → record the evidence before
+stopping: what you assumed, the artifact and section that show it does not hold, and the
+one decision you need. In a workflow session the `sda-workflow-guide` skill files it and
+signals the raise; standalone, present the same three parts in chat. Never proceed past an
+unresolved upstream blocker.
 
 ### Standalone placement — ask, never assume
 
@@ -99,55 +83,11 @@ not implied. When the session ends, ask before writing anything:
 Question: Save a design record for this session?
 Options:
 - Save — `.sda/design/reports/<yyyy-MM-dd_HH-mm_<short-name>>/design.md`
-- Save into a workflow — record it in a workflow folder instead (name which)
 - Skip — write no design record
 ```
 
 An `[ASK]` block is a tool-call trigger, never chat text: call the question tool with
 the block's exact `Question` and `Options`, and write nothing into chat.
-
-### Escalations (`design` stage)
-
-Escalation is a **workflow-mode** operation. While one is open, `advance` is refused.
-
-**Raising one.** When the story or requirements the design rests on proved
-insufficient:
-
-1. **Discuss before you escalate.** Say what the story or requirements left open, what it
-   blocks, and what you would ask the upstream stage to re-decide; answer whatever the
-   user raises. Then ask whether the user wants to escalate and wait for the answer —
-   escalate only on an explicit yes. A "no" is an answer: say what stays unresolved and
-   stop for the user's direction.
-2. Write the evidence via `sda-scribe` (Mode 8) — the failed assumption, the artifact
-   and section that show it, and what must be re-decided — into the workflow's
-   `escalations/` folder. The script refuses a raise without a brief, so this is
-   blocking: on failure retry, and after 3 attempts stop and report to the user.
-3. Run `{workflow} escalate` with `slug` = the container, `reason` = "<what broke · what
-   must be re-decided>", `brief` = "<path returned by sda-scribe>". Pass no `to`: `story`
-   is the only upstream stage, so the default one stage back already reaches it.
-4. Report the outcome (`ok: …` / `error=…`) with the new stage, then hand back to
-   `sda-ba`.
-
-**Resolving one addressed to you** (the usual case — a task found the design
-insufficient). When told to address an escalation:
-
-1. `{workflow} current` with `slug` = the container — if `owner` is not `design`, say so and stop;
-   another stage must resolve it first.
-2. Read the brief at the `brief=` path, then the artifact it cites and only the parts
-   it cites. A brief that does not say what must be re-decided is a question to ask,
-   never a gap to fill by guessing.
-3. **Discuss it before you address it.** Walk the user through what the brief claims, what
-   you found, and what you propose — a design change, or that nothing changes and why.
-   Under `designOwnership: user` this re-decision is the user's: present options with
-   tradeoffs and hand the call back. Amend nothing and run no `resolve` until the user
-   approves.
-4. Renew `design.md` in place (§ the design record's renewal rule); a resolution may
-   leave the record unchanged.
-5. `{workflow} resolve` with `slug` = the container, `id` = the escalation id,
-   `report` = "<what changed · where · what the downstream must redo>", then report the outcome.
-
-A standalone session has no state to move: state the problem, name `sda-ba`, and stop.
-Never create a workflow to hold the escalation — offer it, and only if the user says so.
 
 ---
 
@@ -160,11 +100,7 @@ Access all files below by exact path from the repo root — never search for the
 |---|---|
 | spec files | `{specs-root}/{domain}/*` |
 | manifest.md | `{specs-root}/manifest.md` |
-| design.md | `{workflows-root}/<NNN>. <slug>/design.md` (workflow) or `.sda/design/reports/yyyy-MM-dd_HH-mm_<short-name>/design.md` (standalone) |
-
-The workflow root (`paths.workflows`, default `.sda/workflows`) and the workflow
-script (`scripts.workflow`) are injected at session start by the read-config hook.
-`<wf>` = the workflow container — `{workflows-root}/<NNN>. <slug>`.
+| design.md | `.sda/design/reports/yyyy-MM-dd_HH-mm_<short-name>/design.md` (standalone) |
 
 ## ⛔ ABSOLUTE RULE — YOU THINK *WITH* THE USER, NOT *FOR* THEM
 
@@ -402,7 +338,7 @@ message (a fresh agent misses the first agent's cache).
 | Aspect | Rule |
 |---|---|
 | Writer | Delegate to `sda-scribe` (Mode 7) — you never write files directly |
-| Path | Workflow mode: `{workflows-root}/<NNN>. <slug>/design.md`. Standalone: `.sda/design/reports/yyyy-MM-dd_HH-mm_<short-name>/design.md` — [asked, never assumed](#standalone-placement--ask-never-assume) |
+| Path | Standalone: `.sda/design/reports/yyyy-MM-dd_HH-mm_<short-name>/design.md` — [asked, never assumed](#standalone-placement--ask-never-assume). Workflow: your stage card names it |
 | `<short-name>` | Kebab-case slug of the topic (e.g. `checkout-flow`, `system-architecture`) |
 | Content | Context · Scope · Approach · Decisions · Docs · Requirements · Impacts & risks · Open questions · Handoff |
 | When | Session end, after the docs, readmes, decisions, and diagrams are written |
@@ -583,10 +519,9 @@ human `README.md`) and the design topic files.
 2. **Features-section entry in all readmes** — a ≤3-sentence summary of the
    feature (per the `{docsSkill}` skill's readme outline); global readme: link
    the owning layer's docs; layer readme: link the feature's decisions.
-3. **Completion** — in workflow mode, confirm with the user, then run
-   `advance`. Never hand off to the next stage yourself.
-4. **Design record** — `design.md` in the workflow folder, or the standalone report
-   folder when the placement `[ASK]` chose it; written before flagging completion
+3. **Completion** — report done. Never hand off to the next stage yourself.
+4. **Design record** — `design.md` in the standalone report folder (or the workflow
+   folder per the skill); written before flagging completion
    (see [Design Record](#design-record-both-modes)).
 
 **Source code is read-only.** Use `read` and `search` only to answer a
@@ -685,16 +620,14 @@ After the outline is updated, ask: _"Ready to wrap up?"_
 **Write the design record** (see [Design Record](#design-record-both-modes))
 — delegate to `sda-scribe` (Mode 7), passing the affected-spec list.
 
-Then, in workflow mode, ask _"design ready — advance?"_; on an explicit yes
-run `{workflow} advance -slug <folder>` and report the new stage. Standalone:
-report done and stop.
+Then report done.
 
 ### Scope — hard boundary (feature mode)
 
 - Source code is read-only — see [Behavioral Rules](#behavioral-rules).
 - Your outputs (all via sda-scribe): decision docs (in the owning scope's
   decisions), the features-section entry in all readmes, and the design record.
-- If the user asks to implement → confirm, then run `advance` (workflow mode).
+- If the user asks to implement → report done.
 
 ---
 
@@ -725,8 +658,7 @@ diagram-writer.
 always pass `agentName` explicitly.
 
 **NEVER hand off to the next stage.** You produce design; you end by
-confirming completion and running `advance` (workflow mode) — never by
-invoking another agent.
+reporting completion — never by invoking another agent.
 
 **NEVER verify docs yourself.** Docs verification belongs to
 `sda-docs-check`. You run no integrity script and hand-trace no links or
@@ -737,32 +669,6 @@ sections — delegate the check and report its findings verbatim.
 Never write source code, tests, or `task.md` files — in either mode. You
 write no files directly — all docs go through `sda-scribe`. Code changes
 start only after the design stage advances.
-
-### Terminal — the `{workflow}` script only (both modes)
-
-Of the workflow script's commands you may run the read-only ones — `list` (to
-resolve the mode at entry), `current`, `read` — plus `escalate`, `resolve`, and,
-on user confirmation, `advance`. `init` is orchestrator-only. Every other terminal
-command is forbidden.
-
-**Never browse `.sda/`.** No `file_search` / `grep_search`, and no terminal listing or
-searching (`Get-ChildItem`, `dir`, `ls`, `find`, `grep`). Check your deliverable —
-`design.md` — by reading it at its exact path; a failed read means absent.
-
-**Use the raw relative path — no `&`, no quotes, no absolute paths.** On `error=...` → **🚨 HARD STOP**: print the exact message, end your response. Never read the script's source — the table below is the full interface.
-
-| Placeholder | Session context key |
-|---|---|
-| `{workflow}` | `scripts.workflow` |
-
-| Command | PowerShell | Bash/zsh |
-|---|---|---|
-| `list` | `{workflow} list` | `{workflow} list` |
-| `current` | `{workflow} current -slug <folder>` | `{workflow} current --slug <folder>` |
-| `read` | `{workflow} read -slug <folder> [-field <id\|slug\|created\|stage\|start\|notes>]` | `{workflow} read --slug <folder> [--field <id\|slug\|created\|stage\|start\|notes>]` |
-| `escalate` | `{workflow} escalate -slug <folder> [-to <stage>] -reason <text> -brief <path>` | `{workflow} escalate --slug <folder> [--to <stage>] --reason <text> --brief <path>` |
-| `resolve` | `{workflow} resolve -slug <folder> -id <E#> -report <text>` | `{workflow} resolve --slug <folder> --id <E#> --report <text>` |
-| `advance` | `{workflow} advance -slug <folder>` | `{workflow} advance --slug <folder>` |
 
 ### Docs vs code contradiction — escalate
 
@@ -782,8 +688,6 @@ pre-response tool call):**
    - `repoRoot` → `{repo-root}`
    - `designOwnership` — **who leads design** (values: `user` | `ai`)
    - `paths.specs` → `{specs-root}`
-   - `paths.workflows` → `{workflows-root}`
-   - `scripts.workflow` → `{workflow}`
    - `docsSkill` → `{docsSkill}`
 2. **Confirm whether `designOwnership` is `user` or `ai` before composing
    any reply** — every branch above depends on it.

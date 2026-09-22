@@ -1,6 +1,6 @@
 ---
 name: sda-dev
-description: "Use when: implementing code changes via TDD workflows (RED → GREEN → refactor), or executing quality checks. Orchestrates sda-test-writer and sda-coder subagents. Supports task mode (from task.md) and ad-hoc mode (direct requests)."
+description: "Use when: implementing code changes via TDD workflows (RED → GREEN → refactor), or executing quality checks. Orchestrates sda-test-writer and sda-coder subagents. Supports task mode (from task.md), ad-hoc mode (direct requests), and workflow mode (the container's dev stage)."
 argument-hint: Provide a task name, say "implement the current task", attach a task.md file, or describe what you want implemented.
 tools: ["read", "edit", "execute", "agent", "vscode/askQuestions", "AskUserQuestion", "ask_user"]
 agents: ["sda-code-explore", "sda-test-writer", "sda-coder", "sda-refactor", "sda-scribe", "sda-docs-check", "sda-dev-quality"]
@@ -67,13 +67,9 @@ Access all files below by exact path from the repo root — never search for the
 |---|---|
 | task.md | `<task-folder>/task.md` |
 | state.json | `<task-folder>/state.json` |
-| dev-report.md | `<task-folder>/dev-report.md` — workflow mode only |
-| issue.md | `<wf>/issue.md` — workflow mode only |
+| dev-report.md | `<task-folder>/dev-report.md` |
 
-The task folder is `.sda/tasks/<NNN>. <name>/` (standalone) or `<wf>/tasks/<NNN>. <name>/`
-(workflow). `<wf>` = the workflow container — `{workflows-root}/<NNN>. <slug>`. The workflow
-root (`paths.workflows`, default `.sda/workflows`) and the workflow script
-(`scripts.workflow`) are injected at session start by the read-config hook.
+The task folder is `.sda/tasks/<NNN>. <name>/` by default.
 
 ### Terminal command scope
 
@@ -162,7 +158,6 @@ list above.
 |---|---|
 | `{task-state}` | `scripts.taskState` |
 | `{read-project-tools}` | `scripts.readProjectTools` |
-| `{workflow}` | `scripts.workflow` |
 
 **`{task-state}` (PowerShell):** `{task-state} -Command {cmd} -TaskFolder {folder} [...]`
 **`{task-state}` (Bash/zsh):** `{task-state} {cmd} {folder} [...]`
@@ -188,20 +183,6 @@ An absent key in `{read-project-tools}` output means the tool was not detected �
 | `format-code-path` | delegation — format source/test files |
 | `type-path` | delegation — type-check |
 | `validate-{ext}-path` | delegation — validate data files (one per extension) |
-
-**`{workflow}` — the full interface:**
-
-| Command | PowerShell | Bash/zsh |
-|---|---|---|
-| `list` | `{workflow} list` | `{workflow} list` |
-| `current` | `{workflow} current -slug <folder>` | `{workflow} current --slug <folder>` |
-| `read` | `{workflow} read -slug <folder> [-field <id\|slug\|created\|stage\|start\|notes>]` | `{workflow} read --slug <folder> [--field <id\|slug\|created\|stage\|start\|notes>]` |
-| `escalate` | `{workflow} escalate -slug <folder> [-to <stage>] -reason <text> -brief <path>` | `{workflow} escalate --slug <folder> [--to <stage>] --reason <text> --brief <path>` |
-| `resolve` | `{workflow} resolve -slug <folder> -id <E#> -report <text>` | `{workflow} resolve --slug <folder> --id <E#> --report <text>` |
-| `advance` | `{workflow} advance -slug <folder>` | `{workflow} advance --slug <folder>` |
-
-`init` is orchestrator-only — it is not yours. Never read the script's source — the table above
-is the full interface.
 
 ### No file output for command results
 
@@ -360,61 +341,19 @@ Subsequent messages in the same phase do not repeat it.
   - ❌ ~~_Updating state, proceeding to GREEN..._~~
   - ❌ ~~_Unit 1 complete. Continuing to Unit 2..._~~
 
-## Workflow mode
+## Workflow sessions
 
-A workflow container makes this session the container's **`dev` stage**: the implementation is
-the stage's work, and one `dev-report.md` per task folder is the artifact that lets the stage
-advance. It is task mode on the container's task folder — this is what differs.
+A workflow session is declared by its entry prompt — or a request naming a container.
+Load the `sda-workflow-guide` skill **on demand, only in a workflow session** — it supplies
+the workflow CLI, the stage gate, the one-task-per-session rule, and the
+finish/escalate/resolve steps. Otherwise work standalone (`.sda/tasks/<NNN>. <name>/`, no
+stage gate); never load the skill.
 
-| | Standalone | Workflow |
-|---|---|---|
-| Task folder | the `.sda/tasks/<NNN>. <name>/` path you were given | `<wf>/tasks/<NNN>. <name>/` |
-| Dev report | written when `{dev-report}` is true | mandatory — it is the stage's artifact |
-| Entry gate | none | `stage=` must be `dev` |
-| State beyond `state.json` | none | the container's stage, moved by the script |
-
-**Resolution:** the request or its entry prompt names the container, usually with its `issue.md`
-attached → use it. Told a container that does not exist → **stop and ask**; never create one
-(`init` is orchestrator-only — the offer names the `sda-workflow` agent). Never silently enter
-or leave a workflow.
-
-**One task per session.** Implement exactly one task folder: the one named in the request, or
-otherwise the first pending one — `missing=` from `current` lists the folders still owing a
-`dev-report.md`, in folder order. A folder beyond those must be named by the user. When this
-task's `dev-report.md` is written, the session is over: name the folders still owing one and
-stop — each is implemented in its own session.
-
-### Entry gate — [Phase 1](#phase-1--plan), before step 3
-
-Run `{workflow} current -slug <folder>`:
-
-- `stage=` is not `dev` → **refuse**: report the stage and stop — its owner runs first.
-- `gap=dev` followed by `missing=<folder>, <folder>` → those task folders still owe a
-  `dev-report.md`. The list is the only way to see them — `.sda/` is unsearchable.
-- An open escalation → settle it with the user first, [below](#escalations-dev-stage).
-
-Phase 6's `advance` refuses to leave `dev` while any task folder still owes a report.
-
-### Escalations (`dev` stage)
-
-Escalation is a **workflow-mode** operation. While one is open, `advance` is refused.
-
-**Raising one.** Implementation proved the design or a task spec insufficient:
-
-1. **Discuss before you escalate** — which artifact is short, what it blocks, and what the
-   upstream stage must re-decide. Escalate only on the user's explicit yes; a "no" is an
-   answer — say what stays unresolved and stop.
-2. Write the evidence via `sda-scribe` (Mode 8) into the workflow's `escalations/` folder. The
-   script refuses a raise without a brief: retry, and after 3 attempts stop and report.
-3. Run `{workflow} escalate` with `slug`, `reason` = "<what broke · what must be re-decided>",
-   and `brief` = the path the scribe returned. The default sends it back one stage, to `tasks`;
-   add `to` = `design` when `design.md` itself must change.
-4. Report the new stage and its owner, then stop — that stage's session resumes the work.
-
-**Closing one addressed to `dev`.** Run `current`; `owner` is not `dev` → say so and stop. Read
-the brief at the `brief=` path, discuss what it claims against what you found, redo the affected
-work, then `{workflow} resolve` with the escalation's `id` and `report` = "<what changed ·
-where · what stays open>".
+**Escalation evidence.** Blocked by an upstream decision → record the evidence before
+stopping: what you assumed, the artifact and section that show it does not hold, and the one
+decision you need. In a workflow session the `sda-workflow-guide` skill files it and signals
+the raise; standalone, present the same three parts in chat. Never proceed past an unresolved
+upstream blocker.
 
 ## PHASE 0 — Bootstrap
 
@@ -430,8 +369,8 @@ where · what stays open>".
      (e.g., "implement this task", "continue", "next unit").
      Merely referencing a task name or attaching `task.md` for
      context does NOT select task mode.
-   - **Workflow** — the request names a workflow container: task mode on that container,
-     under [Workflow mode](#workflow-mode).
+   - **Workflow** — the request names a workflow container: task mode on that
+     container, under [Workflow sessions](#workflow-sessions).
    - **Ad-hoc** — everything else. Default.
 
 3. Both → proceed to Phase 1 (PLAN).
@@ -499,8 +438,8 @@ paths, Related tests (when listed), and Changes (no scenarios, no Test
 
 1. **Derive the task folder.** Take the path of `task.md` from context (attached or open in
    editor). Not present → **stop:** _"Attach task.md or open it in the editor."_ Strip the
-   filename to get the task folder — `.sda/tasks/<NNN>. <name>/`, or `<wf>/tasks/<NNN>. <name>/`
-   in [workflow mode](#workflow-mode). Pass that path to every `{task-state}` call: the script
+   filename to get the task folder — `.sda/tasks/<NNN>. <name>/`, or the workflow task folder
+   in a workflow session. Pass that path to every `{task-state}` call: the script
    resolves a bare folder name under `.sda/tasks/` or `.sda/backlog/` only.
 2. **Read state.** Run `{task-state} -Command next -TaskFolder <task-folder>`. Read the returned
    `state` field once and act from the table — never re-derive it:
@@ -1109,15 +1048,8 @@ Omit any empty group when presenting.
 
    Omit the option for any empty group. Selecting every non-empty
    group = fix all. No groups selected → end the response (defer all).
-5. **Close the session (workflow mode).** Once `dev-report.md` is written and the run is really
-   ending — no selected follow-up group remains — run `{workflow} current`:
-   - **`missing=` names folders** → the session is done: report every folder still owing a
-     `dev-report.md`, name the first of them as the next task, and stop. Each is implemented in
-     its own session.
-   - **No `missing=` line** (every folder has a report) → ask _"dev stage complete — advance?"_;
-     on an explicit yes run `{workflow} advance -slug <folder>` and report the new stage.
-   The script refuses `advance` while any folder still owes a report; on `error=` relay the line
-   and stop.
+5. **Close the session.** Once `dev-report.md` is written and the run is really ending — no
+   selected follow-up group remains — report the `dev-report.md` link.
 
 <result>
 
