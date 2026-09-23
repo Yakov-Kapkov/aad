@@ -86,50 +86,59 @@ Only run commands returned by `{read-project-tools}`.
 terminal call. Never chain multiple gate commands with `;` or `&&`
 in a single invocation.
 
+**One run per gate per area.** A gate command runs at most twice: the
+verdict pass, then the single failure-detail re-run. G2's auto-fix re-run
+replaces that second pass. Never repeat a gate for any other reason — not
+for empty output, not for output you cannot classify, not on a
+re-invocation that already covered the same files.
+
 **Decompose chained commands.** If a command returned by
 `{read-project-tools}` contains `;` or `&&`, split it on those
 separators and run each segment as a separate terminal call,
-each with its own `filter-tool` (`{N}` = `10`). The gate result is
+each with its own `filter-tool`. The gate result is
 the aggregate: all segments must pass.
 
 **Run commands verbatim.** Except for decomposing chained commands above,
 run commands exactly as documented — no wrappers, no env var
 prefixes, no shell workarounds, no fabricated one-liners or scripts.
 Never rewrite a returned invocation into a direct binary or entry-point
-call; a bare binary is valid only when `{read-project-tools}` returns
-one, or troubleshooting prescribes it.
+call; a bare binary is valid only when `{read-project-tools}` returns one,
+or when a troubleshooting entry prescribes it for an **unfiltered** command
+with a confirmed non-zero exit code. Never rewrite a filtered command.
 Never add flags, arguments, or path-exclusion options that are not
 present in the documented command.
 
+**`{cap}` = this agent's cap. `{N}` = the template's placeholder.** A returned
+filter template carries a literal `{N}` — substitute the `{cap}` value for it.
+Fixed values, defined once, in the table below.
+
 **Cap noisy output.** Any command that may produce more than ~100 lines
-must use `filter-tool` (`{N}` = `10`). For test commands, use
-`filter-last-n` (`{N}` = `10`) for the first pass (shows summary); use
-`filter-test-output` (`{N}` = `20`) only when re-running after a failure.
-Skip the filter only for commands that are inherently concise
-(type-checking).
+must use `filter-tool`. For test commands, use `filter-last-n` for the first
+pass (shows summary). Skip the filter only for commands that are inherently
+concise (type-checking).
+
+| Filter | Verdict pass | Failure detail (one re-run) |
+|---|---|---|
+| `filter-last-n` (tests) | `{cap}` = 10 | — |
+| `filter-test-output` (tests) | — | `{cap}` = 100 |
+| `filter-tool` (findings gates) | `{cap}` = 10 | `{cap}` = 50 |
 
 **Judge filtered gates by output, not exit code.** The filter pipe masks the
 runner's status — apply each gate's pass condition to the returned output.
 Failure marker = a failure line, or a summary reporting a non-zero
-failure/error count. **No output is not proof of success** — re-run the
-unfiltered label and read its exit code before reporting ✅.
+failure/error count.
+**Empty output — decide by gate class, never by a second run:**
+- Findings gates (L2, L4, G2, G4, G5) → ✅ — a clean run has nothing to report.
+- Tests (L3, G3) → ❌ unable to verify — the summary line is always printed.
+  Report it and stop: it is not a failure marker, so it triggers no re-run.
 
 **Judge unfiltered gates by exit code.** A bare gate (L1/G1 types) that prints
-nothing and exits `0` is ✅ — empty output is a red flag only for a **filtered**
-command. Never re-run a bare gate for output.
+nothing and exits `0` is ✅. Never re-run a bare gate for output.
 
-**Escalate on failure — re-run with expanded `{N}`.** The small `{N}`
-above keeps passing runs clean but may trim error details on failure.
-When a filtered gate reports a failure marker, re-run the same command with
-expanded `{N}` and use that output for the Flags section:
-- `filter-tool` → `{N}` = `50`
-- `filter-test-output` → `{N}` = `100`
-**Tests (L3, G3, Phase 3) use a two-pass approach:** first pass with
-`filter-last-n` (`{N}` = `10`) for the summary; on failure, re-run with
-`filter-test-output` (`{N}` = `20`). Escalate to N=100 on
-`filter-test-output` only when that second pass still lacks
-sufficient failure detail.
-Exception: skip re-run when it would be expensive and error context
+**Escalate on failure — one re-run.** When a filtered gate reports a failure
+marker, re-run the same command once with the failure-detail `{cap}` (table
+above) and use that output for the Flags section. Never run a third pass.
+Exception: skip the re-run when it would be expensive and error context
 is already sufficient — use judgment.
 
 ### No file output for command results
@@ -182,8 +191,8 @@ Coverage enabled:  true|false
 
 ### Phase 2 — Map files to areas
 
-1. **For each target file**, resolve its area by matching file path prefix against each area's working directory:
-   - Call `{read-project-tools} {file-directory} ["shell"]` (the `working-dir=` key suffices — no other commands needed).
+1. **For each unique target-file directory**, resolve its area by matching file path prefix against each area's working directory:
+   - Call `{read-project-tools} {file-directory} ["shell"]` **once per unique directory** (the `working-dir=` key suffices — no other commands needed).
    - The returned `working-dir=` maps to the area.
 2. **Build per-area file lists:**
    ```
@@ -204,8 +213,9 @@ Baseline failures are only needed for G3 regression classification.
 1. Store baseline failures from input as `{baseline-failures}`.
 2. **If no baseline provided:**
    - For each target area, call `{read-project-tools} {workdir} ["test-all,filter-last-n,filter-test-output"]`.
-   - **First pass:** Run `test-all` with filter-last-n (`{N}` = `10`). No failure marker → baseline = `[]`.
-   - **If a failure marker appears:** Re-run with filter-test-output (`{N}` = `20`).
+   - **First pass:** Run `test-all` with `filter-last-n`. No failure marker → baseline = `[]`.
+   - **If a failure marker appears:** Re-run with `filter-test-output` (one re-run, per the cap table).
+   - **Keep this run's output** — G3 reuses it; `test-all` never runs twice for one area in one pass.
    - Merge all failing test names into `{baseline-failures}`.
 
 ### Phase 4 — Run local gates per area
@@ -226,19 +236,19 @@ final report in Phase 6.
 
 3. **L2 — Lint:**
    - N/A if no `lint-path`.
-   - Fill `{path}` with area's target Source + Test file paths. Apply filter-tool (`{N}` = `10`).
+   - Fill `{path}` with area's target Source + Test file paths. Apply `filter-tool`.
    - Pass condition: zero errors.
 
 4. **L3 — Tests:**
    - N/A if no `test-path`.
    - Fill `{path}` with area's target Test file paths.
-   - **First pass:** Run with filter-last-n (`{N}` = `10`). No failure marker → pass.
-   - **If a failure marker appears:** Re-run with filter-test-output (`{N}` = `20`) for detailed output.
+   - **First pass:** Run with `filter-last-n`. No failure marker → pass.
+   - **If a failure marker appears:** Re-run with `filter-test-output` for detailed output.
    - Pass condition: all green.
 
 5. **L4 — Coverage:**
    - ⏭️ Skip if `tests.coverage.enabled` is `false`. N/A if no `test-path-coverage`.
-   - Fill `{path}` with area's target Test file paths. Apply filter-tool (`{N}` = `10`).
+   - Fill `{path}` with area's target Test file paths. Apply `filter-tool`.
    - Pass condition: zero errors in the output.
 
 ### Phase 5 — Run global gates per area
@@ -250,7 +260,7 @@ immediately (e.g., `G1 Types: ✅`). Accumulate all results for the
 final report in Phase 6.
 
 1. **Fetch commands** — call `{read-project-tools} {workdir} ["type-all,lint-all,test-all,build-all,precommit-all,filter-last-n,filter-test-output,filter-tool"]`.
-   Also fetch `precommit-all` from `{read-project-tools} . ["precommit-all"]` (project-global).
+   Fetch `precommit-all` from `{read-project-tools} . ["precommit-all"]` (project-global) **only when the area's working directory is not `./`** — otherwise the call above already carries it.
 
 2. **G1 — Types:**
    - N/A if no `type-all`. If absent, try `type-path` on all area source files. If both absent → ❌ unable to verify.
@@ -259,14 +269,14 @@ final report in Phase 6.
 
 3. **G2 — Lint:**
    - N/A if no `lint-all`.
-   - Apply filter-tool (`{N}` = `10`).
+   - Apply `filter-tool`.
    - Pass condition: zero errors/warnings.
    - Commands may auto-fix files. Re-run once before reporting failure.
 
 4. **G3 — Tests:**
    - N/A if no `test-all`.
-   - **First pass:** Run with filter-last-n (`{N}` = `10`). No failure marker → pass.
-   - **If a failure marker appears:** Re-run with filter-test-output (`{N}` = `20`) for detailed output.
+   - **First pass:** Reuse the Phase 3 `test-all` output for this area — do not run it again. Run it only when Phase 3 was skipped, or G2 lint auto-fixed files. Use `filter-last-n`.
+   - **If a failure marker appears:** Re-run with `filter-test-output` for detailed output.
    - Pass condition: all green.
    - Classify failures against `{baseline-failures}`:
      - Name in baseline → pre-existing.
@@ -276,12 +286,12 @@ final report in Phase 6.
    - N/A if no `precommit-all`. Command fetched from `{read-project-tools} .` (project-global).
    - Apply [Decompose chained commands](#terminal-command-scope) — `precommit-all`
      often chains multiple tools with `;`. Run each segment as a
-     separate call with `filter-tool` (`{N}` = `10`).
+     separate call with `filter-tool`.
    - Pass condition: every segment reports zero errors.
 
 6. **G5 — Build:**
    - N/A if no `build-all`.
-   - Apply filter-tool (`{N}` = `10`).
+   - Apply `filter-tool`.
    - Pass condition: zero errors in the output.
 
 ### Phase 6 — Produce final report
@@ -315,7 +325,7 @@ actionable items — no exceptions, no questions.
 | G4 Pre-merge | ✅ / ❌ / N/A {detail} | `{command}` |
 | G5 Build | ✅ / ❌ / N/A {detail} | `{command}` |
 
-{coverage breakdown: - file.py — {N}% — only when gate L4 has findings}
+{coverage breakdown: - file.py — {percent}% — only when gate L4 has findings}
 
 #### Area: {Name} ({working-dir})
 ...
@@ -369,6 +379,7 @@ The agent reports facts only; the caller decides what to do.)
 - Build failure in {Area}: {error output}
 - Type errors in target files ({Area}): {error output}
 - Lint errors in target files ({Area}): {error output}
+- Unable to verify {gate} in {Area}: {reason — no output, or the gate's tool is absent}
 ```
 
 ---

@@ -87,7 +87,9 @@ present in the documented command.
 **Never rewrite an invocation into a bare binary.** A package-runner or
 script invocation returned by `{read-project-tools}` is used as-is — never
 rewritten into a direct binary or entry-point call. A bare binary is valid
-only when `{read-project-tools}` returns one, or troubleshooting prescribes it.
+only when `{read-project-tools}` returns one, or when a troubleshooting entry
+prescribes it for an **unfiltered** command with a confirmed non-zero exit
+code. Never rewrite a filtered command.
 
 **No CLI exploration.** Never run terminal commands to find, list,
 or search file contents directly (e.g. `Get-ChildItem`, `find`, `grep`, `Select-String -Path`).
@@ -100,14 +102,19 @@ part of commands returned by `{read-project-tools}`.
 A filter pipe masks the runner's status (`$?` on PowerShell, last pipe stage on
 bash/zsh) — judge by the output, never the exit code. Failure marker = a
 failure line, or a summary reporting a non-zero failure/error count → failed;
-no failure marker → passed. **No output — or output you cannot classify — is
-not a pass** for a filtered command: re-run the unfiltered label (`test-all` /
-`test-path`) and read its exit code and output.
+no failure marker → passed. **Empty output:** a findings command (lint,
+coverage, build, pre-merge) → passed — a clean run has nothing to report; a
+test command → **not a pass** — its summary line always prints, so report
+`❌ unable to verify` and never re-run to confirm.
 
 ### Two-pass test runs
 
-**First pass** = `filter-last-n` (`{N}` = `10`) — verdict from the summary.
-**Failure detail** = `filter-test-output` (`{N}` = `100`) — failing-test lines + summary.
+**`{cap}` = the number substituted into a returned template's `{N}`.** Use it
+for every filter tail. (`{N}` elsewhere in this file — `Unit {N}`, `Prior
+failure {N}`, `{N}/{N} passed` — is unrelated.)
+
+**First pass** = `filter-last-n` (`{cap}` = `10`) — verdict from the summary.
+**Failure detail** = `filter-test-output` (`{cap}` = `100`) — failing-test lines + summary.
 
 1. Run the first pass.
 2. No failure marker → passing — stop; never run the failure-detail command.
@@ -135,13 +142,16 @@ Always use absolute paths for `cd` — never relative.
 
 ### Failure handling & escalation
 
-Route every failure by its kind.
+Route every failure by its kind. **A report is not a failure** — a subagent's
+findings (`sda-docs-check` deviations, quality flags) are returns to act on or
+surface; they never trigger a troubleshooting lookup.
 
-**Troubleshootable failures** — the orchestrator's own unexpected failures
-(e.g. a command it runs directly) and any subagent that returns
-`⚠️ UNRESOLVED` or `🚨 HARD STOP`. Do not fix from scratch: first look up
-the symptom in any available troubleshooting guidance from the current
-system context. If a known fix is found, apply it and retry once — re-run
+**Troubleshootable failures** — a **command or environment** failure: the
+orchestrator's own unexpected failure (e.g. a command it runs directly), or a
+subagent that returns `⚠️ UNRESOLVED` or `🚨 HARD STOP`. Do not fix from
+scratch: first look up the symptom in any available troubleshooting guidance
+from the current system context. If a known fix is found, apply it and retry
+once — re-run
 the command (own failure) or re-delegate to the subagent (escalation).
 At most one retry (two attempts total). If no known fix is found or the
 retry still fails, surface the message verbatim to the user and end the
@@ -641,8 +651,8 @@ wait.
    Language: {per-file annotations from the unit header — test-writer writes each test file in the language(s) annotated on its Test path}
    Source: {source file path(s)}
    Test: {test file path(s)}
-   Test command: {test-path with {path}=test file paths; filter-last-n ({N}=10)}
-   Test command (failure detail): {test-path with {path}=test file paths; filter-test-output ({N}=100)}
+   Test command: {test-path with {path}=test file paths; filter-last-n ({cap}=10)}
+   Test command (failure detail): {test-path with {path}=test file paths; filter-test-output ({cap}=100)}
    Format-code command: {format-code-path with {path}=source + test file paths — omit if absent}
    Type-check command: {type-path with {path}=source + test file paths — omit if absent}
    Validate-data commands: {validate-{ext}-path with {path}=data file paths; normalize .yml → yaml — omit if absent}
@@ -720,8 +730,8 @@ or changes from other units. Delegate and wait.
    Source: {source file path(s)}   ← integration only: current unit's target files ONLY — do not include files from other units
    Test: {test file path(s)}       ← GREEN only; omit for integration only
    Related tests: {the unit's `**Related tests:**` paths}   ← integration only; include only when the work unit has Related tests; omit for GREEN
-   Test command: {test-path with {path}=Test file paths for GREEN, Related tests paths for integration; filter-last-n ({N}=10)}   ← omit both test-command lines when an integration unit lists no Related tests
-   Test command (failure detail): {test-path with {path}=Test file paths for GREEN, Related tests paths for integration; filter-test-output ({N}=100)}
+   Test command: {test-path with {path}=Test file paths for GREEN, Related tests paths for integration; filter-last-n ({cap}=10)}   ← omit both test-command lines when an integration unit lists no Related tests
+   Test command (failure detail): {test-path with {path}=Test file paths for GREEN, Related tests paths for integration; filter-test-output ({cap}=100)}
    Format-code command: {format-code-path with {path}=source file paths — omit if absent}
    Type-check command: {type-path with {path}=source files — omit if absent}
    Validate-data commands: {validate-{ext}-path with {path}=data file paths; normalize .yml → yaml — omit if absent}
@@ -766,7 +776,7 @@ Proceed to Phase 4·U (per-unit refactor).
 3. **Route the result:**
    - No findings → output the `<result>` block below.
    - Findings → re-delegate to `sda-scribe` **once**, each finding as an anchored delta, then re-run `sda-docs-check`.
-   - Findings after the retry → apply [Failure handling & escalation](#failure-handling--escalation).
+   - Findings after the retry → **not a failure** ([Failure handling & escalation](#failure-handling--escalation)): present the report verbatim and ask the user to resolve what remains — a `Recommendation: fix code` or "caller decides" finding is the user's decision, never a troubleshooting lookup. Act on the answer; if a finding stays open, stop and report it.
 4. **State update** — same as Phase 3. **Next step** — return to Phase 1 for the next unit; when all units are `DONE`, run Phase 4·X if `{multi-unit}` is true, then Phase 5.
 
 <result>
@@ -809,8 +819,8 @@ Scope: per-unit
 Source files: {current unit's source files}
 Test files: {current unit's test files}
 In-scope symbols: {symbols this unit added or modified; "{file}: *" for a wholly new file}
-Test command: {test-path with {path}=test file paths; filter-last-n ({N}=10)}
-Test command (failure detail): {test-path with {path}=test file paths; filter-test-output ({N}=100)}
+Test command: {test-path with {path}=test file paths; filter-last-n ({cap}=10)}
+Test command (failure detail): {test-path with {path}=test file paths; filter-test-output ({cap}=100)}
 Format-code command: {format-code-path with {path}=source + test file paths — omit if absent}
 Type-check command: {type-path with {path}=source + test file paths — omit if absent}
 Validate-data commands: {validate-{ext}-path with {path}=data file paths; normalize .yml → yaml — omit if absent}
@@ -826,8 +836,8 @@ Scope: per-unit
 Source files: {current unit's source files}
 Test files: {current unit's test files — omit if none}
 In-scope symbols: {symbols from Changes blocks; "{file}: *" for a wholly new file}
-Test command: {test-path with {path}=Related tests paths; filter-last-n ({N}=10) — omit both lines if no Related tests}
-Test command (failure detail): {test-path with {path}=Related tests paths; filter-test-output ({N}=100)}
+Test command: {test-path with {path}=Related tests paths; filter-last-n ({cap}=10) — omit both lines if no Related tests}
+Test command (failure detail): {test-path with {path}=Related tests paths; filter-test-output ({cap}=100)}
 Format-code command: {format-code-path with {path}=source file paths — omit if absent}
 Type-check command: {type-path with {path}=source files — omit if absent}
 Validate-data commands: {validate-{ext}-path with {path}=data file paths; normalize .yml → yaml — omit if absent}
@@ -883,8 +893,8 @@ Units:
   Source files: {unit M source files}
   Test files: {unit M test files}
   In-scope symbols: {symbols unit M added or modified; "{file}: *" for a wholly new file}
-Test command: {test-path with {path}=test file paths; filter-last-n ({N}=10)}
-Test command (failure detail): {test-path with {path}=test file paths; filter-test-output ({N}=100)}
+Test command: {test-path with {path}=test file paths; filter-last-n ({cap}=10)}
+Test command (failure detail): {test-path with {path}=test file paths; filter-test-output ({cap}=100)}
 Format-code command: {format-code-path with {path}=source + test file paths — omit if absent}
 Type-check command: {type-path with {path}=source + test file paths — omit if absent}
 Validate-data commands: {validate-{ext}-path with {path}=data file paths; normalize .yml → yaml — omit if absent}
@@ -942,7 +952,7 @@ source or test files. Delegate and wait.
 3. **When `sda-dev-quality` returns** — route by result:
    - Any failure (`⚠️ UNRESOLVED`, `🚨 HARD STOP`) → apply [Failure handling & escalation](#failure-handling--escalation). Do NOT output the result block.
    - Clean report with no flags → output the report verbatim as Phase 5 result. Proceed to Phase 6.
-   - Clean report with flags → process each flag (see below), then re-delegate to `sda-dev-quality`.
+   - Clean report with flags → process each flag (see below), then re-delegate to `sda-dev-quality` **only when a flag produced a fix** — an "unable to verify" flag is surfaced, never re-run.
 
 ### Flags processing
 
@@ -954,6 +964,7 @@ For each flag from `sda-dev-quality`'s `### Flags` section:
 | Regression (test failure not in baseline) | If flagged test was written by this task → delegate to `sda-coder`. If flagged test is pre-existing → delegate to `sda-coder` with [regression fix inputs](#regression-fix). If unclear → delegate to `sda-coder` first. |
 | Build failure | Delegate to `sda-coder` with failure output from flag detail |
 | Type / Lint errors in target files | Delegate to `sda-coder` with error output from flag detail |
+| Unable to verify (no output, or the gate's tool is absent) | Surface to the user verbatim. Do NOT delegate a fix, do NOT re-delegate the gate, do NOT look up troubleshooting — no re-run clears it. |
 
 ### Coverage decision
 
@@ -978,8 +989,8 @@ Triggered when `sda-dev-quality` flags a regression (test failure not in baselin
    - `Language`: infer from file extensions
    - `Source`: this task's changed source files
    - `Test`: flagged test files
-   - `Test command`: `test-path` with flagged test files + filter-last-n (`{N}` = `10`)
-   - `Test command (failure detail)`: `test-path` with flagged test files + filter-test-output (`{N}` = `100`)
+   - `Test command`: `test-path` with flagged test files + filter-last-n (`{cap}` = `10`)
+   - `Test command (failure detail)`: `test-path` with flagged test files + filter-test-output (`{cap}` = `100`)
    - Omit `Validate-data commands` and `Changes`
    - Add: `Regression context: These tests passed before this task started. The source files listed above were modified by this task and likely caused the failures. Fix the source to restore the failing tests without reverting the task's intended changes.`
 3. Apply [Failure handling & escalation](#failure-handling--escalation) if `sda-coder` returns a failure.

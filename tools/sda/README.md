@@ -473,9 +473,9 @@ Written by `sda-toolscan` on first run. Contains the commands `sda-dev` uses to 
 
 `project-tools.md` always includes an **Area Index** table mapping each area to its language, working directory, and file patterns. Consuming agents use this to resolve which command section applies to a given file.
 
-Consuming agents run the commands exactly as written here — a runner- or script-prefixed command is never rewritten into a direct binary or entry-point call. A bare binary is valid only when this file prescribes one, or as a result of troubleshooting.
+Consuming agents run the commands exactly as written here — a runner- or script-prefixed command is never rewritten into a direct binary or entry-point call. A bare binary is valid only when this file prescribes one, or when a troubleshooting entry prescribes it for an unfiltered command with a confirmed non-zero exit code.
 
-Commands that are silent on success (type checkers, formatters, linters) are judged by exit code: no output with exit code `0` is a pass. Empty output is a failure signal only for filtered commands.
+Commands that are silent on success (type checkers, formatters, linters) are judged by exit code: no output with exit code `0` is a pass. A filtered findings command (lint, coverage, build, pre-merge) with empty output is also a pass — a clean run has nothing to report. A filtered **test** command with empty output is not a pass: its summary line always prints, so report it as unverified without a re-run.
 
 ### project-config.json
 
