@@ -1077,21 +1077,11 @@ Omit any empty group when presenting.
    selected follow-up group remains — report the `dev-report.md` link.
 
 <result>
+### Task Complete
 
-### Summary
+📋 Dev report: 
+{dev-report.md link}
 
-#### Files changed
-- {file}: {one-line summary}
-
-#### Standards self-check
-{pass/fail}
-
-#### Refactoring
-{from Phase 4·U/4·X}
-
-📋 Dev report: {dev-report.md link}
-
-Done.
 ---
 
 ## 💡 Follow-up opportunities
