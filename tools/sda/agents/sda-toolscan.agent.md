@@ -679,12 +679,21 @@ If a tool doesn't support scoped execution, add:
   **Exception: `## Application Run` is exempt from this rule.** Servers, dev-servers,
   and workers are long-running by design — do NOT add single-run flags.
   See [4.5 — Application run commands](#45--application-run-commands).
-- **Output suppression.** Read the test runner's `Hook command` from the
+- **Output suppression.** Read the tool's `Hook command` from the
   tool-catalog. Extract its silence flag — the flag that suppresses
-  non-result output (e.g. `--silent`, `-q`, `--quiet`). Append it to every
-  generated test command: `test-all`, `test-path`, `test-path-coverage`.
-  If `test-all` uses a script alias, pass the silence flag through the
+  non-result output (e.g. `--silent`, `-q`, `--quiet`, `--log-level warn`).
+  Append it to every command generated for that tool: `test-all`,
+  `test-path`, `test-path-coverage`, `format-code-all`, `format-code-path`.
+  If a test command uses a script alias, pass the silence flag through the
   script wrapper's argument separator.
+
+- **Format commands are emitted from the catalog's in-place form.** `format-code-all`
+  is the formatter's `Hook command`; `format-code-path` keeps its binary and flags,
+  replacing the whole-codebase target with the path placeholder. The write mode comes
+  from that cell — never emit a read-only variant (`--check`, `--verify-no-changes`).
+  A Format command emits no verdict line — its exit status is the verdict — so it never
+  carries a filter tail; never append a pipe or a redirection. When the catalog records
+  no silence flag for the tool (e.g. Biome, Maven plugins), emit the command as it is.
 
 - **Intentional modifications are fine.** Lint-fix / format commands are expected
   to modify files — label them as fix/format variants.
@@ -878,4 +887,5 @@ Before reporting complete, verify all items:
 | AC-11 | `### Application Run` section is present in each area block; each detected layer has `# app-run-start`, `# app-run-url`, and `# app-run-healthcheck` labels with their values; if no layer detected for that area, each label stub carries `# _Not detected._` |
 | AC-12 | `### Build` section is present in each area block; `# build-all` stub is populated with the detected command, or `# _Not detected._` when no build command is found |
 | AC-13 | Every area's `### Test Execution` carries `# filter-test-output`; absent test framework → `# _Not detected._` stub |
+| AC-14 | Every Format command carries its tool's silence flag where the catalog's `Hook command` records one, and none of them carries a filter tail |
 

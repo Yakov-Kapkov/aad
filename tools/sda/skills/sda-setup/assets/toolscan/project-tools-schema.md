@@ -8,6 +8,7 @@ Defines the structure and content rules for `project-tools.md` — the machine-r
 
 - **Command labels** (e.g. `# test-path`, `# format-code-path`) are machine-readable keys. SDA agents look up commands by these exact labels — do not rename them.
 - **A command slot may hold multiple invocations.** When one label maps to several independent tools/hooks (e.g. `black` + `isort` behind `format-code-path`), the value is those complete invocations joined by the detected shell command separator (`;` PowerShell / `&&` bash/zsh). Each invocation is self-contained; selectors are never combined into one call, and any path placeholder repeats in every invocation.
+- **Format commands are emitted silent.** The `format-code-all` / `format-code-path` values carry the formatter's silence flag — the flag that suppresses non-result output (e.g. `--log-level warn`, `-q`, `--quiet`). A Format command emits no verdict line: its exit status is the verdict, so it never carries a filter tail. A formatter with no silence flag (e.g. Biome, Maven plugins) is emitted as it is.
 - **Always render every section and Detected-Tools line** — never omit one because its tool is missing. When a tool, validator, hook manager, or runnable layer is absent, render the heading and write the marker `_Not detected._` (add a brief reason when useful) in place of its commands. Detected-Tools lines (inside each area's `### Detected Tools` sub-section) use `❌` / `None` instead.
 - **A not-detected command stub always keeps its label.** Emit every `#`-labeled stub defined by the schema; when the tool is absent, write `# _Not detected._` on the immediately following line — no executable command. Consuming scripts skip lines that start with `#`, so the stub is treated as absent at runtime while remaining visible for manual editing without a schema lookup.
 - **Working directory** — stated once per area at the `##` heading level; applies to all `###` sub-sections within that area. Always `./`-prefixed, relative to workspace root.
@@ -233,7 +234,8 @@ Defines the structure and content rules for `project-tools.md` — the machine-r
 <!-- <command>: placeholder — substitute the actual command being filtered -->
 <!-- {stderr-redirect}: PowerShell → ` 2>&1` | bash/zsh → ` 2>&1` — always emitted: runners write
      failure detail to stderr, so a stdout-only pipe leaves the bulk of a failing run unfiltered.
-     No exit-status guard is appended — filtered commands are judged by their output, never their exit code. -->
+     No exit-status guard is appended — filtered commands are judged by their output, never their exit code.
+     Format command values carry none of this machinery — no filter tail (see the Format-commands content rule). -->
 <!-- {last-n-lines-tool}: PowerShell → `Select-Object -Last` | bash/zsh → `tail -n` -->
 <!-- {test-lines-filter}: composed per area by sda-toolscan — from the `## Test output filter patterns`
      section in that area's language tool-discovery spec.

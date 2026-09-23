@@ -216,8 +216,8 @@ For each area with target files:
 immediately (e.g., `L1 Types: ✅`). Accumulate all results for the
 final report in Phase 6.
 
-1. **Fetch commands** — call `{read-project-tools} {workdir} ["type-path,lint-path,test-path,test-path-coverage,format-code-path,filter-last-n,filter-test-output,filter-tool"]`.
-   Omit `lint-path` / `type-path` / `test-path-coverage` / `format-code-path` / `filter-last-n` / `filter-tool` / `filter-test-output` when absent.
+1. **Fetch commands** — call `{read-project-tools} {workdir} ["type-path,lint-path,test-path,test-path-coverage,filter-last-n,filter-test-output,filter-tool"]`.
+   Omit `lint-path` / `type-path` / `test-path-coverage` / `filter-last-n` / `filter-tool` / `filter-test-output` when absent.
 
 2. **L1 — Types:**
    - N/A if no `type-path`. If absent, try `type-all` on the area's working directory. If both absent → N/A.

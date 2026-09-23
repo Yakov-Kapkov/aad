@@ -284,7 +284,7 @@ End your response with this block — do not add any text after it.
 {clean | ❌ could not fix after 3 attempts}
 <!-- Omit if no validate-data commands were provided -->
 
-<!-- Replace GREEN gate, Type gate, Format code, or Data gate with the following if a command could not execute: -->
+<!-- Replace GREEN gate, Type gate, or Data gate with the following if a command could not execute: -->
 ### ⚠️ UNRESOLVED
 `{command}` — exit {code} | output: {trimmed output or "none"}
 
@@ -360,7 +360,7 @@ End your response with this block — do not add any text after it.
 ### Test results
 {trimmed test output}
 
-<!-- Replace Type gate, Format code, Data gate, Test gate, or Test results with the following if a command could not execute: -->
+<!-- Replace Type gate, Data gate, or Test results with the following if a command could not execute: -->
 ### ⚠️ UNRESOLVED
 `{command}` — exit {code} | output: {trimmed output or "none"}
 

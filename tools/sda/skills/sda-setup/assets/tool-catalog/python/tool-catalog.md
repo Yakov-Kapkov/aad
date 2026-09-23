@@ -11,8 +11,8 @@ Priority 1 = recommended default; 2 = alternative. Read by `sda-setup` (Step 7) 
 | Type checker | mypy | 1 | `pip install mypy` | `mypy .` | | `mypy --version` | Static type checker with gradual typing support |
 | Type checker | pyright | 2 | `pip install pyright` | `pyright` | | `pyright --version` | Fast type checker from Microsoft, used by Pylance |
 | Linter | ruff | 1 | `pip install ruff` | `ruff check .` | | `ruff --version` | Extremely fast linter written in Rust; replaces pylint and flake8 |
-| Code formatter | ruff | 1 | `pip install ruff` | `ruff format --check .` | | `ruff --version` | Fast formatter written in Rust; drop-in replacement for black with zero config; same package as the linter |
-| Code formatter | black | 2 | `pip install black` | `black --check .` | | `black --version` | Opinionated formatter; the original Python standard |
+| Code formatter | ruff | 1 | `pip install ruff` | `ruff format . --quiet` | | `ruff --version` | Fast formatter written in Rust; drop-in replacement for black with zero config; same package as the linter |
+| Code formatter | black | 2 | `pip install black` | `black . --quiet` | | `black --version` | Opinionated formatter; the original Python standard |
 | Coverage | coverage | 1 | `pip install coverage` | | | `coverage --version` | Standard coverage tool with HTML/XML reports |
 | Coverage | pytest-cov | 2 | `pip install pytest-cov` | | | | Coverage plugin that integrates directly with pytest runs |
 | Git hooks | pre-commit | 1 | `pip install pre-commit` | | `pre-commit install` | `pre-commit --version` | Git hooks framework; runs checks before every commit |

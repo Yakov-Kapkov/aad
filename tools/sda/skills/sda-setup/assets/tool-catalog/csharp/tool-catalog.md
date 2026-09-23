@@ -8,8 +8,8 @@ Priority 1 = recommended default; 2 = alternative. Read by `sda-setup` (Step 7) 
 | Test runner | xunit | 1 | `dotnet add package xunit` | `dotnet test --verbosity quiet` | | | Modern extensible test framework; recommended for .NET |
 | Test runner | nunit | 2 | `dotnet add package NUnit` | `dotnet test --verbosity quiet` | | | Mature test framework with rich assertions |
 | Test runner | mstest | 2 | `dotnet add package MSTest.TestFramework` | `dotnet test --verbosity quiet` | | | Microsoft's built-in test framework |
-| Code formatter | dotnet-format | 1 | `dotnet tool install -g dotnet-format` | `dotnet format` | | `dotnet format --version` | Official .NET formatter and code-style enforcer |
-| Code formatter | csharpier | 2 | `dotnet tool install -g csharpier` | `dotnet csharpier .` | | `dotnet csharpier --version` | Opinionated formatter for C#; faster and stricter than dotnet-format |
+| Code formatter | dotnet-format | 1 | `dotnet tool install -g dotnet-format` | `dotnet format --verbosity minimal` | | `dotnet format --version` | Official .NET formatter and code-style enforcer |
+| Code formatter | csharpier | 2 | `dotnet tool install -g csharpier` | `dotnet csharpier . --log-level Warning` | | `dotnet csharpier --version` | Opinionated formatter for C#; faster and stricter than dotnet-format |
 | Coverage | coverlet | 1 | `dotnet add package coverlet.collector` | | | | Cross-platform code coverage for .NET |
 | Git hooks | husky.net | 1 | `dotnet tool install husky` | | `dotnet husky install` | | Git hooks manager for .NET projects |
 | Git hooks | pre-commit | 2 | `pip install pre-commit` | | `pre-commit install` | `pre-commit --version` | Cross-language Git hooks framework |
