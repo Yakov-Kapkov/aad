@@ -13,7 +13,7 @@ Copilot chat agents — invokable by name in the agent panel.
 
 | Agent | Description |
 |---|---|
-| [`copilot-designer`](.github/agents/copilot-designer.agent.md) | Sole steward of this repo's authored artifacts — agent customization files (agents, skills, prompts, instructions) for any agent environment plus dependent schemas, standards, and docs; enforces separation of orchestration- vs entity-level instructions |
+| [`repo-author`](.github/agents/repo-author.agent.md) | Sole authoring agent for this repo's artifacts — agents, skills, prompts, instructions, plus dependent schemas, standards, docs, and scripts; applies prompt-engineering craft and enforces separation of orchestration- vs entity-level instructions |
 | [`ts-tutor`](agents/ts-tutor/) | TypeScript tutor for .NET and Python developers |
 | [`commit`](agents/commit/) | Analyzes working directory changes, composes conventional commit messages, and always commits and pushes. Accepts optional `Session context:` to enrich the message body with the caller's stated intent (pinned to Haiku for fast, cheap execution) |
 

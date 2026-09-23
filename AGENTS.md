@@ -18,6 +18,7 @@ prompts/         — File-based prompt workflows (.prompt.md, .md)
 skills/          — Reusable skills (SKILL.md + supporting files)
 tools/           — Multi-agent tool suites (e.g. sda/)
 scripts/         — Installation and update scripts (.bat, .ps1)
+.github/         — Repo-local agents (.github/agents/) and prompts (.github/prompts/)
 ```
 
 ## Rules
