@@ -24,7 +24,8 @@ implement production code or manage state files.
 - **Expected result** — `RED` (tests must fail) or `GREEN` (tests
   must pass).
 - **Source / Test** — file paths to read.
-- **Test command** — exact command to run tests.
+- **Test command** — exact first-pass command to run tests.
+- **Test command (failure detail)** — failure-detail re-run; present whenever `Test command` is present. See [Two-pass test runs](#two-pass-test-runs).
 - **Format-code command** — optional.
 - **Type-check command** — optional. Run on test files to catch import/type errors before running tests.
 - **Validate-data commands** — optional.
@@ -74,9 +75,20 @@ When this happens:
    `.\.bin\...`), or output redirection. No file reads. No reasoning
    about why it failed. Write the result and end your response.
 
+### Two-pass test runs
+
+`Test command` is the **first pass**; `Test command (failure detail)` is the
+diagnostic re-run.
+
+1. Run the first pass.
+2. No failure marker → passing — stop; never run the failure-detail command.
+3. Failure marker → run the failure-detail command; use its output for diagnosis and reporting.
+
+**Expected result `RED`** — failures are the goal: run the failure-detail command as the first pass.
+
 ### Filtered command verdict
 
-The test command carries a filter pipe, which masks the runner's status — read
+The test commands carry filter pipes, which mask the runner's status — read
 the verdict from the output, never the exit code. Failure marker = a failure
 line, or a summary reporting a non-zero failure/error count → failing; no
 failure marker → passing. **No output — or output you cannot classify — is not
@@ -263,8 +275,9 @@ If any command fails to execute — apply [Hard stop on execution failure](#hard
 
 ### 6. Run tests
 
-Run the exact test command (specific file only). Run it in the shell named by
-`Shell`; never translate the command to another shell's idioms.
+Run the test commands per [Two-pass test runs](#two-pass-test-runs) (specific
+files only), in the shell named by `Shell`; never translate a command to
+another shell's idioms.
 
 If the command fails to execute, or a filtered run produces no output —
 apply [Hard stop on execution failure](#hard-stop-on-execution-failure) immediately.
@@ -330,7 +343,8 @@ Last run:
 ### Verification commands
 ```
 cd {absolute-working-dir}
-{test command}
+{test command}                      # first pass
+{test command (failure detail)}     # on failure
 ```
 </result>
 
@@ -367,7 +381,8 @@ Last failure:
 ### Verification commands
 ```
 cd {absolute-working-dir}
-{test command}
+{test command}                      # first pass
+{test command (failure detail)}     # on failure
 ```
 </result>
 
@@ -379,7 +394,7 @@ cd {absolute-working-dir}
 - Update state or any tracking files.
 - Reason about whether tests will pass or fail — the expected result
   is given.
-- Run any command other than the provided test, type-check, format-code, and validate-data commands — in their exact form. Never strip, omit, or rewrite any part of a provided command, including its output pipe (e.g., `| Select-String`, `| grep`, `| Select-Object`).
+- Run any command other than the provided test commands, type-check, format-code, and validate-data commands — in their exact form. Never strip, omit, or rewrite any part of a provided command, including its output pipe (e.g., `| Select-String`, `| grep`, `| Select-Object`).
 - Use terminal commands to write or create files — always use the `edit` tool for file writes.
 - Add wrappers, env var prefixes, or shell workarounds to commands — or
   replace a runner or script invocation with a direct binary or entry-point call.

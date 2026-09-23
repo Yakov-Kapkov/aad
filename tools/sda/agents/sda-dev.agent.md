@@ -31,16 +31,9 @@ own bootstrapping, state tracking, unit routing, refactoring, and quality checks
 
 ### Coding standards
 
-**Standards skill** = the `standardsSkill` value from session context (injected at session start).
-**Coding standards** = the language-specific rules and style guides in that
-skill plus any workspace-local coding-standards instructions. All produced
-code must comply with them.
-
-`sda-test-writer` and `sda-coder` load and enforce those standards on all
-code they produce — you pass them the skill name in every delegation.
-
-sda-dev never writes or modifies source or test code directly —
-that is the exclusive scope of `sda-test-writer`, `sda-coder`, and `sda-refactor`.
+`{standardsSkill}` = the `standardsSkill` value from session context. Pass it as the
+`Standards skill` field in every `sda-test-writer`, `sda-coder`, and `sda-refactor`
+delegation — those subagents load and enforce the skill on the code they write.
 
 ### Design best practices
 
@@ -101,6 +94,17 @@ failure line, or a summary reporting a non-zero failure/error count → failed;
 no failure marker → passed. **No output — or output you cannot classify — is
 not a pass** for a filtered command: re-run the unfiltered label (`test-all` /
 `test-path`) and read its exit code and output.
+
+### Two-pass test runs
+
+**First pass** = `filter-last-n` (`{N}` = `10`) — verdict from the summary.
+**Failure detail** = `filter-test-output` (`{N}` = `100`) — failing-test lines + summary.
+
+1. Run the first pass.
+2. No failure marker → passing — stop; never run the failure-detail command.
+3. Failure marker → run the failure-detail command; use its output for detection, diagnosis, and reporting.
+
+**Expected result `FAIL` (RED)** — failures are the goal: start with the failure-detail command.
 
 ### Empty-output verdict
 
@@ -190,8 +194,8 @@ An absent key in `{read-project-tools}` output means the tool was not detected �
 |---|---|
 | `shell` | Phase 0 — detect shell |
 | `test-all` | baseline — run the full test suite |
-| `filter-last-n` | baseline — trim output to `{N}` lines |
-| `filter-test-output` | baseline + delegation — trim to `{N}` failing lines |
+| `filter-last-n` | baseline + delegation — first pass (summary) |
+| `filter-test-output` | baseline + delegation — failure detail (failing lines + summary) |
 | `test-path` | delegation — run one unit's tests |
 | `format-code-path` | delegation — format source/test files |
 | `type-path` | delegation — type-check |
@@ -436,6 +440,19 @@ This phase resolves the work unit via the selected mode. Follow the [Task mode](
 
 Phases 2–6 check the flags above instead of referencing the mode directly.
 
+### Test baseline
+
+Skip if `{baseline-failures}` is already set for this session.
+Collect the unique areas (one `test-all` per area, not per file) — **exclude `docs` units** (no runnable code):
+- **Task mode** — the per-unit `**Area:**` annotations in `task.md`.
+- **Ad-hoc mode** — the areas derived from the unit's files.
+
+For each unique area, call `{read-project-tools} {area-workdir} ["test-all,filter-last-n,filter-test-output"]`.
+Run `test-all` per [Two-pass test runs](#two-pass-test-runs).
+First pass clean → baseline is clear; no output → not a pass — apply [Filtered command verdict](#filtered-command-verdict).
+Failure marker → the failure-detail pass names the failing tests.
+Merge all failing test names into `{baseline-failures}`; a fully-passing result across all areas → `{baseline-failures}` = `[]`.
+
 ### Task mode
 
 **STATE ANCHOR — re-read this every time you enter Phase 1 in task
@@ -502,15 +519,7 @@ paths, Related tests (when listed), and Changes (no scenarios, no Test
      in `task.md` (via `sda-dev-task`) before implementation can start."_
      Do not proceed.
 
-   **Then capture test baseline.** Skip if `{baseline-failures}` is already set for this session.
-   Collect every area listed in `task.md`'s per-unit `**Area:**` annotations
-   (one `test-all` per unique area, not per file) — **exclude `docs` units**
-   (no runnable code). For each unique area,
-   call `{read-project-tools} {area-workdir} ["test-all,filter-last-n,filter-test-output"]`.
-   **First pass:** run `test-all` with filter-last-n (`{N}` = `10`). No failure marker + test summary → baseline is clear; no output → not a pass — apply [Filtered command verdict](#filtered-command-verdict).
-   **On a failure marker:** re-run with filter-test-output (`{N}` = `100`) to detect failing tests.
-   Merge all failing test names into `{baseline-failures}`. A fully-passing
-   result across all areas → set `{baseline-failures}` = `[]`.
+   **Then capture test baseline** — see [Test baseline](#test-baseline).
 4. **Extract unit inputs** for the **current unit only** from `task.md`:
    - `tests required` / `tests only`: scenarios, Source/Test paths,
      Test Context, and Changes blocks (if present).
@@ -559,14 +568,7 @@ paths, Related tests (when listed), and Changes (no scenarios, no Test
      only a concern that is complex or spans unrelated subsystems.
 3. **Determine route** — see [Route table](#route-table).
 
-4. **Capture test baseline.** Skip if `{baseline-failures}` is already set for this session.
-   Collect the unique areas from step 2 (one `test-all` per area, not per file) —
-   **exclude `docs` units** (no runnable code).
-   For each unique area, call `{read-project-tools} {area-workdir} ["test-all,filter-last-n,filter-test-output"]`.
-   **First pass:** run `test-all` with filter-last-n (`{N}` = `10`). No failure marker + test summary → baseline is clear; no output → not a pass — apply [Filtered command verdict](#filtered-command-verdict).
-   **On a failure marker:** re-run with filter-test-output (`{N}` = `100`) to detect failing tests.
-   Merge all failing test names into `{baseline-failures}`. A fully-passing
-   result across all areas → set `{baseline-failures}` = `[]`.
+4. **Capture test baseline** — see [Test baseline](#test-baseline).
 
 ### Dispatch
 
@@ -644,7 +646,8 @@ wait.
    Language: {per-file annotations from the unit header — test-writer writes each test file in the language(s) annotated on its Test path}
    Source: {source file path(s)}
    Test: {test file path(s)}
-   Test command: {test-path with {path}=test file paths; filter-test-output ({N}=100)}
+   Test command: {test-path with {path}=test file paths; filter-last-n ({N}=10)}
+   Test command (failure detail): {test-path with {path}=test file paths; filter-test-output ({N}=100)}
    Format-code command: {format-code-path with {path}=source + test file paths — omit if absent}
    Type-check command: {type-path with {path}=source + test file paths — omit if absent}
    Validate-data commands: {validate-{ext}-path with {path}=data file paths; normalize .yml → yaml — omit if absent}
@@ -722,8 +725,8 @@ or changes from other units. Delegate and wait.
    Source: {source file path(s)}   ← integration only: current unit's target files ONLY — do not include files from other units
    Test: {test file path(s)}       ← GREEN only; omit for integration only
    Related tests: {the unit's `**Related tests:**` paths}   ← integration only; include only when the work unit has Related tests; omit for GREEN
-   Test command: {test-path with {path}=Test file paths; filter-test-output ({N}=100)}   ← GREEN only
-   Test command: {test-path with {path}=Related tests paths; filter-test-output ({N}=100)}   ← integration only; omit entirely when no Related tests listed
+   Test command: {test-path with {path}=Test file paths for GREEN, Related tests paths for integration; filter-last-n ({N}=10)}   ← omit both test-command lines when an integration unit lists no Related tests
+   Test command (failure detail): {test-path with {path}=Test file paths for GREEN, Related tests paths for integration; filter-test-output ({N}=100)}
    Format-code command: {format-code-path with {path}=source file paths — omit if absent}
    Type-check command: {type-path with {path}=source files — omit if absent}
    Validate-data commands: {validate-{ext}-path with {path}=data file paths; normalize .yml → yaml — omit if absent}
@@ -811,7 +814,8 @@ Scope: per-unit
 Source files: {current unit's source files}
 Test files: {current unit's test files}
 In-scope symbols: {symbols this unit added or modified; "{file}: *" for a wholly new file}
-Test command: {test-path with {path}=test file paths; filter-test-output ({N}=100)}
+Test command: {test-path with {path}=test file paths; filter-last-n ({N}=10)}
+Test command (failure detail): {test-path with {path}=test file paths; filter-test-output ({N}=100)}
 Format-code command: {format-code-path with {path}=source + test file paths — omit if absent}
 Type-check command: {type-path with {path}=source + test file paths — omit if absent}
 Validate-data commands: {validate-{ext}-path with {path}=data file paths; normalize .yml → yaml — omit if absent}
@@ -827,7 +831,8 @@ Scope: per-unit
 Source files: {current unit's source files}
 Test files: {current unit's test files — omit if none}
 In-scope symbols: {symbols from Changes blocks; "{file}: *" for a wholly new file}
-Test command: {test-path with {path}=Related tests paths; filter-test-output ({N}=100) — omit if no Related tests}
+Test command: {test-path with {path}=Related tests paths; filter-last-n ({N}=10) — omit both lines if no Related tests}
+Test command (failure detail): {test-path with {path}=Related tests paths; filter-test-output ({N}=100)}
 Format-code command: {format-code-path with {path}=source file paths — omit if absent}
 Type-check command: {type-path with {path}=source files — omit if absent}
 Validate-data commands: {validate-{ext}-path with {path}=data file paths; normalize .yml → yaml — omit if absent}
@@ -883,7 +888,8 @@ Units:
   Source files: {unit M source files}
   Test files: {unit M test files}
   In-scope symbols: {symbols unit M added or modified; "{file}: *" for a wholly new file}
-Test command: {test-path with {path}=test file paths; filter-test-output ({N}=100)}
+Test command: {test-path with {path}=test file paths; filter-last-n ({N}=10)}
+Test command (failure detail): {test-path with {path}=test file paths; filter-test-output ({N}=100)}
 Format-code command: {format-code-path with {path}=source + test file paths — omit if absent}
 Type-check command: {type-path with {path}=source + test file paths — omit if absent}
 Validate-data commands: {validate-{ext}-path with {path}=data file paths; normalize .yml → yaml — omit if absent}
@@ -973,16 +979,16 @@ Max 3 quality-gate cycles total (original + 2 re-runs). After 3 cycles with unre
 Triggered when `sda-dev-quality` flags a regression (test failure not in baseline).
 
 1. Use the flagged test file path(s) and failure detail from the quality agent's report.
-2. Construct the test command using `test-path` with flagged test file paths (+ filter-test-output, `{N}` = `100`).
-3. Invoke `sda-coder` by name. Use the **GREEN (make tests pass)** input format from [Phase 3](#phase-3--green-delegate-implementation) with:
+2. Invoke `sda-coder` by name. Use the **GREEN (make tests pass)** input format from [Phase 3](#phase-3--green-delegate-implementation) with:
    - `Language`: infer from file extensions
    - `Source`: this task's changed source files
    - `Test`: flagged test files
-   - `Test command`: `test-path` with flagged test files + filter-test-output (`{N}` = `100`)
+   - `Test command`: `test-path` with flagged test files + filter-last-n (`{N}` = `10`)
+   - `Test command (failure detail)`: `test-path` with flagged test files + filter-test-output (`{N}` = `100`)
    - Omit `Validate-data commands` and `Changes`
    - Add: `Regression context: These tests passed before this task started. The source files listed above were modified by this task and likely caused the failures. Fix the source to restore the failing tests without reverting the task's intended changes.`
-4. Apply [Failure handling & escalation](#failure-handling--escalation) if `sda-coder` returns a failure.
-5. Record modified files alongside the task's changed files.
+3. Apply [Failure handling & escalation](#failure-handling--escalation) if `sda-coder` returns a failure.
+4. Record modified files alongside the task's changed files.
 
 <result>
 

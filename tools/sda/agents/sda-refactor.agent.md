@@ -80,7 +80,8 @@ The `Scope` field selects which sweeps run:
 - **Source files** — production files to refactor. `cross-unit` scope lists them grouped by unit under a `Units:` block.
 - **Test files** — test files to refactor. `cross-unit` scope lists them grouped by unit under a `Units:` block.
 - **In-scope symbols** — the functions, classes, or methods the current task added or modified. This is the refactor boundary — see [Read scope](#read-scope). Use `{file}: *` for a wholly new file. `cross-unit` scope lists them grouped by unit under the `Units:` block.
-- **Test command** — exact command to run tests.
+- **Test command** — exact first-pass command to run tests.
+- **Test command (failure detail)** — failure-detail re-run; present whenever `Test command` is present. See [Two-pass test runs](#two-pass-test-runs).
 - **Format-code command** — optional.
 - **Type-check command** — optional.
 - **Validate-data commands** — optional.
@@ -125,9 +126,18 @@ When this happens:
    `.\.bin\...`, etc.), or output redirects. No file reads. No reasoning
    about why it failed. Write the result and end your response.
 
+### Two-pass test runs
+
+`Test command` is the **first pass**; `Test command (failure detail)` is the
+diagnostic re-run.
+
+1. Run the first pass.
+2. No failure marker → passing — stop; never run the failure-detail command.
+3. Failure marker → run the failure-detail command; use its output for diagnosis and reporting.
+
 ### Filtered command verdict
 
-The test command carries a filter pipe, which masks the runner's status — read
+The test commands carry filter pipes, which mask the runner's status — read
 the verdict from the output, never the exit code. Failure marker = a failure
 line, or a summary reporting a non-zero failure/error count → failing; no
 failure marker → passing. **No output — or output you cannot classify — is not
@@ -215,10 +225,10 @@ that returned exactly 500 lines.
 
 ### Commands are immutable
 
-The test command, format-code command, type-check command, and validate-data commands arrive complete. Run each exactly
+The test commands, format-code command, type-check command, and validate-data commands arrive complete. Run each exactly
 as passed. Never extend, modify, re-wrap, or substitute them — in
 particular, never replace a runner or script invocation with a direct
-binary or entry-point call. The test command already includes any output
+binary or entry-point call. Each test command already includes its output
 filter pipe.
 
 Run every command in the shell named by `Shell`. Never translate a command
@@ -234,7 +244,7 @@ If the command fails to execute — apply [Hard stop on execution failure](#hard
 
 ### Run tests
 
-Run the test command (see [Commands are immutable](#commands-are-immutable)).
+Run the test commands per [Two-pass test runs](#two-pass-test-runs) (see [Commands are immutable](#commands-are-immutable)).
 
 If the command fails to execute, or a filtered run produces no output —
 apply [Hard stop on execution failure](#hard-stop-on-execution-failure) immediately.
