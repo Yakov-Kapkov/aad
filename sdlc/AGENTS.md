@@ -1,5 +1,9 @@
-# AGENTS.md — tools/sda/
+# AGENTS.md
 
+## HARD RULE
+`sdlc` folder is READ ONLY.
+
+---
 Rules for AI agents working on the SDA (Software Development Assistant) tool suite.
 
 ---
