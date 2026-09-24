@@ -259,7 +259,7 @@ finds — it reports, and leaves routing (sda-dev-task vs ad-hoc sda-dev) to you
 | `sda-test-writer` | Writes tests for TDD slices (RED) and tests-only slices. Mechanical worker: makes domain decisions within the assigned unit; stops and reports anything outside scope. | project config | read, edit, search, execute |
 | `sda-coder` | Implements production code (GREEN) and integration slices. Mechanical worker: makes domain decisions within the assigned unit; stops and reports anything outside scope. | project config | read, edit, search, execute |
 | `sda-refactor` | Runs the REFACTOR pass without changing behaviour: per-unit (refactors the code each unit added or modified) plus a final cross-unit duplication pass; reverts any change that breaks a test. | project config | read, edit, search, execute |
-| `sda-dev-quality` | Runs per-area quality gates (types, lint, tests, coverage, build, pre-merge). Check-and-report only — never fixes. Invoked by sda-dev (Phase 5) or standalone. | Claude Haiku 4.5 | read, search, execute |
+| `sda-dev-quality` | Runs quality gates (types, lint, tests, coverage, build, pre-merge) in **local** (target files) or **global** (whole area) mode. Check-and-report only — never fixes. Invoked by sda-dev (Phase 5, global) or standalone. | Claude Haiku 4.5 | read, search, execute |
 | `sda-docs-check` | Verifies the docs tree (global + per-layer) + decision-doc integrity + drift and AI-readme routing (AGENTS.md/CLAUDE.md links, feature list) against reality. Full scope, or targeted on a `docs` unit's files. Check-and-report only — never fixes. Invoked by sda-design and sda-dev. | Claude Sonnet 4.6 | read, search, execute, agent |
 | `sda-tool-installer` | Installs required development tools — reads tool-catalog.md, runs install commands, handles git-hooks init, reports pass/fail per tool. Invoked by sda-setup skill (Step 7). | Claude Haiku 4.5 | read, execute |
 
@@ -350,7 +350,7 @@ PHASE 4 — REFACTOR
   a thin cross-unit pass removes inter-unit duplication.
 
 PHASE 5 — QUALITY CHECKS
-  Delegates quality gates to sda-dev-quality — gates run per project area.
+  Delegates quality gates to sda-dev-quality in global mode — gates run per project area.
   Presents per-area results and exact commands to the user.
 
 PHASE 6 — FINALIZE  (task mode)

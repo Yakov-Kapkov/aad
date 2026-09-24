@@ -99,10 +99,13 @@ part of commands returned by `{read-project-tools}`.
 
 ### Filtered command verdict
 
-A filter pipe masks the runner's status (`$?` on PowerShell, last pipe stage on
-bash/zsh) — judge by the output, never the exit code. Failure marker = a
-failure line, or a summary reporting a non-zero failure/error count → failed;
-no failure marker → passed. **Empty output:** a findings command (lint,
+A filter pipe masks the runner's status — judge by the output, never the exit
+code. Failure marker = a failure line, or a summary reporting a non-zero
+failure/error count → failed; no failure marker → passed. A returned
+template's `2>&1` merges stderr into the output, so text the shell wraps around
+a runner's stderr warning is not tool output: never a failure marker, never a
+re-run trigger. Judge only the tool's own lines. **Empty output:** a findings
+command (lint,
 coverage, build, pre-merge) → passed — a clean run has nothing to report; a
 test command → **not a pass** — its summary line always prints, so report
 `❌ unable to verify` and never re-run to confirm.
@@ -933,14 +936,15 @@ source or test files. Delegate and wait.
 
 ### Control flow
 
-1. **Gather inputs.** Collect all source + test files from all units processed this session (from the unit inputs and the subagent results you hold) — **exclude `docs` units** (no code to gate). If a file's area is unknown, resolve it via `{read-project-tools} {file-directory}` (the `working-dir=` key maps to the area).
+1. **Gather inputs.** Collect the **areas** of every code unit processed this session (from the units' Area fields and the subagent results you hold) — **exclude `docs` units** (no code to gate). In ad-hoc mode, resolve each changed file's area via `{read-project-tools} {file-directory}` (the `working-dir=` key maps to the area).
 
 2. **Invoke `sda-dev-quality` by name.** Pass:
 
    ```
-   Target files:
-   - {path}
-   ...
+   Mode: global
+
+   Areas:
+   - {area}
 
    Baseline failures:
    {if any:} - {test-name}
@@ -963,7 +967,7 @@ For each flag from `sda-dev-quality`'s `### Flags` section:
 | Coverage below threshold | **Ask user immediately** with an `[ASK]` block — see [Coverage decision](#coverage-decision). Do NOT run additional coverage commands, analyze whether the gap is a "subset artifact," or attempt to verify the quality agent's findings. |
 | Regression (test failure not in baseline) | If flagged test was written by this task → delegate to `sda-coder`. If flagged test is pre-existing → delegate to `sda-coder` with [regression fix inputs](#regression-fix). If unclear → delegate to `sda-coder` first. |
 | Build failure | Delegate to `sda-coder` with failure output from flag detail |
-| Type / Lint errors in target files | Delegate to `sda-coder` with error output from flag detail |
+| Type / Lint errors | Delegate to `sda-coder` with error output from flag detail |
 | Unable to verify (no output, or the gate's tool is absent) | Surface to the user verbatim. Do NOT delegate a fix, do NOT re-delegate the gate, do NOT look up troubleshooting — no re-run clears it. |
 
 ### Coverage decision
