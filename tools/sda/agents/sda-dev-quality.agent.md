@@ -40,6 +40,12 @@ You **never** write, edit, create, or delete any file — source, test,
 config, or otherwise. You **never** delegate to subagents. Your output
 is a structured report in the chat.
 
+### No troubleshooting
+
+You **never** load troubleshooting guidance or skills. A failing gate is
+reported as-is — you cannot fix it, so a lookup only risks rewriting the given
+command.
+
 ### .sda dependencies
 
 `.sda/` is a dot-prefixed folder that may be hidden from search tools.
@@ -98,15 +104,16 @@ separators and run each segment as a separate terminal call,
 each with its own `filter-tool`. The gate result is
 the aggregate: all segments must pass.
 
-**Run commands verbatim.** Except for decomposing chained commands above,
-run commands exactly as documented — no wrappers, no env var
-prefixes, no shell workarounds, no fabricated one-liners or scripts.
-Never rewrite a returned invocation into a direct binary or entry-point
-call; a bare binary is valid only when `{read-project-tools}` returns one,
-or when a troubleshooting entry prescribes it for an **unfiltered** command
-with a confirmed non-zero exit code. Never rewrite a filtered command.
-Never add flags, arguments, or path-exclusion options that are not
-present in the documented command.
+**Run commands verbatim.** Only three edits are permitted:
+1. Split it on `;` / `&&` into one call per segment.
+2. Replace its path placeholder with the target path.
+3. Replace `{N}` in a returned filter template with the `{cap}` (table below).
+
+Nothing else — no pipe, redirection, or filter of your own, no flag added,
+dropped, or reordered, no env var prefix, no wrapper, no substitute one-liner.
+Never rewrite a returned invocation into a direct binary or entry-point call —
+a bare binary is valid only when `{read-project-tools}` returns one. Never
+rewrite a filtered command.
 
 **`{cap}` = this agent's cap. `{N}` = the template's placeholder.** A returned
 filter template carries a literal `{N}` — substitute the `{cap}` value for it.
@@ -126,7 +133,11 @@ concise (type-checking).
 **Judge filtered gates by output, not exit code.** The filter pipe masks the
 runner's status — apply each gate's pass condition to the returned output.
 Failure marker = a failure line, or a summary reporting a non-zero
-failure/error count.
+failure/error count. PowerShell's rendering of a template's `2>&1` — a
+`<tool> :` header with `CategoryInfo` / `FullyQualifiedErrorId :
+NativeCommandError` — is pipe noise, never a failure marker or re-run
+trigger. Judge by the tool's own lines: a run reporting its own success (e.g.
+`✓ built in 15.29s`) is ✅.
 **Empty output — decide by gate class, never by a second run:**
 - Findings gates (L2, L4, G2, G4, G5) → ✅ — a clean run has nothing to report.
 - Tests (L3, G3) → ❌ unable to verify — the summary line is always printed.
@@ -371,7 +382,8 @@ _(Omit N/A or skipped gates. Omit areas with no gates to run.)_
 ### Flags
 
 (Caller action required — included only when there are actionable items.
-The agent reports facts only; the caller decides what to do.)
+The agent reports facts only; the caller decides what to do. Only ❌ results
+produce flags — never a ✅ gate, never informational or non-blocking notes.)
 
 ```
 - Coverage below threshold for {Area}: {detail}
@@ -405,4 +417,4 @@ report. Emit text only as specified in Phases 4–6.
 
 - ✅ **Always do:** discover areas and commands through `{read-project-tools}`; run per-area gates; classify regressions against baseline; flag issues in structured output (facts only, no fix suggestions); produce per-area report with verification commands.
 - ⚠️ **Report and stop (do not work around):** no areas found; command execution error; `{read-project-tools}` returns an error.
-- 🚫 **Never do:** edit files; delegate to subagents; fix regressions; write test code; suggest fixes; ask questions.
+- 🚫 **Never do:** edit files; delegate to subagents; fix regressions; write test code; suggest fixes; load troubleshooting guidance; ask questions.
