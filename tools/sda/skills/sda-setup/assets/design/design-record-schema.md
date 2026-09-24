@@ -100,8 +100,9 @@ read and updated, never duplicated into a new location.
 
 ### Handoff
 - **Settled** — the constraints the task breakdown must honour.
-- **Specs** — the contracts the tasks read, extend, or create, split `use-as-is` / `extend` /
-  `create`. The next stage traces contracts from this line.
+- **Specs** — the contracts this design touched, split `use-as-is` / `extend` / `create`.
+  The next stage traces contracts from this line. Every entry names a file that
+  exists when this stage ends.
 - **Not to re-decide** — what is already closed, plus the location that closes it.
 - Omit the `Specs` line if the design touches no contract.
 
@@ -144,7 +145,7 @@ Walk the list — do not recall it.
 |---|---|
 | test scenarios and cases | the task document |
 | file layout, symbol and type names | the task document |
-| schema field lists, exact payloads | spec files, inlined into the task document |
+| schema field lists, exact payloads | spec files; inlined into the task document |
 | CLI flags, config keys, env vars | readmes (mechanical) |
 | logging message text | the task document |
 | implementation order / unit sequencing | the task document's implementation plan |

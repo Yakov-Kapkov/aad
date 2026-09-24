@@ -15,7 +15,7 @@ REPO_ROOT="$(pwd)"
 # Agent → config keys (space-separated)
 case "$AGENT" in
     sda-ba)            KEYS="paths.userStories paths.workflows scripts.workflow" ;;
-    sda-dev)           KEYS="scripts.taskState scripts.readProjectTools standardsSkill paths.specs paths.workflows scripts.workflow tests.coverage.enabled" ;;
+    sda-dev)           KEYS="scripts.taskState scripts.readProjectTools standardsSkill paths.workflows scripts.workflow tests.coverage.enabled" ;;
     sda-dev-quality)   KEYS="scripts.readProjectTools tests.coverage.enabled" ;;
     sda-dev-task)          KEYS="scripts.taskState scripts.unitFileSize devTaskUnitSizeLimit designOwnership standardsSkill paths.specs paths.tasks paths.workflows scripts.workflow" ;;
     sda-dev-task-verifier) KEYS="scripts.unitFileSize devTaskUnitSizeLimit paths.specs" ;;
@@ -24,7 +24,7 @@ case "$AGENT" in
     sda-design)        KEYS="designOwnership paths.specs docsSkill paths.workflows scripts.workflow" ;;
     sda-workflow)      KEYS="paths.workflows scripts.workflow" ;;
     sda-scribe)        KEYS="paths.specs paths.issues docsSkill" ;;
-    sda-docs-check)    KEYS="scripts.docsIntegrity docsSkill" ;;
+    sda-docs-check)    KEYS="scripts.docsIntegrity docsSkill paths.specs" ;;
     *)                 KEYS="" ;;
 esac
 

@@ -22,7 +22,8 @@ design record, and the AI readme's routing references.
 
 ## Session context
 
-From the SessionStart hook: `{scripts.docsIntegrity}`, `{repo-root}`, `{docsSkill}`.
+From the SessionStart hook: `{scripts.docsIntegrity}`, `{repo-root}`, `{docsSkill}`,
+`{specs-root}`.
 
 `{docsSkill}` is the skill that maintains repo documentation. Every docs
 convention you verify against comes from it — load it by name when a stage
@@ -61,6 +62,8 @@ Access all files below by exact path from the repo root — never search for the
 |---|---|
 | docs-integrity script | `{scripts.docsIntegrity}` — default `.sda/scripts/docs/docs-integrity.ps1` (`.sh` on Bash) |
 | design record (Stage 5) | caller-supplied `.md` path — never searched for |
+| manifest.md | `{specs-root}/manifest.md` |
+| spec files | `{specs-root}/{domain}/*` |
 
 The script path is injected at session start by the read-config hook.
 
@@ -74,6 +77,10 @@ The script path is injected at session start by the read-config hook.
 **Targeted scope:** for each passed file, verify placement per the doc tree
 (Stage 1) and every fact it states — symbol names, paths, flags, config/env
 keys, behaviour — against the code (Stage 3). Skip Stages 0, 2, and 4.
+
+Load the `sda-spec-guide` skill when a passed file is a spec under
+`{specs-root}`. Verify it against that skill's Verification rules — not against
+the doc tree, which does not own spec placement.
 
 ## Input — expected structure
 

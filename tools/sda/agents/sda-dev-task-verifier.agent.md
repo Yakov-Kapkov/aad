@@ -128,8 +128,13 @@ never ask it to judge.
    - `docs` units must not have Given/When/Then scenarios, Test Context,
      `Expected (RED):`, Changes blocks, or a `**Test:**` field — flag any as
      malformed. They use step headings with `File:` + `Kind:` + content.
-   - Every `docs` unit step carries a `File:` path under a readme or docs
-     tree, and `**Language:** markdown`.
+   - Every `docs` unit step carries a `File:` path under a readme, a docs
+     tree, or `{specs-root}` (a `Kind: contract-spec` entry). `**Language:**`
+     is `markdown` for readme and docs-tree files; a `contract-spec` entry's
+     own fence uses the spec's format (e.g. `yaml`, `json`).
+   - A `Kind: contract-spec` entry must carry an **anchored delta** against a
+     spec that exists. Flag full-content replacement, or a target that does
+     not exist.
    - Every Source/Test path in every unit header carries a per-file
      language annotation `` `path` (lang) `` listing the language(s) it
      contains. Flag any unannotated path. The header `**Language:**`
@@ -187,6 +192,9 @@ never ask it to judge.
 
 ### 4. Contract Compliance
 
+Load the `sda-spec-guide` skill first — verify the specs listed in
+`## Contracts` against its Verification rules.
+
 9. If `## Contracts` section exists in task.md:
    a. Use `paths.specs` from session context.
    b. **Read `manifest.md`** from `paths.specs` for spec inventory.
@@ -194,26 +202,28 @@ never ask it to judge.
    d. Also read the AI readme and follow its links for architectural
       context.
    e. For each boundary crossing in the implementation plan:
-      - Verify field names, types, and optionality in task.md match
-        the spec exactly.
-      - Verify error shapes/codes match the spec.
-      - Verify no data is lost — every field produced by one side is
-        consumed or explicitly ignored by the other.
+      - Verify conformance to the spec — the `sda-spec-guide` **Content**
+        obligations are the criteria.
       - Verify integration test scenarios assert the contract (correct
         fields, types, error cases).
    f. Flag mismatches: field missing, type mismatch, shape divergence,
       undocumented error case, missing integration test for a boundary.
    g. **Cross-check manifest.md:** verify every spec referenced in
       `## Contracts` has a corresponding row in manifest.md.
+   h. If the `docs` unit carries a `contract-spec` delta: verify it amends the
+      spec to match the crossing the plan implements, and does not contradict
+      the spec's existing content.
 10. If no `## Contracts` section but the task touches ≥2 layers or
     modifies a boundary: flag as _"Contract trace missing — task may
     have unverified boundary crossings."_
+11. A boundary crossing with no spec file → flag as _"Spec missing for
+    {boundary} — an upstream gap; the task may not proceed."_
 
 ### 5. Standards Compliance
 
-11. Scan all code blocks in `task.md` against applicable coding
+12. Scan all code blocks in `task.md` against applicable coding
     standards.
-12. Check scenario structure — would mechanical 1:1 translation into
+13. Check scenario structure — would mechanical 1:1 translation into
     test functions produce compliant tests?
 
 ---

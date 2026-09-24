@@ -15,7 +15,8 @@ sda-ba  →  sda-setup skill  →  sda-toolscan  →  sda-dev-task  →  sda-dev
 
 ### 1. Run install script
 
-Installs the **sda-setup** skill, the **sda-workflow-guide** skill, SDA agents, and the
+Installs the **sda-setup** skill, the **sda-workflow-guide** skill, the **sda-spec-guide**
+skill, SDA agents, and the
 supporting skills — [**Standards Compliance**](../../skills/standards-compliance/),
 [**Troubleshooting**](../../skills/troubleshooting/),
 [**Software Design Best Practices**](../../skills/software-design-best-practices/), and
@@ -176,14 +177,16 @@ One agent, two altitudes — detect from the request:
   Design the architecture for the notification subsystem.
   ```
   Discovers the repo's layers via `sda-code-explore`, then delegates the global
-  `docs/` (architecture, vocabulary, index, decisions, diagrams) + one `docs/` per layer, and the
-  readme outlines (AI readme + human README each) — to `sda-scribe`.
+  `docs/` (architecture, vocabulary, index, decisions, diagrams) + one `docs/` per layer, the
+  readme outlines (AI readme + human README each), and a spec file for every
+  boundary it documents — to `sda-scribe`.
 - **Feature mode** — a specific feature or bounded context:
   ```
   Design a feature for paginated order listing filtered by status.
   ```
-  Records design decisions, updates the features section of all readmes, and writes the
-  design record (`design.md`).
+  Records design decisions, updates the features section of all readmes, writes a spec
+  file for every boundary the feature crosses, and writes the design record
+  (`design.md`).
 
 `sda-design` is conversational. By default it pressure-tests the design **you** propose rather than authoring it — describe the area you're tackling, defend your direction against its push-back on complexity and risk, and iterate together before committing. (Configurable via `designOwnership` — see [project-config.json](#project-configjson).) At the end of every session it writes the design record, `design.md` — inside the workflow folder when the requirement has one, otherwise under `.sda/design/reports/<yyyy-MM-dd_HH-mm_<name>>/` — so the next agent reads a compact record instead of the full conversation.
 
@@ -277,6 +280,7 @@ All pipeline agents are user-invokable and used as needed.
 |---|---|
 | `sda-setup` | Scaffolds `.sda/` folder with resource files (bootstrap, tool-discovery, config example) |
 | `sda-workflow-guide` | Workflow-mode operating instructions for stage agents — the workflow CLI, the stage gate, finish/escalate/resolve steps, and one stage card per producer |
+| `sda-spec-guide` | Contract spec conventions — the spec model, storage layout, metadata, and content rules |
 
 ### Prompts
 
@@ -485,7 +489,7 @@ Written by the `sda-setup` skill. Stores project-level settings injected into ea
 |---|---|---|---|
 | `designOwnership` | `string` | `user` | Who owns the design decision in `sda-design` and `sda-dev-task`. When `user` (default), the agent never volunteers an approach — it pressure-tests the approach **you** propose and hands the decision back to you; it only proposes options when your message explicitly asks for them. When `ai`, the agent may propose the design itself (legacy behaviour). |
 | `standardsSkill` | `string` | `standards-compliance` | Name of the skill carrying coding standards. `sda-dev`, `sda-coder`, `sda-refactor`, `sda-test-writer`, and `sda-dev-task` load it before generating code. |
-| `paths.specs` | `string` | `.sda/specs` | Root folder for specification files (OpenAPI, JSON Schema, etc.). Written by sda-scribe; read by sda-dev-task and sda-dev-task-verifier. |
+| `paths.specs` | `string` | `.sda/specs` | Root folder for specification files (OpenAPI, JSON Schema, etc.). Written by sda-scribe — `sda-design` creates specs, a task's `docs` unit amends an existing one. Read by sda-design, sda-dev-task, sda-dev-task-verifier, sda-qa-task, and sda-docs-check. |
 | `paths.issues` | `string` | `.sda/issues` | Root folder for standalone QA work (no task): each `<NNN>-<slug>/` holds a `qa-task.md` authored by sda-qa-task and the `qa-report.md` written by sda-qa. |
 | `paths.secrets` | `string` | `.sda/secrets` | Git-ignored folder holding `qa.secrets.env` credentials used by sda-qa. |
 | `paths.userStories` | `string` | `.sda/stories` | Root folder for User Stories authored by sda-ba. Written by sda-ba when no output path is given. |
@@ -567,6 +571,7 @@ container-consistency verification, and CLI misuse.
 - **`sda-design` is read-only.** It researches and decides content, but never edits any file — all writes are delegated to `sda-scribe`.
 - **One docs writer.** `sda-coder` and `sda-refactor` never edit docs. A **mechanical** doc change (new entry in an existing format) goes through a `docs` unit → `sda-scribe` (write) → `sda-docs-check` (targeted verify); a **semantic** one (new concept, decision, vocabulary, tree structure, routing) goes through `sda-design`. At most one `docs` unit per task, always last.
 - **One owner per planning artifact.** Story → `sda-ba`, design → `sda-design`, tasks → `sda-dev-task`; every other agent is read-only on them. `workflow.json` and `state.json` are written by their scripts only — never hand-edited.
+- **One spec creator.** `sda-design` creates a spec for every boundary a feature crosses, before task design begins; a task may only amend an existing spec through its `docs` unit, never create one. A missing spec hard-stops the task stage.
 - **`sda-dev` hard-stops if `project-tools.md` is missing.** There is no fallback — run `sda-setup` + `sda-toolscan` first.
 - **Standards are mandatory, always.** Every code-producing agent loads the `standardsSkill` skill before writing — `sda-dev` passes the skill name in every delegation, even for trivial fixes or ad-hoc requests.
 - **Quality checks are non-negotiable.** After any code change, all quality gates (tests, coverage, pre-merge, types, lint, full test suite) must run and pass before finishing. `sda-dev` delegates them to `sda-dev-quality` (Phase 5) and never runs a gate itself.

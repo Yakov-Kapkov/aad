@@ -54,6 +54,10 @@ Access all files below by exact path from the repo root — never search for the
   *behaviour* in `## Design Approach`. You **MUST NOT** read the task's
   `## Implementation Plan`, `dev-report.md`, or source code to define FRs.
   Reading intent is necessary, not sufficient — **translate, don't transcribe**.
+- **A task may amend a spec — you cannot see that amendment.** A task records its own
+  boundary delta through its `docs` unit, which sits in the plan you must not read.
+  Where a spec and the task's agreed intent disagree, the intent wins; never derive an
+  FR for a changed boundary from the spec file.
 - **Standalone mode — source reads locate, never define.** Use `sda-code-explore`
   to find reachable routes/endpoints and where source-of-truth data lives.
   Those reads locate entry points; they never become structural assertions.
@@ -123,6 +127,9 @@ An absent key in `{read-project-tools}` output means the tool was not detected �
 | task `## Contracts` + referenced spec files | source code (coupled mode) |
 | task `## Design Approach` — behaviour only (see test below) | `qa-report.md` |
 | | `qa-task.md` from other tasks |
+
+Load the `sda-spec-guide` skill when the task's `## Contracts` names a spec —
+it supplies the spec model, storage, and content rules.
 
 **Schema is the sole format reference.** Never read another task's `qa-task.md` for structural guidance. If the schema is unclear, ask.
 

@@ -300,6 +300,13 @@ Decision files and readme routing lines always go through `sda-scribe`.
 
 ---
 
+## Specs — load the `sda-spec-guide` skill
+
+Load it whenever this session writes a spec. It supplies the spec model,
+storage layout, metadata, and content rules.
+
+---
+
 ## Decision recording — immediate (both modes)
 
 Record each design decision the moment the user commits to it — never defer.
@@ -346,8 +353,9 @@ message (a fresh agent misses the first agent's cache).
 | Handoff | The next stage reads the record at its path instead of the conversation |
 
 **`## Handoff` is the critical section** — the settled constraints plus the
-affected-spec list (`use-as-is` / `extend` / `create`). That list is what
-lets the next stage trace contracts without re-deriving the design.
+affected-spec list (`use-as-is` / `extend` / `create`). Every entry must name
+a file that exists by the time this stage ends, so the next stage traces
+contracts without re-deriving the design.
 
 ---
 
@@ -380,8 +388,8 @@ the user can start reading while diagrams are generated.
    `{docsSkill}` skill's schemas.
 3. Create only the files the design actually needs — never pre-seed empty
    files.
-4. Canonical spec files still go to `{specs-root}` via `sda-scribe` (Domain,
-   File name, Boundary, Format, Description, Content).
+4. Spec files: delegate the write to `sda-scribe` (Mode 6, `contract-spec`)
+   with the four metadata fields (see `sda-spec-guide`).
 5. Diagrams go to the diagrams folder the skill's tree defines — global or
    per-layer.
 6. When delegating to diagram-writer, always use the full resolved path in the `OUTPUT:` field.
@@ -423,12 +431,15 @@ the user can start reading while diagrams are generated.
 7. Link the diagrams from the relevant architecture topic file and docs index
         │
         ▼
-8. Collaborate
+8. Write the spec files for every boundary this design documents — see Save rules
+        │
+        ▼
+9. Collaborate
    — for any change, challenge quality before updating
    — update all affected artifacts together (see Change Propagation)
         │
         ▼
-9. Write the design record (see [Design Record](#design-record-both-modes))
+10. Write the design record (see [Design Record](#design-record-both-modes))
    — delegate to sda-scribe (Mode 7); pass the record path to the next agent
 ```
 
@@ -444,8 +455,9 @@ services and their connections (global). A layer diagram covers that layer only.
 
 After writing, run `sda-docs-check` to verify structure and readme routing
 against the expected structure (the repo's actual structure, or the skill's
-tree). Before delegating, confirm the design covers every layer discovered
-and only the files the design needs.
+tree). Before delegating, confirm the design covers every layer discovered,
+that every boundary it documents has a spec file, and only the files the
+design needs.
 
 ### Diagram Delegation
 
@@ -503,7 +515,8 @@ artifact in the owning scope as the change touches. Apply via `sda-scribe`.
 - **DO NOT** produce implementation tasks, sprint tickets, or coding plans —
   that is the next stage's job.
 - You produce no files directly. You dictate content to `sda-scribe`
-  (the design docs and readmes) and `sda-diagram-writer` (diagrams).
+  (the design docs, readmes, and spec files) and `sda-diagram-writer`
+  (diagrams).
 
 ---
 
@@ -519,7 +532,9 @@ human `README.md`) and the design topic files.
 2. **Features-section entry in all readmes** — a ≤3-sentence summary of the
    feature (per the `{docsSkill}` skill's readme outline); global readme: link
    the owning layer's docs; layer readme: link the feature's decisions.
-3. **Completion** — report done. Never hand off to the next stage yourself.
+3. **Spec files** — one per boundary the feature crosses, written before the
+   session ends (see [Finishing](#finishing)).
+4. **Completion** — report done. Never hand off to the next stage yourself.
 4. **Design record** — `design.md` in the standalone report folder (or the workflow
    folder per the skill); written before flagging completion
    (see [Design Record](#design-record-both-modes)).
@@ -607,15 +622,20 @@ When you have alignment:
 
 After the outline is updated, ask: _"Ready to wrap up?"_
 
-**Before finishing, identify affected specs:**
+**Before finishing, complete the spec set:**
 1. Read `{specs-root}/manifest.md` to see existing specifications.
 2. List which specs this feature will:
    - **Use as-is** (consumer follows existing contract)
    - **Extend** (add fields, endpoints, events)
    - **Create** (new boundary not yet specified)
-3. Record it in the design record's `## Handoff` **Specs** line so
-   the next stage knows which specs to read, update, or create during
-   contract trace once the workflow advances.
+3. **Write every one of them.** Delegate each to `sda-scribe` (Mode 6,
+   `contract-spec`) with the four metadata fields. A boundary that has code
+   but no spec is written the same way, opened with
+   `# EXTRACTED — verify against implementation`.
+4. Record the finished list in the design record's `## Handoff` **Specs** line.
+
+**Spec gate:** every boundary this feature crosses has a spec file. The task
+stage conforms to specs — it never writes one.
 
 **Write the design record** (see [Design Record](#design-record-both-modes))
 — delegate to `sda-scribe` (Mode 7), passing the affected-spec list.
@@ -626,7 +646,8 @@ Then report done.
 
 - Source code is read-only — see [Behavioral Rules](#behavioral-rules).
 - Your outputs (all via sda-scribe): decision docs (in the owning scope's
-  decisions), the features-section entry in all readmes, and the design record.
+  decisions), the features-section entry in all readmes, the design record,
+  and the spec files for every boundary this feature crosses.
 - If the user asks to implement → report done.
 
 ---
@@ -644,7 +665,7 @@ Then report done.
 | Design-doc writes | `sda-scribe` |
 | Readme outlines (all AI readmes + `README.md`) | `sda-scribe` |
 | Design record writes | `sda-scribe` |
-| Canonical spec files | `sda-scribe` |
+| Spec files | `sda-scribe` (Mode 6) |
 | Docs verification (structure + decision tree + readme routing) | `sda-docs-check` — pass the expected structure (repo's actual, or default) |
 
 You never write docs directly — `sda-scribe` writes every file. You decide
@@ -697,4 +718,3 @@ Docs paths come from the AI readmes, not config: read the global AI readme
 (repo root) first, then each layer's readme, to locate the docs tree. The
 tree layout follows the `{docsSkill}` skill's doc tree, unless the repo's AI
 readme declares its own.
-Use `{specs-root}` when delegating canonical specs to sda-scribe.

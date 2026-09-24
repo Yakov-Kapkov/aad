@@ -55,7 +55,7 @@ import paths, or code snippets — those belong in the Implementation Plan.
 - `{file-path}` — {what it contains / why it's relevant}
 
 ## Contracts
-{Omit if the task has no boundary crossings verified during design.}
+{Omit if the task conforms to no existing spec.}
 - `{specs-root}/{domain}/{file-name}` — {boundary, e.g. UI → Backend}: {one-line description}
 
 ## Regression Risks
@@ -223,7 +223,7 @@ File: `{file-path}`
 ### Unit 5 — {unit name}
 **Type:** docs
 **Area:** {layer the doc belongs to, or `Global`}
-**Language:** markdown
+**Language:** markdown — or the spec's format when a step is `contract-spec`
 
 #### Step 5.1 — {file being written}
 
@@ -231,6 +231,16 @@ File: `{docs-path}`
 Kind: {file type — e.g. `readme`, `index`, `cli`, `architecture`}
 \`\`\`markdown
 {complete file content — or, for an existing file, the anchor line plus the new content}
+\`\`\`
+
+#### Step 5.2 — {spec amendment — anchored delta}
+
+File: `{specs-root}/{domain}/{file-name}`
+Kind: contract-spec
+Domain: {subdirectory name} · Boundary: {e.g. UI → Backend} · Format: {e.g. OpenAPI 3.1} · Description: {one-line for manifest.md}
+\`\`\`{spec format — e.g. yaml, json}
+{anchor line — 3-5 lines of existing spec text}
+{the replacement text — the task's own delta}
 \`\`\`
 ```
 
@@ -280,7 +290,9 @@ Kind: {file type — e.g. `readme`, `index`, `cli`, `architecture`}
 - Use for: specs, RFCs, issue threads, prior art, migration guides.
 
 ### Contracts
-- Omit if the task has no boundary crossings.
+- Omit if the task conforms to no existing spec.
+- Lists every spec this task must conform to. They already exist; a task never
+  creates one.
 - One entry per spec file: path relative to repo root, boundary direction, one-line description.
 
 ### Regression Risks
@@ -297,8 +309,13 @@ Kind: {file type — e.g. `readme`, `index`, `cli`, `architecture`}
 ### Units
 - Named after the **behaviour** they deliver (`Token refresh`, `Error responses`), not architectural tiers.
 - Annotated: **tests required**, **tests only**, **integration only**, **refactoring**, or **docs**.
+- A **docs** unit carries step entries only — `File:` + `Kind:` + content.
+  `Kind: contract-spec` names an **existing** spec under `{specs-root}` and
+  adds Domain, Boundary, Format, and Description so the writer can maintain
+  `manifest.md`. It carries an anchored delta, never full content, and never a
+  new file.
 - **Area:** the project area the unit belongs to (e.g. `Backend`, `Frontend`, `Worker`), derived from the unit's file paths matched against the Area Index in `project-tools.md`. Multi-area units list comma-separated areas (e.g. `Backend, Frontend`). The Area field is mandatory — always present on every unit.
-  - `docs` units: the layer the doc belongs to (`<layer>/docs/...`, `<layer>/README.md` → that layer); `Global` for repo-root readmes and the root `docs/` tree.
+  - `docs` units: the layer the doc belongs to (`<layer>/docs/...`, `<layer>/README.md` → that layer); `Global` for repo-root readmes and the root `docs/` tree. A `contract-spec` step takes the layer the boundary serves, or `Global` when it crosses layers.
 - **Per-file language.** Annotate every Source/Test path with the programming language(s) it contains: `` `src/repo.py` (python, postgres) ``.
 - **Language:** header line = deduplicated **union** of the per-file annotations (e.g. `python, postgres`).
   - Fence tags on Changes / Test Context blocks must match the language of the code they contain.

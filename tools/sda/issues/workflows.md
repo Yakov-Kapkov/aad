@@ -2,10 +2,10 @@
 
 **Status:** design locked 2026-09-21 (rev 8 — `dev` stage + per-task dev-report gate) · tranches 1–13 implemented · **script twins verified 2026-09-21** (117-step differential harness: identical output, exit codes, and `workflow.json` on both twins) · **rev 9 (2026-09-22): workflow knowledge extracted from producers into the `sda-workflow-guide` skill**
 **Scope:** `tools/sda` (+ `skills/repo-ai-friendly` as a dependency; `skills/sda-setup` assets)
-**Origin:** the `sdlc/` folder is a parallel evolution branch kept for reference. Its
+**Origin:** the `sdlc/` folder — a parallel evolution branch, since removed — supplied the
 **state discipline** (state = data + transition script; one writer; housekeeper vs advisor)
-is borrowed. Its 5-BC pipeline, per-BC folders, ledgers, DoD, pending overlay, and inner
-DEV+QA cycle are **not** adopted.
+this design borrows. Its 5-BC pipeline, per-BC folders, ledgers, DoD, pending overlay, and
+inner DEV+QA cycle were **not** adopted.
 
 ---
 

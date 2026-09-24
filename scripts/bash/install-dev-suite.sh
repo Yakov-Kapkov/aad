@@ -79,7 +79,7 @@ if [ "$ACTION" = "uninstall" ]; then
     done
 
     # Skills
-    for skill in sda-setup sda-workflow-guide standards-compliance troubleshooting software-design-best-practices repo-ai-friendly; do
+    for skill in sda-setup sda-workflow-guide sda-spec-guide standards-compliance troubleshooting software-design-best-practices repo-ai-friendly; do
         dir="$TARGET_BASE/skills/$skill"
         if [ -d "$dir" ]; then
             rm -rf "$dir"
@@ -109,6 +109,10 @@ echo -e "${YELLOW}== Installing sda-setup skill ==${NC}"
 echo
 echo -e "${YELLOW}== Installing sda-workflow-guide skill ==${NC}"
 "$SCRIPT_DIR/install-skill.sh" -t "$TARGET_BASE" -n "sda-workflow-guide" -s "tools/sda/skills/sda-workflow-guide"
+
+echo
+echo -e "${YELLOW}== Installing sda-spec-guide skill ==${NC}"
+"$SCRIPT_DIR/install-skill.sh" -t "$TARGET_BASE" -n "sda-spec-guide" -s "tools/sda/skills/sda-spec-guide"
 
 echo
 echo -e "${YELLOW}== Installing commit agent ==${NC}"

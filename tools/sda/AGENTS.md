@@ -60,6 +60,8 @@ tools/sda/
     │       ├── stage-design.md
     │       ├── stage-tasks.md
     │       └── stage-dev.md
+    ├── sda-spec-guide/                 ← contract spec conventions for all planning agents
+    │   └── SKILL.md
     └── sda-setup/                     ← project scaffolding skill
         ├── SKILL.md
         └── assets/
@@ -147,13 +149,13 @@ sda-ba ─delegates─▸ sda-scribe                          requirements tree 
 sda-ba ─produces──▸ user-story.md                       input for sda-design / sda-dev-task
 
 sda-design ─delegates─▸ sda-diagram-writer            diagram generation (system mode)
-sda-design ─delegates─▸ sda-scribe                    canonical specs, decision + design docs, design record (Mode 7)
+sda-design ─delegates─▸ sda-scribe                    specs, decision + design docs, design record (Mode 7)
 sda-design ─delegates─▸ sda-code-explore              layer discovery + structure
 sda-design ─delegates─▸ sda-docs-check                docs structure + decision integrity + drift + readme routing
 sda-design ────handoff──▸ sda-dev-task               design pipeline (feature → tasks); passes design.md path
 sda-dev-task ─delegates─▸ sda-code-explore              task design pipeline (research)
 sda-dev-task ─delegates─▸ sda-web-explore               task design pipeline (web/API research)
-sda-dev-task ─delegates─▸ sda-scribe                     task design pipeline (Phase 6: task.md + specs)
+sda-dev-task ─delegates─▸ sda-scribe                     task design pipeline (Phase 6: task.md)
 sda-dev-task ─delegates─▸ sda-dev-task-verifier              task design pipeline (Phase 7 + contract compliance)
 sda-dev-task-verifier ─delegates─▸ sda-code-explore     file-gathering for structural + regression checks
 sda-dev-task ────handoff──▸ sda-dev                  tasks → dev (the workflow's dev stage)
@@ -213,17 +215,17 @@ sda-dev ─delegates─▸ sda-dev-quality             per-area quality gates (P
 | `sda-dev-task-verifier` output format | `sda-dev-task` (processes results), `sda.dev.task-verify` prompt | Both depend on the report structure |
 | `sda-dev-task-verifier` delegation to `sda-code-explore` | `sda-code-explore` input contract | Verifier sends file lists for structural + regression fact-gathering; explorer returns raw findings |
 | Consistency/regression check rules | `sda-dev-task-verifier` | All verification logic lives in the verifier |
-| Contract spec file format or storage conventions | `sda-design` (defines policy, writes canonical specs via sda-scribe), `sda-dev-task` (designs content), `sda-scribe` (writes files), `sda-dev-task-verifier` (reads for verification) | All planning agents share spec conventions |
+| Contract spec conventions | `sda-spec-guide` skill (owns the model, storage, metadata, and content rules), `sda-design` / `sda-dev-task` / `sda-dev-task-verifier` / `sda-docs-check` / `sda-qa-task` (load it), `sda-scribe` (writes spec files + manifest rows), **install-dev-suite** (installs it), rule 6 below (the cross-agent ownership map) | Spec conventions have one home each — artifact facts in the skill, who may write what in rule 6 |
 | App readme outline (`AGENTS.md`) | `sda-design` (owns content), `sda-scribe` (Mode 6 writes), `sda-dev-task` (reads the AI readme for task scope), `sda-dev` (routes `docs` units that touch it), `sda-docs-check` (verifies routing against reality) | Readmes are the routing map — the format comes from the `{docsSkill}` skill's readme outline; thin, no implementation detail; reference entries carry triggers; features listed in the features section |
 | Doc tree & per-layer readmes | `sda-design` (owns placement), `sda-scribe` (Mode 6 writes), `sda-dev` (routes `docs` units), `sda-docs-check` (verifies) | The tree layout comes from the `{docsSkill}` skill's doc tree — every layer gets AI readme + human README + a docs set; every docs folder gets an `index.md` |
 | Design topic files (`architecture.md`, `vocabulary.md`) | `sda-design` (dictates content), `sda-scribe` (Mode 6 writes) | Formats come from the `{docsSkill}` skill's architecture + vocabulary file rules |
-| `paths.specs` in `project-config.json` | `sda-design` (writes canonical specs, reads manifest for affected specs), `sda-dev-task` (reads specs during contract trace), `sda-scribe` (writes spec files), `sda-dev-task-verifier` (reads specs for verification) | All planning agents receive this from session context; default `.sda/specs` |
+| `paths.specs` in `project-config.json` | `sda-design` (writes specs, reads manifest for affected specs), `sda-dev-task` (reads specs during contract trace), `sda-scribe` (writes spec files), `sda-dev-task-verifier` (reads specs for verification), `sda-docs-check` (resolves a spec path when verifying a spec) | All planning agents receive this from session context; default `.sda/specs` |
 | `workflow-schema.md` (workflow container + `workflow.json` shape) | `{workflow}` script (implements it — and verifies every container against it before reading state), `sda-ba` / `sda-design` / `sda-dev-task` / `sda-dev` (read state via the `sda-workflow-guide` skill), `sda-scribe` (Mode 8 — records the brief in the workflow's `escalations/` folder), **sda-setup skill** (copies the asset to `.sda/resources/workflow/`) | Folder naming, stage order, the `start` stage (skipped prefix), `notes[]` entry types, and the escalation brief's folder + `brief` field are the contract — a shape change breaks every reader of `list` / `read`, the scribe's Step 10, and every brief already on disk |
 | `escalation-brief-schema.md` (the escalation brief's content) | `sda-scribe` (Mode 8 writes it per the schema — **Step 10 owns its file name and numbering**), `sda-design` / `sda-dev-task` / `sda-dev` (draft that content before the raise), `sda-ba` (reads it when resolving), **sda-setup skill** (copies the asset) | A document schema, not state — the script never reads the brief. Its sections change what every future escalation must carry, so it moves independently of the container's rules |
 | `workflow.ps1` + `workflow.sh` (the state-script twins) | `_twins.Tests.ps1` (test: differential harness — one scenario sequence against both, comparing output, exit codes, and the written `workflow.json`), `sda-workflow` (runs the twins; never writes state), `sda-workflow-guide` (documents the producer-facing subset: `current`/`read`/`advance`/`escalate`/`resolve`) | One contract, two implementations: every command, refusal, and exit code must exist in **both**, and the harness must stay green. It is a **test, not an asset** — `_<subject>.Tests.ps1`, pruned by `install-skill.*` and never copied into `.sda/` |
 | Stage list + each stage's artifact (the machine itself) | Both twins (`workflow.ps1` / `workflow.sh`), `_twins.Tests.ps1` (a scenario per stage and gate), `workflow-schema.md` (documents it), `sda-workflow` (pipeline diagram, escalate reach, `gap=` / `missing=` reporting), the `sda-workflow-guide` skill (one stage card per producer, encoding its gate) | One stage machine across the twins, the schema, the advisor, and the skill's stage cards. `dev`'s artifact is per task folder, so its gate covers the whole `tasks/` tree rather than one file |
 | `paths.workflows` + `scripts.workflow` in `project-config.json` | `sda-ba`, `sda-design`, `sda-dev-task`, `sda-dev` (receive the keys; the `sda-workflow-guide` skill consumes them in workflow sessions), **sda-setup skill** (config example + read-config defaults) | Injected via session context; `paths.workflows` defaults to `.sda/workflows`. Presence does **not** imply a workflow exists — see the `{workflow}` script boundary row for who may run what |
-| `manifest.md` format | `sda-design` (adds canonical specs, reads for affected specs), `sda-dev-task` (reads for spec discovery), `sda-scribe` (writes/updates rows), `sda-dev-task-verifier` (reads for verification) | Entry point for spec discovery; scribe maintains it |
+| `manifest.md` format | `sda-design` (adds specs, reads for affected specs), `sda-dev-task` (reads for spec discovery), `sda-scribe` (writes/updates rows), `sda-dev-task-verifier` (reads for verification) | Entry point for spec discovery; scribe maintains it |
 | `sda-design` diagram delegation format (`DIAGRAM` block) | `sda-diagram-writer` input contract | Subagent parses the exact DIAGRAM block format the orchestrator sends |
 | Shared constraint blocks (`Two-pass test runs`, `Filtered command verdict`, `File reading strategy`, `Terminal working directory`; plus `Commands are immutable`, `Type check`, `Validate data`, `Format code` in the coder + refactor pair) | `sda-dev`, `sda-test-writer`, `sda-coder`, `sda-refactor` | Each block is duplicated verbatim in every file that carries it — editing one copy means editing every other copy |
 | `{workflow}` script boundary (read-only `list`/`current`/`read` + `escalate`/`resolve`/`advance`; `init` orchestrator-only) | `sda-workflow` (advisor — owns `init`, raises a user-requested escalation from any stage with an upstream, never `resolve`), `sda-workflow-guide` (the skill producers follow — encodes the producer-facing subset and stage cards), `sda-ba` / `sda-design` / `sda-dev-task` / `sda-dev` (raise, advance their own stage, or resolve per the skill), `sda-scribe` (Mode 8 writes the brief a raise requires), human (confirms every transition) | Producers never **structure** a workflow — `init` stays orchestrator-only and the script stays the sole writer of `workflow.json`. A producer advances its own stage, raises an escalation, or closes one only on the user's direct confirmation. In workflow mode a producer follows the skill, which first runs `current` and refuses to act when `stage=` is not its own. The advisor **names** producers and never invokes them. While an escalation is open, `advance` is refused; `escalate` is refused without an existing brief in the workflow's `escalations/` folder, so the evidence is written before the raise and the raise aborts if it is not. A standalone session never invokes the script |
@@ -247,7 +249,7 @@ sda-dev ─delegates─▸ sda-dev-quality             per-area quality gates (P
 | `repo-ai-friendly` skill (design + decision + requirements schemas) | `sda-design` (loads for structure), `sda-scribe` (Mode 5/6 loads for formats), `sda-ba` (loads for the requirements structure + IDs), `sda-docs-check` (loads for verification), **install-dev-suite** (installs it), `read-config` (resolves `docsSkill`) | All consumers load it by name via `docsSkill`; the skill owns the doc tree + schema formats; sda-setup no longer copies them |
 | `sda-docs-check` input (scope + expected structure) | `sda-design` (passes `full` + the repo's structure when its AI readme declares one, else default), `sda-dev` (passes `targeted` + the written file list) | Caller decides what to verify against; otherwise the repo's AI readme if it declares one, else the `{docsSkill}` skill's canonical tree |
 | `sda-docs-check` report findings | `sda-dev` (Phase 3·D: presents them and asks the user) | Findings are a report, not a failure — routing them to troubleshooting guidance misreads the verifier's output |
-| `docs` unit type (`task-schema.md`) | `sda-dev-task` (designs it — one per task, last), `sda-dev-task-verifier` (validates it), `sda-dev` (routes to Phase 3·D; skips refactor + quality for it), `sda-scribe` (Mode 6 writes the files), `sda-docs-check` (targeted verification) | The only sanctioned path for mechanical doc changes made during implementation; semantic doc changes escalate to `sda-design`, semantic requirements changes to `sda-ba` |
+| `docs` unit type (`task-schema.md`) | `sda-dev-task` (designs it — one per task, last), `sda-dev-task-verifier` (validates it), `sda-dev` (routes to Phase 3·D; skips refactor + quality for it), `sda-scribe` (Mode 6 writes the files), `sda-docs-check` (targeted verification) | The only sanctioned path for mechanical doc changes made during implementation — including an anchored delta to an existing spec and its `manifest.md` row. It never creates a spec (`sda-design`'s deliverable); semantic doc changes escalate to `sda-design`, semantic requirements changes to `sda-ba` |
 | `sda-scribe` Mode 6 content shape (`content` vs `changes`) | `sda-design`, `sda-dev`, `sda-ba` (all callers) | Callers must pass the shape the scribe parses; anchored deltas update an existing file, full content creates or rewrites one |
 | `design.md` renewal (Mode 7) | `sda-design` (reads it at session start), `sda-scribe` (writes it), `sda-dev-task` (reads it as handoff context) | The record is renewed in place — a second file or an appended session log breaks the two-placement model |
 | `scripts.docsIntegrity` in `project-config.json` | `sda-docs-check` (runs it) | Docs-integrity script. `-Root` takes a decisions/requirements tree (links, orphans, duplicates, one-way `.sda/` rule); `-File` takes one document (links, code fence, non-`.md` path) |
@@ -297,12 +299,31 @@ File schemas (`task.md`, `qa-task.md`, `dev-report.md`, `state.json`, `project-t
 
 The `README.md` in this folder documents the agent pipeline, setup steps, workflow phases, and configuration paths. When any of these change in the agent files, update `README.md` to match.
 
-### 6. Preserve Existing Patterns
+### 6. Contract Spec Ownership
+
+One spec file, one creator — the design stage. `sda-design` ends every session
+with a spec for every boundary the feature crosses: designed, or extracted
+from code that already exists. `sda-dev-task` requires them to exist already,
+stops when one is missing, and may record its own delta into one that exists.
+
+| Agent | May | Must not |
+|---|---|---|
+| `sda-design` | create any spec, via `sda-scribe` (Mode 6) | — |
+| `sda-dev-task` | read specs; record an anchored delta into an existing spec via a `docs` unit; stop when a crossed boundary has none | create, delete, replace, or defer a spec |
+| `sda-dev` | — | author spec content |
+| `sda-scribe` | write the spec file and its manifest row | decide content |
+| `sda-dev-task-verifier` | read specs; report mismatches | edit a spec |
+| `sda-docs-check` | verify a written spec | fix it |
+| `sda-qa-task` | read specs and the manifest | edit a spec |
+
+The spec model, storage layout, and metadata live in the `sda-spec-guide` skill.
+
+### 7. Preserve Existing Patterns
 
 - Follow the formatting conventions already in use (Markdown heading levels, table layout, section numbering, output template style).
 - New sections should model their structure after existing peer sections in the same agent file.
 
-### 7. Language-Agnostic Instructions
+### 8. Language-Agnostic Instructions
 
 All SDA agent bodies, skills, and supporting assets must remain **language-agnostic**. Never hard-code language-specific commands, framework names, file extensions, or toolchain references into agent or skill instructions.
 
@@ -319,7 +340,7 @@ Language-specific behavior is resolved at runtime through:
 
 Agent instructions describe **what** to do; runtime artifacts supply the **how**.
 
-### 8. `.sda` Dependencies Section Required
+### 9. `.sda` Dependencies Section Required
 
 Every agent or skill that reads or writes files in `.sda/` must include a `.sda dependencies` section with:
 
@@ -327,17 +348,17 @@ Every agent or skill that reads or writes files in `.sda/` must include a `.sda 
 - **Standard preamble:** `".sda/ is a dot-prefixed folder that may be hidden from search tools. Access all files below by exact path from the repo root — never search for them."`
 - **Dependency table:** `| File | Path |` listing every `.sda/` file the agent reads or writes, with the exact relative path from the repo root.
 
-### 9. Delegation — Always Pass Full `.sda/` Paths
+### 10. Delegation — Always Pass Full `.sda/` Paths
 
 When delegating to a subagent, pass every `.sda/` file reference with its full path (e.g., `.sda/project-tools.md`, not `project-tools.md`). Subagents must never search for `.sda/` files — if a path is ambiguous, ask the caller.
 
-### 10. Communication Style Placement
+### 11. Communication Style Placement
 
 Every SDA agent that produces chat output must include a `## Communication style — mandatory` section (or `### Chat output style` when nested). This section is a **global governing rule** — it applies throughout the agent's entire session, not to a single phase or step.
 
 **Placement:** After the constraint sections (HARD CONSTRAINTS, read-list, or equivalent) and **before** the first workflow or phase section. Never place it after workflow sections.
 
-### 11. CLI Script String Encoding
+### 12. CLI Script String Encoding
 
 All PowerShell (`.ps1`) and bash (`.sh`) scripts must use only ASCII characters inside string literals — including error messages, warnings, and output strings.
 
@@ -348,11 +369,11 @@ All PowerShell (`.ps1`) and bash (`.sh`) scripts must use only ASCII characters 
 
 Non-ASCII characters in `#` comments are safe. The restriction applies only to characters inside quoted strings. PowerShell 5.1 misparsed UTF-8 em dashes as `â€"`, producing `TerminatorExpectedAtEndOfString` parse errors.
 
-### 12. Machine-Written State — Scripts Only
+### 13. Machine-Written State — Scripts Only
 
 `workflow.json` and `state.json` are written by their scripts only. Never hand-edit them, and never let an agent write them directly. A rejected transition is an error to report and escalate — not a state file to patch.
 
-### 13. Doc Locations Come From the AI Readmes
+### 14. Doc Locations Come From the AI Readmes
 
 Doc trees (decisions, requirements) and readmes are located by reading the repo's own AI readmes — never from a hardcoded canonical layout and never from `project-config.json`. Repos differ: use the structure the repo has, create only the nodes it needs, and do not assume the `{docsSkill}` default tree is fully present.
 

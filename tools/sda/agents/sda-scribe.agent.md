@@ -86,16 +86,9 @@ You receive:
    - Test Context (Patterns, Object construction, Mock boundaries) — code units only.
    - Scenarios in Given/When/Then with Expected (RED) predictions — `tests required`/`tests only` only.
    - Changes blocks (where provided).
-9. **Contracts** — (optional) list of contract spec files to write:
-   - **Domain** — subdirectory name (e.g., `users`, `orders`, `shared`).
-   - **File name** — spec file name (e.g., `api.yaml`, `events.yaml`).
-   - **Boundary** — data flow direction (e.g., `UI → Backend`).
-   - **Format** — spec format (OpenAPI 3.1, JSON Schema, AsyncAPI, etc.).
-   - **Description** — one-line summary for manifest.md.
-   - **Content** — fully-specified spec file content.
-10. **Prerequisites** — (optional) list of env vars / services.
-11. **Regression Risks** — (optional) list with ✅/⚠️ status.
-12. **Backlog flag** — (optional) if set, save to backlog instead.
+9. **Prerequisites** — (optional) list of env vars / services.
+10. **Regression Risks** — (optional) list with ✅/⚠️ status.
+11. **Backlog flag** — (optional) if set, save to backlog instead.
 
 ### Mode 2 — Update (existing task)
 
@@ -166,7 +159,12 @@ creating or updating (callers: `sda-design`, `sda-dev`, `sda-ba`). You receive:
        `readme`, or any other type the skill defines;
      - a requirements type — `requirements-index` (routing table, any level),
        `requirements-item` (one capability's FRs and NFRs), or
-       `requirements-nfr` (an `nfr.md`).
+       `requirements-nfr` (an `nfr.md`);
+     - `contract-spec` — an **existing** contract spec file under
+       `{specs-root}`. The entry also carries Domain, Boundary, Format, and
+       Description, and triggers Step 3 (file + `manifest.md` row). From a
+       `docs` unit it always arrives as `changes` (an anchored delta) — never
+       `content`.
    - `path` — root-relative target path (repo root, layer root, or docs folder).
    - **Content** — exactly one of:
      - `content` — fully-specified content: a new file, or a full rewrite.
@@ -283,20 +281,25 @@ Numbering, the file name, and the folder are yours; the caller never supplies th
 
 ### Step 3 — Write contract spec files and update manifest
 
-If **Contracts** input is provided:
+Triggered by a Mode 6 file entry with `Kind: contract-spec`. `sda-design`
+supplies it to create or extend a spec; a task's `docs` unit supplies it only
+to amend one that exists. The entry carries the metadata.
+
+If a contract spec input is provided:
 1. Use `{specs-root}` from session context.
 2. For each spec file in the input:
    - Determine the target path: `{specs-root}/{domain}/{file-name}`.
    - Create domain subdirectory if it doesn't exist.
-   - Create/overwrite the spec file with fully-specified content.
+   - From a design entry: create/overwrite the spec file with fully-specified
+     content.
+   - From a `docs`-unit entry: apply the anchored delta to the existing file.
+     A target that does not exist is a **report back**, not a file to create.
 3. **Update `manifest.md`:**
    - Read `{specs-root}/manifest.md` (create if missing).
    - For each spec written:
      - If row exists for that path → update description/boundary/format.
      - If no row exists → add new row.
    - Preserve existing rows for specs not touched by this invocation.
-4. Collect the list of written spec file paths for the `## Contracts`
-   section in task.md.
 
 **manifest.md format:**
 ```markdown
@@ -308,7 +311,7 @@ If **Contracts** input is provided:
 | [orders/events.yaml](orders/events.yaml) | OrderService → NotificationService | AsyncAPI 2.6 | Order lifecycle events |
 ```
 
-Skip if no Contracts input.
+Skip unless a Mode 6 entry carries `Kind: contract-spec`.
 
 ### Step 4 — Write task.md
 
@@ -317,8 +320,7 @@ Extract data from caller input and format per `task-schema.md`:
 - `## Goal` — from input.
 - `## Context` — from input (omit for a standalone task).
 - `## Scope` — `Feature: {name}` / `Global`, plus `Layer: {layer}`.
-- `## Contracts` — list of spec file paths written in Step 3
-  (omit if none).
+- `## Contracts` — from input (omit if none).
 - `## Prerequisites` — from input (omit if none).
 - `## Design Approach` — from input, formatted per schema.
 - `## Source References` — if provided.
