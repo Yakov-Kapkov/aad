@@ -15,7 +15,7 @@ Copilot chat agents — invokable by name in the agent panel.
 |---|---|
 | [`repo-author`](.github/agents/repo-author.agent.md) | Sole authoring agent for this repo's artifacts — agents, skills, prompts, instructions, plus dependent schemas, standards, docs, and scripts; applies prompt-engineering craft and enforces separation of orchestration- vs entity-level instructions |
 | [`ts-tutor`](agents/ts-tutor/) | TypeScript tutor for .NET and Python developers |
-| [`commit`](agents/commit/) | Analyzes working directory changes, composes conventional commit messages, and always commits and pushes. Accepts optional `Session context:` to enrich the message body with the caller's stated intent (pinned to Haiku for fast, cheap execution) |
+| [`commit`](agents/commit/) | Analyzes working directory changes, composes conventional commit messages, and always commits and pushes. An optional `Session context:` governs the message; the agent decides single commit vs. split itself (pinned to Haiku for fast, cheap execution) |
 
 ---
 
@@ -26,7 +26,7 @@ setup required.
 
 | Folder | Description |
 |---|---|
-| [`prompts/commit/`](prompts/commit/) | Two prompts for the commit agent: `/commit` and `/commit-staged` — both infer session context from the conversation to produce richer commit message bodies |
+| [`prompts/commit/`](prompts/commit/) | Two prompts for the commit agent: `/commit` and `/commit-staged` — both infer session context from the conversation to govern the commit message |
 | [`anything-else`](.github/prompts/anything-else.prompt.md) | End-of-task completeness review — prompts the agent to catch anything forgotten (dependents, docs, cleanup) before finishing |
 
 ---
