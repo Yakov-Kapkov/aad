@@ -84,6 +84,8 @@ Suggested Commands:
     dotnet test --verbosity quiet --filter "FullyQualifiedName~MyClassTests" --no-build
     # test-path-coverage  (accepts class name or namespace; threshold from config)
     dotnet test --verbosity quiet --filter "FullyQualifiedName~MyClassTests" --collect:"XPlat Code Coverage" --no-build
+    # test-all-coverage  (whole area; threshold from config)
+    dotnet test --verbosity quiet --collect:"XPlat Code Coverage"
 
   ⚠️  --filter format:
       `--filter` matches against test metadata, NOT file paths.

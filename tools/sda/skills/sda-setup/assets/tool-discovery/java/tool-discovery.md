@@ -84,6 +84,8 @@ Suggested Commands:
     mvn test -Dtest=MyClassTest
     # test-path-coverage  (accepts class name or package pattern; threshold from config)
     mvn verify -Dtest=MyClassTest
+    # test-all-coverage  (whole area; threshold from config — JaCoCo bound to verify)
+    mvn verify
   
   Static analysis:
     mvn checkstyle:check

@@ -683,7 +683,8 @@ If a tool doesn't support scoped execution, add:
   tool-catalog. Extract its silence flag — the flag that suppresses
   non-result output (e.g. `--silent`, `-q`, `--quiet`, `--log-level warn`).
   Append it to every command generated for that tool: `test-all`,
-  `test-path`, `test-path-coverage`, `format-code-all`, `format-code-path`.
+  `test-path`, `test-path-coverage`, `test-all-coverage`, `format-code-all`,
+  `format-code-path`.
   If a test command uses a script alias, pass the silence flag through the
   script wrapper's argument separator.
 
@@ -819,6 +820,8 @@ Consult the discovery spec for correct target format. Don't assume
 filesystem paths are valid — some tools need importable module names.
 
 **Project-level coverage injection:** some runners embed coverage flags in project config, triggering full-codebase coverage on every invocation including scoped runs. When the discovery spec flags this pattern, apply the prescribed override flags to scoped test commands.
+
+**Whole-area coverage** is a separate label — `test-all-coverage`: the full suite with the project's threshold. It inherits project config unchanged and never carries the scoped override flags; the discovery spec supplies its flags.
 
 ### Working directory rule
 

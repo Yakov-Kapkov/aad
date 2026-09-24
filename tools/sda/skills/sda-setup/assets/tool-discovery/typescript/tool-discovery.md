@@ -97,6 +97,8 @@ Suggested Commands:
     npx vitest run --silent src/module/module.test.ts
     # test-path-coverage  (accepts file or folder path; threshold from config — direct invocation)
     npx vitest run --silent --coverage src/module/module.test.ts
+    # test-all-coverage  (whole area; threshold from config — direct invocation)
+    npx vitest run --silent --coverage
   
   Type checking:
     npx tsc --noEmit

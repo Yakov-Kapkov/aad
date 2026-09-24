@@ -114,6 +114,12 @@ Suggested Commands:
     poetry run pytest tests/unit/test_file.py --no-cov
     # test-path-coverage  (accepts file or folder path; threshold from config; --override-ini clears addopts when it contains --cov)
     poetry run pytest tests/unit/test_file.py --override-ini="addopts=" --cov=module.name --cov-report=term-missing
+    # test-all-coverage  (whole project; threshold from config — inherits addopts, no override flags)
+    poetry run pytest --cov=<package> --cov-report=term-missing
+
+  ⚠️  Whole-area coverage: when `addopts` already carries `--cov=...` and
+      `--cov-fail-under=N`, omit the `--cov` argument — emit `poetry run pytest`
+      with the silence flag only.
 
   ⚠️  --override-ini="addopts=" in scoped coverage commands:
       When `addopts` in `pyproject.toml` embeds `--cov=<dir>` and/or `--cov-fail-under=N`,

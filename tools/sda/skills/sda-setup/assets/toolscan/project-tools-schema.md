@@ -84,6 +84,8 @@ Defines the structure and content rules for `project-tools.md` — the machine-r
      Command labels are machine-readable keys — do not rename them.
      test-path accepts both a file path and a folder path — one command covers both.
      test-path-coverage: threshold enforced automatically from project config.
+     test-all-coverage: the whole-area measurement — no path argument; inherits project
+     config unchanged, so it never carries the scoped override flags.
      Project-level coverage injection: some runners embed coverage flags in project config,
      causing every invocation to trigger full-codebase coverage. When a discovery spec flags
      this pattern, scoped commands must include the language-appropriate override flags.
@@ -102,6 +104,9 @@ Defines the structure and content rules for `project-tools.md` — the machine-r
 
 # test-path-coverage (run specific file or folder with coverage, threshold from config)
 {command} path/to/test_file_or_folder {--cov-flags}
+
+# test-all-coverage (run entire test suite with coverage, threshold from config)
+{command} {--cov-flags}
 
 # filter-test-output (extract test result lines and summary — N is supplied by the caller)
 <command> {stderr-redirect} | {test-lines-filter} | {last-n-lines-tool} {N}

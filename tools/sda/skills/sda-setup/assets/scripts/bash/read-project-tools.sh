@@ -26,7 +26,7 @@ tools_file = '.sda/project-tools.md'
 
 SKIP_HEADINGS = {'Area Index', 'Validators', 'Output Filter Command', 'Pre-Commit Checks'}
 AREA_COMMANDS = {
-    'test-path', 'test-path-coverage', 'test-all',
+    'test-path', 'test-path-coverage', 'test-all', 'test-all-coverage',
     'type-path', 'type-all',
     'lint-path', 'lint-all',
     'lint-path-fix', 'lint-all-fix',

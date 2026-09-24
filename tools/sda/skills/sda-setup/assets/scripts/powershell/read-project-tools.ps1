@@ -107,7 +107,7 @@ $allArr  = $allLines
 
 # Area-scoped command names (label name = command name — looked up directly)
 $areaCommands = @(
-    'test-path','test-path-coverage','test-all',
+    'test-path','test-path-coverage','test-all','test-all-coverage',
     'type-path','type-all',
     'lint-path','lint-all',
     'lint-path-fix','lint-all-fix',
