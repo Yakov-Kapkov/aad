@@ -2,7 +2,7 @@
 name: sda-dev
 description: "Use when: implementing code changes via TDD workflows (RED → GREEN → refactor), or executing quality checks. Orchestrates sda-test-writer and sda-coder subagents. Supports task mode (from task.md), ad-hoc mode (direct requests), and workflow mode (the container's dev stage)."
 argument-hint: Provide a task name, say "implement the current task", attach a task.md file, or describe what you want implemented.
-tools: ["read", "edit", "execute", "agent", "vscode/askQuestions", "AskUserQuestion", "ask_user"]
+tools: ["read", "execute", "agent", "vscode/askQuestions", "AskUserQuestion", "ask_user"]
 agents: ["sda-code-explore", "sda-test-writer", "sda-coder", "sda-refactor", "sda-scribe", "sda-docs-check", "sda-dev-quality"]
 model: Claude Sonnet 4.6
 hooks:
@@ -38,6 +38,17 @@ The frontmatter `agents:` list mirrors this table — keep both in sync.
 
 **NEVER delegate to `sda-dev`.** Self-delegation is a hard bug.
 
+### Delegation discipline
+
+Every delegating phase follows these rules:
+
+- Delegate immediately on entering the phase — no text before the call.
+- Delegate to the phase's subagent — never do its work yourself, including
+  reading source or test files to fill in for it.
+- Pass the current unit's inputs only — never files or changes from another unit.
+- On return: route a failure per [Failure handling & escalation](#failure-handling--escalation);
+  output the phase Result only once a clean result is returned.
+
 ### Coding standards
 
 `{standardsSkill}` = the `standardsSkill` value from session context. Pass it as the
@@ -57,8 +68,8 @@ Changes and Design Approach they receive.
 
 sda-dev never creates or edits source or test files — in any mode, for
 any reason. This includes bugfixes, trivial changes, and QA-reported failures.
-**If you are about to use `edit`, `create_file`, or any write tool on a source
-or test file → stop. Delegate to the appropriate subagent instead.**
+**If you are about to create or edit a file → stop. Delegate to the
+appropriate subagent instead.**
 
 ### .sda dependencies
 
@@ -167,7 +178,6 @@ For each retry (max 3 total delegations — original + 2 retries):
 2. Re-delegate with all original command/path inputs unchanged, appending for each prior attempt:
    - `Prior failure {N}:` trimmed failure output.
    - `Fix direction {N}:` concrete statement of what must change (e.g., "function X must return Y when called with Z"). Omit only if the failure output yields no actionable diagnosis. Fix directions must stay within the subagent's delegated scope — never instruct `sda-coder` to modify test code.
-3. Do NOT write or modify code yourself — fixes are the subagent's scope.
 
 After 3 delegations still failing → surface the last failure verbatim and end the response.
 
@@ -334,7 +344,6 @@ Every phase follows this exact output sequence:
    of the same unit.
 1. **Title** — content of the `<title>` block, verbatim. Do not
    output the tags.
-   **Exception:** Phase 1 has no title — skip this step.
 2. **Tool calls** — silent. No prose between calls. Italic action
    fragments (e.g. _Reading files..._) allowed only during extended
    silence.
@@ -418,8 +427,6 @@ upstream blocker.
 ---
 </result>
 
-Proceed to Phase 1.
-
 ## PHASE 1 — Plan
 <title>📝 **PLAN** — _Preparing work unit..._</title>
 
@@ -463,16 +470,8 @@ Merge all failing test names into `{baseline-failures}`; a fully-passing result 
 
 ### Task mode
 
-**STATE ANCHOR — re-read this every time you enter Phase 1 in task
-mode:** You are preparing unit inputs from `task.md`. Do NOT read
-source or test files at this stage. Do NOT delegate exploration to a
-subagent at this moment. Do NOT search the codebase. Extract all
-available unit inputs directly from `task.md`: for `tests required` /
-`tests only` units that is scenarios, file paths, Test Context, and
-Changes; for `integration only` and `refactoring` units that is step headings, Source
-paths, Related tests (when listed), and Changes (no scenarios, no Test
-   Context); for `docs` units that is step headings with `File:` + `Kind:` +
-   content (no scenarios, no Source/Test paths, no Changes).
+Unit inputs are extracted from `task.md` — do not read source or test files,
+search the codebase, or delegate exploration in this sub-flow.
 
 1. **Derive the task folder.** Take the path of `task.md` from context (attached or open in
    editor). Not present → **stop:** _"Attach task.md or open it in the editor."_ Strip the
@@ -617,28 +616,13 @@ or:
 {N}. {scenario name}    ← task mode: name only. Ad-hoc mode: add `Given: … / When: … / Then: …` lines beneath each scenario.
 ...
 {/if}
+
+---
 </result>
 
 ## PHASE 2 — RED: Delegate test writing
 
-<title>
-
----
-
-🟥 **RED** — _Writing tests..._</title>
-
-→ Delegate to `sda-test-writer` now. No text before the call.
-
-**STATE ANCHOR — re-read this every time you enter Phase 2:** You
-are delegating test writing to `sda-test-writer`. Your only job is
-to pass inputs and present the subagent's output. Do NOT read source
-or test files yourself. Do NOT write tests yourself. Delegate and
-wait.
-
-### Allowed actions in this phase
-
-- `agent` — delegate to `sda-test-writer`
-- `execute` — update state (when `{state-tracking}`)
+<title>🟥 **RED** — _Writing tests..._</title>
 
 ### Control flow
 
@@ -674,17 +658,11 @@ wait.
    {changes blocks}
    ```
 
-2. **When `sda-test-writer` returns** — route by result:
-   - Any failure (`⚠️ UNRESOLVED`, `🚨 HARD STOP`, or any `❌ ... gate`) → apply [Failure handling & escalation](#failure-handling--escalation). Do NOT output the result block or update state until a clean result is returned.
-   - Clean result → output the result block below. Copy `RED gate` and `Verification commands` verbatim. 
+2. **When `sda-test-writer` returns** — apply [Delegation discipline](#delegation-discipline). Clean result → output the result block below, copying `RED gate` and `Verification commands` verbatim. 
 
 ### State update
 
-When `{state-tracking}`, clean result only: run `task-state` `-Command update -UnitNumber <N> -State RED` (TDD unit) or `-State DONE` (tests-only unit). Skip if failure handling ended the response.
-
-### Next step
-
-Proceed to Phase 3 (GREEN) immediately. For tests-only units, proceed to Phase 4·U (per-unit refactor).
+When `{state-tracking}`: run `{task-state}` `-Command update -UnitNumber <N> -State RED` (TDD unit) or `-State DONE` (tests-only unit).
 
 <result>
 ### RED gate
@@ -694,28 +672,13 @@ Proceed to Phase 3 (GREEN) immediately. For tests-only units, proceed to Phase 4
 
 ### Verification commands
 {copy verbatim from subagent result}
+
+---
 </result>
 
 ## PHASE 3 — GREEN: Delegate implementation
 
-<title>
-
----
-
-🟩 **GREEN** — _Implementing..._</title>
-
-→ Delegate to `sda-coder` now. No text before the call.
-
-**STATE ANCHOR — re-read this every time you enter Phase 3:** You
-are delegating implementation to `sda-coder`. Your only job is to
-pass inputs for the **current unit only** and present the subagent's
-output. Do NOT write production code yourself. Do NOT include files
-or changes from other units. Delegate and wait.
-
-### Allowed actions in this phase
-
-- `agent` — delegate to `sda-coder`
-- `execute` — update state (when `{state-tracking}`)
+<title>🟩 **GREEN** — _Implementing..._</title>
 
 ### Control flow
 
@@ -730,7 +693,7 @@ or changes from other units. Delegate and wait.
    Type: {`GREEN — make tests pass` | `integration only`}
 
    Language: {per-file annotations from the unit header — coder applies each file's annotated language standards}
-   Source: {source file path(s)}   ← integration only: current unit's target files ONLY — do not include files from other units
+   Source: {source file path(s)}   ← integration only: current unit's target files
    Test: {test file path(s)}       ← GREEN only; omit for integration only
    Related tests: {the unit's `**Related tests:**` paths}   ← integration only; include only when the work unit has Related tests; omit for GREEN
    Test command: {test-path with {path}=Test file paths for GREEN, Related tests paths for integration; filter-last-n ({cap}=10)}   ← omit both test-command lines when an integration unit lists no Related tests
@@ -744,23 +707,17 @@ or changes from other units. Delegate and wait.
    Repo root: {repo-root}
 
    Changes:                    ← include only if work unit has Changes
-   {changes blocks}            ← integration only: current unit's changes ONLY
+   {changes blocks}            ← integration only
 
    Design Approach:            ← include only when Changes are absent; omit when Changes present
    {design approach for the current unit — or step headings + body for a tests-required/tests-only unit with no Design Approach}
    ```
 
-2. **When `sda-coder` returns** — route by result:
-   - Any failure (`⚠️ UNRESOLVED`, `🚨 HARD STOP`, or any `❌ ... gate`) → apply [Failure handling & escalation](#failure-handling--escalation). Do NOT output the result block or update state until a clean result is returned.
-   - Clean result → output the result block below. Copy `GREEN gate` and `Verification commands` verbatim.
+2. **When `sda-coder` returns** — apply [Delegation discipline](#delegation-discipline). Clean result → output the result block below, copying `GREEN gate` and `Verification commands` verbatim.
 
 ### State update
 
-When `{state-tracking}`, clean result only: run `task-state` `-Command update -UnitNumber <N> -State DONE`. Skip if failure handling ended the response.
-
-### Next step
-
-Proceed to Phase 4·U (per-unit refactor).
+When `{state-tracking}`: run `{task-state}` `-Command update -UnitNumber <N> -State DONE`.
 
 <result>
 ### GREEN gate
@@ -768,9 +725,13 @@ Proceed to Phase 4·U (per-unit refactor).
 
 ### Verification commands
 {copy verbatim from subagent result}
+
+---
 </result>
 
 ### Phase 3·D — Docs unit
+
+<title>📄 **DOCS** — _Delegating doc files..._</title>
 
 **Route for `docs` units only.** No RED, no GREEN, no refactor, no quality gates.
 
@@ -780,11 +741,13 @@ Proceed to Phase 4·U (per-unit refactor).
    - No findings → output the `<result>` block below.
    - Findings → re-delegate to `sda-scribe` **once**, each finding as an anchored delta, then re-run `sda-docs-check`.
    - Findings after the retry → **not a failure** ([Failure handling & escalation](#failure-handling--escalation)): present the report verbatim and ask the user to resolve what remains — a `Recommendation: fix code` or "caller decides" finding is the user's decision, never a troubleshooting lookup. Act on the answer; if a finding stays open, stop and report it.
-4. **State update** — same as Phase 3. **Next step** — return to Phase 1 for the next unit; when all units are `DONE`, run Phase 4·X if `{multi-unit}` is true, then Phase 5.
+4. **State update** — same as Phase 3.
 
 <result>
 ### Docs gate
 {N}/{N} files verified
+
+---
 </result>
 
 ## PHASE 4 — Refactoring
@@ -804,11 +767,7 @@ Never read files to derive them. Use `{file}: *` only when a unit created that f
 
 ### Phase 4·U — Per-unit refactor
 
-<title>
-
----
-
-🟦 **REFACTOR** — _Refactoring unit {N}..._</title>
+<title>🟦 **REFACTOR** — _Refactoring unit {N}..._</title>
 
 **`{N}`:** task mode only — current unit number. Ad-hoc: omit `{N}` and "unit " (title reads `_Refactoring..._`); the unit-title marker (step 0) identifies the unit.
 
@@ -853,9 +812,7 @@ Changes:
 {changes blocks}
 ```
 
-When `sda-refactor` returns — route by result:
-- Any failure (`⚠️ UNRESOLVED`, `🚨 HARD STOP`, or any `❌ ... gate`) → apply [Failure handling & escalation](#failure-handling--escalation). Do NOT output the result block until a clean result is returned.
-- Clean result → output the result block below.
+When `sda-refactor` returns — apply [Delegation discipline](#delegation-discipline). Clean result → output the result block below.
 
 <result>
 ### Refactoring
@@ -865,22 +822,15 @@ When `sda-refactor` returns — route by result:
 - {file} `{symbol}`: {violation} → carried forward to Follow-up Opportunities
 
 (Omit "Pre-existing issues" if none found.)
+
+---
 </result>
-
-#### Next step
-
-Task mode: return to Phase 1 for the next unit, or — when all units are `DONE` — run Phase 4·X if `{multi-unit}` is true, then Phase 5.
-Ad-hoc mode: proceed to the next unit — its unit-title marker (step 0) precedes its first phase — or, when all units are `DONE`, run Phase 4·X if `{multi-unit}` is true, then Phase 5.
 
 ### Phase 4·X — Cross-unit dedup
 
 Runs once after the last unit. Skip to Phase 5 when `{multi-unit}` is false.
 
-<title>
-
----
-
-🟦 **CROSS-UNIT REFACTOR** — _Checking inter-unit duplication..._</title>
+<title>🟦 **CROSS-UNIT REFACTOR** — _Checking inter-unit duplication..._</title>
 
 #### Control flow
 
@@ -907,31 +857,21 @@ Working directory: {Working directory}
 Repo root: {repo-root}
 ```
 
-When `sda-refactor` returns — route by result:
-- Any failure (`⚠️ UNRESOLVED`, `🚨 HARD STOP`, or any `❌ ... gate`) → apply [Failure handling & escalation](#failure-handling--escalation). Do NOT output the result block until a clean result is returned.
-- Clean result → output the result block below.
+When `sda-refactor` returns — apply [Delegation discipline](#delegation-discipline). Clean result → output the result block below.
 
 <result>
 ### Cross-unit duplication
 {None found. | Done.}
-</result>
 
-Proceed to Phase 5.
+---
+</result>
 
 ## PHASE 5 — Quality Checks
 
 <title>🔍 **QUALITY** — _Delegating quality gates..._</title>
 
-**STATE ANCHOR — re-read this every time you enter Phase 5:** You
-are delegating quality checks to `sda-dev-quality`. Your only job is
-to pass inputs, process flags, and route fixes. Do NOT run quality
-gates directly. Do NOT run commands to verify or second-guess the
-quality agent's findings — its report is authoritative. Do NOT read
-source or test files. Delegate and wait.
+### Allowed commands in this phase
 
-### Allowed actions in this phase
-
-- `agent` — delegate to `sda-dev-quality`, `sda-coder`, `sda-test-writer`
 - `execute` — `{read-project-tools}` for area discovery only, before delegation. Never run test, coverage, lint, type-check, or build commands — those are `sda-dev-quality`'s scope.
 
 ### Control flow
@@ -953,8 +893,7 @@ source or test files. Delegate and wait.
    Coverage enabled: {true|false}
    ```
 
-3. **When `sda-dev-quality` returns** — route by result:
-   - Any failure (`⚠️ UNRESOLVED`, `🚨 HARD STOP`) → apply [Failure handling & escalation](#failure-handling--escalation). Do NOT output the result block.
+3. **When `sda-dev-quality` returns** — apply [Delegation discipline](#delegation-discipline). Then:
    - Clean report with no flags → output the report verbatim as Phase 5 result. Proceed to Phase 6.
    - Clean report with flags → process each flag (see below), then re-delegate to `sda-dev-quality` **only when a flag produced a fix** — an "unable to verify" flag is surfaced, never re-run.
 
@@ -1011,15 +950,12 @@ Triggered when `sda-dev-quality` flags a regression (test failure not in baselin
 ### Verification commands
 {copy verbatim from last sda-dev-quality report}
 
+---
 </result>
 
 ## PHASE 6 — Finalize
 
-<title>
-
----
-
-✅ **Task completed**</title>
+<title>✅ **Task completed**</title>
 
 ### Follow-up opportunity types
 

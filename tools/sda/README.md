@@ -157,7 +157,7 @@ For quick, one-off changes without a task spec (ad-hoc mode):
 Fix the bug where createOrder throws when quantity is 0.
 ```
 
-`sda-dev` runs the TDD loop (RED → GREEN → refactor) and enforces the quality gates. It delegates test writing and coding to subagents to keep each context small and reasoning sharp.
+`sda-dev` orchestrates the TDD loop (RED → GREEN → refactor) and owns quality checks. It delegates test writing, coding, refactoring, and gate execution to subagents to keep each context small and reasoning sharp.
 
 With a workflow container, start it from the container's `issue.md` with `/sda.workflow.dev.issue`
 — that session follows the `sda-workflow-guide` skill and implements **one task folder per
@@ -265,7 +265,7 @@ finds — it reports, and leaves routing (sda-dev-task vs ad-hoc sda-dev) to you
 
 **Model configuration:** Implementation agents use models from `project-config.json`. Default: Claude Sonnet. Run sda-setup (or say "update sda") to resolve family names and apply to agent files. See [Model configuration](#model-configuration).
 
-`sda-dev` runs the TDD loop and quality gates, delegating test writing and coding to subagents to keep each context small. A task's `docs` unit routes to `sda-scribe` (write) and then `sda-docs-check` (targeted verification).
+`sda-dev` orchestrates the TDD loop and owns quality checks, delegating test writing, coding, refactoring, and gate execution to subagents to keep each context small. A task's `docs` unit routes to `sda-scribe` (write) and then `sda-docs-check` (targeted verification).
 
 `sda-scribe` is the universal scribe for SDA planning and implementation agents — it writes task.md, qa-task.md, dev-report.md, design-decision docs, design docs, requirements docs, design records, contract spec files, and manifest.md. It uses Haiku for cost efficiency since it performs no reasoning — only schema formatting and file I/O. `sda-code-explore` is invoked by `sda-dev-task`, `sda-dev-task-verifier`, `sda-qa-task`, and `sda-dev` for codebase research — also Haiku, since it only reads and reports. `sda-web-explore` is invoked by `sda-dev-task` and `sda-design` for live web/API research when documentation may have changed. `sda-dev-task-verifier` handles Phase 7 (consistency + regression checks) — it can be invoked directly by the user or delegated to by `sda-dev-task`.
 
@@ -324,7 +324,7 @@ sda-dev execution — phases 0–6 (per sda-dev.agent.md)
 
 PHASE 0 — BOOTSTRAP  (once per conversation)
   Verifies tooling, loads standards, detects mode.
-  Ad-hoc: explores codebase and derives work unit.
+  Ad-hoc: delegates exploration, then derives the work unit.
   Task: proceeds to PLAN.
 
 PHASE 1 — PLAN  (task mode, per unit)
@@ -333,12 +333,12 @@ PHASE 1 — PLAN  (task mode, per unit)
   REFACTOR, or DOCS (resume table).
 
 PHASE 2 — RED
-  Writes failing tests for every approved scenario.
-  Confirms RED state (tests fail as expected).
+  Delegates test writing to sda-test-writer.
+  Presents the RED gate — new tests fail, pre-existing tests pass.
 
 PHASE 3 — GREEN
-  Writes production code to make all tests pass.
-  Re-runs tests until fully green.
+  Delegates implementation to sda-coder until all tests pass.
+  Presents the GREEN gate.
 
 PHASE 3·D — DOCS  (`docs` unit — always the last unit)
   Delegates the doc files to sda-scribe (full content or anchored delta),
@@ -346,8 +346,8 @@ PHASE 3·D — DOCS  (`docs` unit — always the last unit)
   No RED, no GREEN, no refactor, no quality gates.
 
 PHASE 4 — REFACTOR
-  Refactors each unit's files as it completes (per-unit); after all units,
-  a thin cross-unit pass removes inter-unit duplication.
+  Delegates each unit's files to sda-refactor as it completes (per-unit);
+  after all units, a thin cross-unit pass removes inter-unit duplication.
 
 PHASE 5 — QUALITY CHECKS
   Delegates quality gates to sda-dev-quality in global mode — gates run per project area.
@@ -528,7 +528,7 @@ Example:
 
 ### Standards files
 
-Read in full by `sda-dev` at the start of every session — before any source file is read or written. Every rule is treated as mandatory; there are no optional guidelines.
+Loaded by the code-producing agents — `sda-test-writer`, `sda-coder`, and `sda-refactor` — from the `standardsSkill` name `sda-dev` passes in every delegation, before any code is written. Every rule is treated as mandatory; there are no optional guidelines.
 
 ---
 
@@ -568,7 +568,7 @@ container-consistency verification, and CLI misuse.
 - **One docs writer.** `sda-coder` and `sda-refactor` never edit docs. A **mechanical** doc change (new entry in an existing format) goes through a `docs` unit → `sda-scribe` (write) → `sda-docs-check` (targeted verify); a **semantic** one (new concept, decision, vocabulary, tree structure, routing) goes through `sda-design`. At most one `docs` unit per task, always last.
 - **One owner per planning artifact.** Story → `sda-ba`, design → `sda-design`, tasks → `sda-dev-task`; every other agent is read-only on them. `workflow.json` and `state.json` are written by their scripts only — never hand-edited.
 - **`sda-dev` hard-stops if `project-tools.md` is missing.** There is no fallback — run `sda-setup` + `sda-toolscan` first.
-- **Standards are mandatory, always.** `sda-dev` reads all standards files before every session — even for trivial fixes or ad-hoc requests.
-- **Quality checks are non-negotiable.** After any code change, `sda-dev` must run and pass all quality gates (tests, coverage, pre-merge, types, lint, full test suite) before finishing.
-- **Tests must be failing before GREEN begins.** `sda-dev` confirms the RED state before writing production code.
+- **Standards are mandatory, always.** Every code-producing agent loads the `standardsSkill` skill before writing — `sda-dev` passes the skill name in every delegation, even for trivial fixes or ad-hoc requests.
+- **Quality checks are non-negotiable.** After any code change, all quality gates (tests, coverage, pre-merge, types, lint, full test suite) must run and pass before finishing. `sda-dev` delegates them to `sda-dev-quality` (Phase 5) and never runs a gate itself.
+- **Tests must be failing before GREEN begins.** `sda-dev` presents the RED gate — new tests fail, pre-existing tests pass — before delegating GREEN to `sda-coder`.
 - **Complexity is proportional.** `sda-design` matches design depth to scope — no patterns, abstractions, or architectural discussions for small, single-file changes.
