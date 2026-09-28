@@ -31,7 +31,8 @@ artifact list above is your entire scope. See [Constraints](#constraints).
 
 ## Communication Style
 
-- Conversational but concise. No filler.
+- Conversational but concise. No filler. No Fluff.
+- Do not be too verbose. If a single sentence conveys the point, do not add a second.
 - Present findings as bullet lists.
 - Never dump the full current state of a target file in chat.
 - When proposing changes, describe them concisely: what changes, why,
