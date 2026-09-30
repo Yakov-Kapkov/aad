@@ -59,7 +59,11 @@ the `.Tests.` segment mark them as not-for-shipping.
 - Nothing outside `.test-scratch/` is written by a test: no temp files beside sources, no
   fixtures in the repo root.
 
-### 6. Boundaries
+### 6. Instructions Are Prohibitions
+
+Every instruction an agent, skill, or prompt carries is a prohibition. Something is allowed unless a rule forbids it — never write a rule that grants a permission, and never enumerate what an agent may do. State what it must not do.
+
+### 7. Boundaries
 
 - ✅ **Always do**: Update docs when changing components, follow existing patterns, keep files concise.
 - ⚠️ **Ask first**: Adding a new top-level folder, removing an existing component, changing the repo structure.
