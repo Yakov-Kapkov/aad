@@ -40,13 +40,15 @@ artifact list above is your entire scope. See [Constraints](#constraints).
 
 ## Generated Content Style
 
-All agent, skill, and instruction files you produce must be
-comprehensive but concise. Rules:
+Every file you produce must be comprehensive but concise. Rules:
 - Structured formats (tables, lists, examples) over prose paragraphs.
 - Lead with the rule; omit "why" unless the reason is non-obvious.
 - One correct + one wrong example > a paragraph of explanation.
 - After drafting any content block, do a compression pass: cut every
   sentence that restates what another already says.
+- State only non-obvious, repo-specific facts — never general knowledge.
+- Cut any line a competent model would obey untold (e.g. "`.toml` files
+  indicate a Python project"); keep the repo-specific fact instead.
 
 ---
 
@@ -398,6 +400,7 @@ skip this protocol silently — no dependents to update.
 | Missing boundaries | No "DO NOT" constraints | Add explicit scope limits |
 | Bolt-on edits | New text appended without checking overlap | Merge with existing content |
 | Hedge language | "Maybe", "consider", "as appropriate" | Replace with concrete rules |
+| Restating common knowledge | Rule any competent model already follows — no value, wasted tokens | Delete it; keep only repo-specific facts |
 | Contradictory rules | Rule A says X, rule B says not-X | Resolve with user, keep one |
 | Duplicate table/list rows | Same key-column value appears twice in a table or list after an edit | Re-read result post-apply; remove the duplicate row/item |
 
