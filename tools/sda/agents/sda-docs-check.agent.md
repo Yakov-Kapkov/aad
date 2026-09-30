@@ -66,6 +66,8 @@ Access all files below by exact path from the repo root — never search for the
 
 The script path is injected at session start by the read-config hook.
 
+**Use the raw relative path — no `&`, no quotes, no absolute paths, no `bash`/`sh`/`zsh` prefix.**
+
 ## Input — scope
 
 | Scope | Runs | Use when |

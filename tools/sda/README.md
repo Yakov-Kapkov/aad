@@ -419,7 +419,9 @@ All resources are read from a `.sda/` folder in the project root (may be git-ign
 | Requirements docs (per-layer) | `<layer>/docs/requirements/` — `index.md` at every level + `<feature>/[<concern>/]<item>.md` + `nfr.md` |
 
 On macOS/Linux, `setup.sh` marks every `*.sh` it copies into `.sda/scripts/` executable, so the
-workflow CLI (`{workflow}`) and any script run by path work without a `bash` prefix.
+workflow CLI (`{workflow}`) and every script run by path is invoked by its raw relative path — never
+with a `bash`/`sh`/`zsh` prefix. The only `bash`-prefixed invocations are the per-agent frontmatter
+hooks, the installers, and third-party commands recorded in `project-tools.md`.
 
 `{language}` values are inferred from project markers — one or more per project (`package.json` → `typescript`, `pyproject.toml` / `requirements.txt` → `python`, etc.). Multi-language projects (e.g. TypeScript frontend + Python backend) load all matching discovery specs and produce a single `project-tools.md` with sections for each area.
 

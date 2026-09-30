@@ -38,7 +38,7 @@ stop — its owner runs first. A `gap=<stage>` line means that stage's artifact 
 
 ## CLI
 
-**Use the raw relative path — no `&`, no quotes, no absolute paths.** On `error=...` →
+**Use the raw relative path — no `&`, no quotes, no absolute paths, no `bash`/`sh`/`zsh` prefix.** On `error=...` →
 **🚨 HARD STOP**: print the exact message, end your response. Never read the script's source —
 this table is the full interface.
 

@@ -178,7 +178,7 @@ After 3 delegations still failing → surface the last failure verbatim and end 
 
 ### CLI scripts
 
-**Use the raw relative path — no `&`, no quotes, no absolute paths.** On `error=...` → **🚨 HARD STOP**: print the exact message, end your response.
+**Use the raw relative path — no `&`, no quotes, no absolute paths, no `bash`/`sh`/`zsh` prefix.** On `error=...` → **🚨 HARD STOP**: print the exact message, end your response.
 
 **Example — PowerShell:**
 - ✅ `.sda/scripts/some-script.ps1 -Folder . -Commands "shell"`

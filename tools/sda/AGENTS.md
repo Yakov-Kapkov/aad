@@ -298,6 +298,7 @@ File schemas (`task.md`, `qa-task.md`, `dev-report.md`, `state.json`, `project-t
 |---|---|
 | `Two-pass test runs`, `Filtered command verdict`, `File reading strategy`, `Terminal working directory` | `sda-dev`, `sda-test-writer`, `sda-coder`, `sda-refactor` |
 | `Commands are immutable`, `Type check`, `Validate data`, `Format code` | `sda-coder`, `sda-refactor` |
+| `CLI invocation form` (rule 17) | `sda-dev`, `sda-dev-quality`, `sda-dev-task`, `sda-dev-task-verifier`, `sda-docs-check`, `sda-qa`, `sda-qa-task`, `sda-toolscan`, `sda-workflow`, `sda-workflow-guide` skill |
 
 ### 5. Keep README.md in Sync
 
@@ -400,6 +401,25 @@ Never name a shell-specific command, flag, or syntax in a rule. State the intent
 | `npx prettier`, `tsc` | the resolved command from `{read-project-tools}` — see rule 8 |
 
 Shell-specific syntax appears only in a **labelled pair** — one PowerShell form and one bash/zsh form, as the `.ps1` / `.sh` script pairs do — never as the unlabelled default.
+
+### 17. SDA CLI Invocation Form — Raw Relative Path
+
+Every resolved SDA script runs by its raw relative path (`{unit-file-size} -Mode verify …`) — never with
+an interpreter prefix (`bash`, `sh`, `zsh`), never `&`, never quotes or an absolute path.
+
+`setup.sh` sets the executable bit and the shebang selects the interpreter, so the bare path is the
+contract. The prefix is not a fallback — it works, but it hides a lost executable bit and makes approval
+rules target the interpreter instead of the script.
+
+**Exceptions — these keep the `bash` prefix:**
+
+- frontmatter hooks, which run outside the agent terminal;
+- installers, skill-folder scripts, and the `_twins.Tests.ps1` harness — they run from a location whose
+  mode a separate installer or the harness sets (the sda-setup skill's invocation rules);
+- third-party commands recorded in `project-tools.md`, whose file mode SDA does not control.
+
+`Permission denied` (exit 126) → restore the bit (`chmod +x <path>`) — never adopt the prefix as the
+standing form.
 
 ## Boundaries
 

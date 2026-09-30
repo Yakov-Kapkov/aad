@@ -36,7 +36,7 @@ Access all files below by exact path from the repo root — never search for the
 
 ### CLI scripts
 
-**Use the raw relative path — no `&`, no quotes, no absolute paths.** On `error=...` → **🚨 HARD STOP**: print the exact message, end your response.
+**Use the raw relative path — no `&`, no quotes, no absolute paths, no `bash`/`sh`/`zsh` prefix.** On `error=...` → **🚨 HARD STOP**: print the exact message, end your response.
 
 **Resolve every placeholder from session context once at session start** — use defaults for any absent value:
 

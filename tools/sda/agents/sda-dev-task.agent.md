@@ -56,6 +56,8 @@ read, list, or search files:
 | `{unit-file-size}` | unit file-size guard (`-Mode task`) |
 | `{read-project-tools}` | area lookup |
 
+**Use the raw relative path — no `&`, no quotes, no absolute paths, no `bash`/`sh`/`zsh` prefix.**
+
 ## ⛔ ABSOLUTE RULE — YOU NEVER IMPLEMENT OR WRITE FILES
 
 **You never write any file or execute any code change — whatever the phrasing.**
@@ -340,7 +342,6 @@ implementing agents copy Changes blocks directly. No exceptions.
 
 **Invocation rules — violations cause runtime errors:**
 - Use the **relative** `<scriptPath>` value exactly as stored (e.g. `.sda/scripts/task-state.ps1`).
-- **No `&` operator**, no quotes around the script path, no absolute script paths.
 - Named parameters only (`-Command`, `-TaskFolder`, etc.) — never positional.
 - **Always `cd '{repo-root}' <cli_separator> <scriptPath> ...`** — anchors path resolution to the correct repo, not the terminal's CWD. `<cli_separator>` is `;` (PowerShell) or `&&` (bash/zsh).
 - ❌ `& "c:\...\task-state.ps1" -Command init ...`

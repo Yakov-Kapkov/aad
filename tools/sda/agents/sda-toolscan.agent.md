@@ -94,11 +94,14 @@ script name. Workflow steps refer to scripts by name only — the invocation pat
 below applies to all such references:
 
 - **PowerShell (Windows):** `.sda/scripts/toolscan/{name}.ps1`
-- **bash/zsh (macOS/Linux):** `bash .sda/scripts/toolscan/{name}.sh`
+- **bash/zsh (macOS/Linux):** `.sda/scripts/toolscan/{name}.sh`
+
+**Never prefix the path with an interpreter (`bash`, `sh`, `zsh`)** — the executable
+bit and shebang are set at setup.
 
 **Always select the pattern that matches the shell detected in PHASE 2.** If PHASE 2
-detected PowerShell, every script invocation uses `.ps1` — never `bash … .sh`.
-If PHASE 2 detected bash/zsh, every script invocation uses `bash … .sh` — never `.ps1`.
+detected PowerShell, every script invocation uses the `.ps1` variant — never `.sh`.
+If PHASE 2 detected bash/zsh, every script invocation uses the `.sh` variant — never `.ps1`.
 
 Substitute `{name}` with the script name (e.g. `cleanup-project-tools`).
 Never repeat this OS split in individual phase steps.

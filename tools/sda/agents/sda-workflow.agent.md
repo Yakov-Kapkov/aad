@@ -58,7 +58,7 @@ nothing, say what stays unresolved, and stop for direction.
 
 ## Commands
 
-**Use the raw relative path — no `&`, no quotes, no absolute paths.** On `error=...` → **🚨 HARD STOP**: print the exact message, end your response.
+**Use the raw relative path — no `&`, no quotes, no absolute paths, no `bash`/`sh`/`zsh` prefix.** On `error=...` → **🚨 HARD STOP**: print the exact message, end your response.
 
 **Example — PowerShell:**
 - ✅ `.sda/scripts/workflow/workflow.ps1 current -slug <folder>`
