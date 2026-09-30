@@ -53,28 +53,20 @@ cp "$ASSETS_DIR/qa/qa.example.secrets.env"           "$TARGET_DIR/secrets/qa.exa
 # Copy read-config hook script
 mkdir -p "$TARGET_DIR/scripts"
 cp "$SCRIPT_DIR/read-config.sh"                      "$TARGET_DIR/scripts/read-config.sh"
-chmod +x "$TARGET_DIR/scripts/read-config.sh"
 cp "$SCRIPT_DIR/read-project-tools.sh"               "$TARGET_DIR/scripts/read-project-tools.sh"
-chmod +x "$TARGET_DIR/scripts/read-project-tools.sh"
 
 # Copy task-state script (bash)
 mkdir -p "$TARGET_DIR/scripts/dev"
 cp "$ASSETS_DIR/dev/bash/task-state.sh"              "$TARGET_DIR/scripts/dev/task-state.sh"
-chmod +x "$TARGET_DIR/scripts/dev/task-state.sh"
 cp "$ASSETS_DIR/dev/bash/unit-file-size.sh"          "$TARGET_DIR/scripts/dev/unit-file-size.sh"
-chmod +x "$TARGET_DIR/scripts/dev/unit-file-size.sh"
 
 # Copy QA credential scripts
 QA_SRC="$ASSETS_DIR/qa/bash"
 mkdir -p "$TARGET_DIR/scripts/qa"
 cp "$QA_SRC/load-qa-secrets.sh"               "$TARGET_DIR/scripts/qa/load-qa-secrets.sh"
-chmod +x "$TARGET_DIR/scripts/qa/load-qa-secrets.sh"
 cp "$QA_SRC/list-qa-secrets.sh"               "$TARGET_DIR/scripts/qa/list-qa-secrets.sh"
-chmod +x "$TARGET_DIR/scripts/qa/list-qa-secrets.sh"
 cp "$QA_SRC/qa-session-init.sh"               "$TARGET_DIR/scripts/qa/qa-session-init.sh"
-chmod +x "$TARGET_DIR/scripts/qa/qa-session-init.sh"
 cp "$QA_SRC/invoke-http.sh"                   "$TARGET_DIR/scripts/qa/invoke-http.sh"
-chmod +x "$TARGET_DIR/scripts/qa/invoke-http.sh"
 
 # Copy toolscan scripts
 TOOLSCAN_SRC="$ASSETS_DIR/toolscan/bash"
@@ -82,20 +74,19 @@ mkdir -p "$TARGET_DIR/scripts/toolscan"
 cp "$TOOLSCAN_SRC/cleanup-project-tools.sh"        "$TARGET_DIR/scripts/toolscan/cleanup-project-tools.sh"
 cp "$TOOLSCAN_SRC/get-timestamp.sh"                "$TARGET_DIR/scripts/toolscan/get-timestamp.sh"
 cp "$TOOLSCAN_SRC/probe-validators.sh"             "$TARGET_DIR/scripts/toolscan/probe-validators.sh"
-chmod +x "$TARGET_DIR/scripts/toolscan/cleanup-project-tools.sh"
-chmod +x "$TARGET_DIR/scripts/toolscan/get-timestamp.sh"
-chmod +x "$TARGET_DIR/scripts/toolscan/probe-validators.sh"
 
 DOCS_SRC="$ASSETS_DIR/docs/bash"
 mkdir -p "$TARGET_DIR/scripts/docs"
 cp "$DOCS_SRC/docs-integrity.sh"                  "$TARGET_DIR/scripts/docs/docs-integrity.sh"
-chmod +x "$TARGET_DIR/scripts/docs/docs-integrity.sh"
 
 # Copy workflow script
 WORKFLOW_SRC="$ASSETS_DIR/workflow/bash"
 mkdir -p "$TARGET_DIR/scripts/workflow"
 cp "$WORKFLOW_SRC/workflow.sh"                     "$TARGET_DIR/scripts/workflow/workflow.sh"
-chmod +x "$TARGET_DIR/scripts/workflow/workflow.sh"
+
+# The workflow CLI and other .sda scripts run by path, so every copied script
+# needs the executable bit — the source mode does not survive every transfer.
+find "$TARGET_DIR/scripts" -type f -name '*.sh' -exec chmod +x {} +
 
 TD_SOURCE="$ASSETS_DIR/tool-discovery/$LANGUAGE/tool-discovery.md"
 if [ -f "$TD_SOURCE" ]; then

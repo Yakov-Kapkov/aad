@@ -104,6 +104,11 @@ Custom tool scripts receive: `<target-base> [-a <filter>] [-e <filter>] [extra a
 Both installers prune files named `_*.Tests.*` from the installed copy — at any depth, and on
 both the default and custom paths. Tests live beside the code they test and are development-only.
 
+## Installed scripts are executable
+
+`install-skill.sh` marks every `*.sh` file in the installed copy executable (`chmod +x`) — at any
+depth, and on both the default and custom paths — so skill scripts run by absolute path.
+
 ## Common Options
 
 | Option | Description | Default |

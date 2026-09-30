@@ -415,6 +415,9 @@ All resources are read from a `.sda/` folder in the project root (may be git-ign
 | Decision docs (per-layer) | `<layer>/docs/decisions/<feature>/` — `index.md` + descriptive kebab-case `.md` files (`shared/` for cross-cutting) |
 | Requirements docs (per-layer) | `<layer>/docs/requirements/` — `index.md` at every level + `<feature>/[<concern>/]<item>.md` + `nfr.md` |
 
+On macOS/Linux, `setup.sh` marks every `*.sh` it copies into `.sda/scripts/` executable, so the
+workflow CLI (`{workflow}`) and any script run by path work without a `bash` prefix.
+
 `{language}` values are inferred from project markers — one or more per project (`package.json` → `typescript`, `pyproject.toml` / `requirements.txt` → `python`, etc.). Multi-language projects (e.g. TypeScript frontend + Python backend) load all matching discovery specs and produce a single `project-tools.md` with sections for each area.
 
 ### Model configuration

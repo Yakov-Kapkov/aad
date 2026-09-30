@@ -66,11 +66,19 @@ prune_tests() {
     find "$1" -type f -name "$TEST_PATTERN" -delete
 }
 
+# Scripts are invoked with an absolute path, so they need the executable bit.
+# Set it on the installed copy: the source mode does not survive every transfer.
+mark_executable() {
+    [ -d "$1" ] || return 0
+    find "$1" -type f -name '*.sh' -exec chmod +x {} +
+}
+
 CUSTOM_SCRIPT="$SKILL_SRC/_installation/bash/install.sh"
 if [ -f "$CUSTOM_SCRIPT" ]; then
     echo "=== Installing skill: $NAME (custom) ==="
     bash "$CUSTOM_SCRIPT" "$SKILL_DST" "${SCRIPT_ARGS[@]+"${SCRIPT_ARGS[@]}"}"
     prune_tests "$SKILL_DST"
+    mark_executable "$SKILL_DST"
     echo "  Done."
     echo
     exit 0
@@ -96,6 +104,7 @@ for item in "$SKILL_SRC"/*; do
 done
 
 prune_tests "$SKILL_DST"
+mark_executable "$SKILL_DST"
 
 find "$SKILL_SRC" -type f -not -path "$SKILL_SRC/_installation/*" \
      -not -name "$TEST_PATTERN" | while read -r file; do
