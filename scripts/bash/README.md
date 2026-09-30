@@ -7,11 +7,12 @@ Installation scripts for macOS and Linux.
 ```bash
 cd <repo-root>/scripts/bash
 chmod +x *.sh
-./install-dev-suite.sh          # core agents → ~/.copilot
-./install-dev-suite.sh full     # all agents  → ~/.copilot
+./install-dev-suite.sh          # full dev suite → ~/.copilot
+./install-dev-suite.sh full     # same as default (mode reserved for future filtering)
 ./install-dev-suite.sh -t ./.copilot  # → workspace folder
 ./install-dev-suite.sh -m "sda-dev=Claude Sonnet 4.6"  # with model overrides
 ./install-dev-suite.sh -m "commit=Claude Haiku 4.5"  # override commit agent model
+./install-dev-suite.sh -x commit  # skip commit agent + its prompts
 ./install-dev-suite.sh uninstall  # remove all dev suite files
 ```
 
@@ -30,7 +31,7 @@ chmod +x *.sh
 # Install dev suite to user-level .copilot (default)
 ./install-dev-suite.sh
 
-# Install with all SDA agents
+# Install with mode full (reserved — same as default)
 ./install-dev-suite.sh full
 
 # Install with custom models for SDA agents
@@ -46,6 +47,9 @@ chmod +x *.sh
 
 # Override model for commit agent
 ./install-dev-suite.sh -m "commit=Claude Haiku 4.5"
+
+# Install without the commit agent and its prompts
+./install-dev-suite.sh -x commit
 
 # Combine mode + models
 ./install-dev-suite.sh -m "sda-dev=Claude Sonnet 4.6" full
@@ -66,7 +70,7 @@ chmod +x *.sh
 ./install-tool.sh -n "sda" -t ./.copilot
 
 # Install a single skill
-./install-skill.sh -n "commit"
+./install-skill.sh -n "troubleshooting"
 
 # Install a single tool
 ./install-tool.sh -n "sda"
@@ -74,8 +78,11 @@ chmod +x *.sh
 # Install a tool with only specific agents
 ./install-tool.sh -n "sda" -a "sda-toolscan,sda-dev"
 
-# Install a tool with model overrides (passed to custom install script)
-./install-tool.sh -n "sda" -- --models "sda-dev=Claude Sonnet 4.6" "sda-coder=Claude Opus 4"
+# Install a tool, excluding specific agents
+./install-tool.sh -n "sda" -e "sda-qa"
+
+# Install a tool with model overrides (passed to the custom install script)
+./install-tool.sh -n "sda" -- "sda-dev=Claude Sonnet 4.6|sda-coder=Claude Opus 4"
 ```
 
 ## Custom Install Scripts
@@ -90,21 +97,24 @@ the default copy logic. Arguments after `--` are passed through.
 | Tool | `tools/{name}/_installation/bash/install.sh` |
 
 Custom skill scripts receive: `<dest-folder> [extra args...]`
+Custom tool scripts receive: `<target-base> [-a <filter>] [-e <filter>] [extra args...]`
 
 ## Tests are never installed
 
 Both installers prune files named `_*.Tests.*` from the installed copy — at any depth, and on
 both the default and custom paths. Tests live beside the code they test and are development-only.
-Custom tool scripts receive: `<target-base> [-a <filter>] [extra args...]`
 
 ## Common Options
 
 | Option | Description | Default |
 |---|---|---|
-| `-t` | Path to the `.copilot` folder | `$HOME/.copilot` |
+| `-t` | Path to the `.copilot` folder | `$HOME/.copilot` (install-dev-suite); *(required)* otherwise |
 | `-n` | Component name (skill or tool) | *(required)* |
 | `-m` | Model assignment for SDA agents (install-dev-suite, repeatable) | *(none)* |
-| `-s` | Override source folder for a skill | `skills/{name}` |
-| `-a` | Comma-separated agent basenames to install (install-tool only) | *(all)* |
+| `-x` | Dev-suite components to skip, comma-separated (install-dev-suite, repeatable); supported: `commit` | *(none)* |
+| `-s` | Override source folder for a skill (install-skill) | `skills/{name}` |
+| `-a` | Comma-separated agent basenames to install (install-tool) | *(all)* |
+| `-e` | Comma-separated agent basenames to exclude, applied after `-a` (install-tool) | *(none)* |
+| `--` | Everything after it is passed to a custom install script (install-skill / install-tool) | *(none)* |
 
 The positional arguments for `install-dev-suite.sh` are action (`install`/`uninstall`, default: `install`) and mode (`full`/`short`, default: `short`). They can appear in any order.

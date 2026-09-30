@@ -18,6 +18,11 @@
     Optional array of "agentname=model" assignments for SDA agents.
     Example: @('sda-coder=Claude Opus 4 (Copilot)', 'sda-dev=Claude Opus 4 (Copilot)')
     Ignored when Action is 'uninstall'.
+
+.PARAMETER Exclude
+    Optional array of dev-suite components to skip. Supported value: 'commit'
+    (skips the commit agent and its prompts).
+    Ignored when Action is 'uninstall'.
 #>
 
 param(
@@ -26,6 +31,8 @@ param(
     [string] $TargetBase = "$env:USERPROFILE\.copilot",
     [ValidateSet('full', 'short')]
     [string] $Mode = 'short',
+    [ValidateSet('commit')]
+    [string[]] $Exclude = @(),
     [string[]] $Models
 )
 
@@ -80,6 +87,9 @@ if ($Action -eq 'uninstall') {
 # INSTALL
 # ══════════════════════════════════════════════════════════════════════════════
 Write-Host "Mode:   $Mode" -ForegroundColor Cyan
+if ($Exclude -and $Exclude.Count -gt 0) {
+    Write-Host "Exclude: $($Exclude -join ', ')" -ForegroundColor Cyan
+}
 
 # ── SDA tool ─────────────────────────────────────────────────────────────────
 Write-Host "`n=== Installing SDA tool ===" -ForegroundColor Cyan
@@ -99,12 +109,16 @@ Write-Host "`n== Installing sda-spec-guide skill ==" -ForegroundColor Yellow
 & (Join-Path $PSScriptRoot 'install-skill.ps1') -TargetBase $TargetBase -Name 'sda-spec-guide' -SourcePath 'tools\sda\skills\sda-spec-guide'
 
 # ── commit agent ─────────────────────────────────────────────────────────────
-Write-Host "`n== Installing commit agent ==" -ForegroundColor Yellow
-$CommitSrc = Join-Path $RepoRoot 'agents\commit\commit.agent.md'
-$CommitDst = Join-Path $TargetBase 'agents'
-New-Item -ItemType Directory -Path $CommitDst -Force | Out-Null
-Copy-Item $CommitSrc -Destination (Join-Path $CommitDst 'commit.agent.md') -Force
-Write-Host '  commit.agent.md'
+if ($Exclude -notcontains 'commit') {
+    Write-Host "`n== Installing commit agent ==" -ForegroundColor Yellow
+    $CommitSrc = Join-Path $RepoRoot 'agents\commit\commit.agent.md'
+    $CommitDst = Join-Path $TargetBase 'agents'
+    New-Item -ItemType Directory -Path $CommitDst -Force | Out-Null
+    Copy-Item $CommitSrc -Destination (Join-Path $CommitDst 'commit.agent.md') -Force
+    Write-Host '  commit.agent.md'
+} else {
+    Write-Host "`n== Skipping commit agent (excluded) ==" -ForegroundColor DarkGray
+}
 
 # ── Patch agent models ───────────────────────────────────────────────────────
 if ($Models -and $Models.Count -gt 0) {
@@ -113,13 +127,17 @@ if ($Models -and $Models.Count -gt 0) {
 }
 
 # ── commit prompts ───────────────────────────────────────────────────────────
-Write-Host "`n== Installing commit prompts ==" -ForegroundColor Yellow
-$PromptsSrc = Join-Path $RepoRoot 'prompts\commit'
-$PromptsDst = Join-Path $TargetBase 'prompts'
-New-Item -ItemType Directory -Path $PromptsDst -Force | Out-Null
-Get-ChildItem $PromptsSrc -Filter '*.prompt.md' -File | ForEach-Object {
-    Copy-Item $_.FullName -Destination (Join-Path $PromptsDst $_.Name) -Force
-    Write-Host "  $($_.Name)"
+if ($Exclude -notcontains 'commit') {
+    Write-Host "`n== Installing commit prompts ==" -ForegroundColor Yellow
+    $PromptsSrc = Join-Path $RepoRoot 'prompts\commit'
+    $PromptsDst = Join-Path $TargetBase 'prompts'
+    New-Item -ItemType Directory -Path $PromptsDst -Force | Out-Null
+    Get-ChildItem $PromptsSrc -Filter '*.prompt.md' -File | ForEach-Object {
+        Copy-Item $_.FullName -Destination (Join-Path $PromptsDst $_.Name) -Force
+        Write-Host "  $($_.Name)"
+    }
+} else {
+    Write-Host "`n== Skipping commit prompts (excluded) ==" -ForegroundColor DarkGray
 }
 
 # ── standards-compliance skill ───────────────────────────────────────────────

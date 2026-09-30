@@ -6,11 +6,12 @@ Installation scripts for Windows (PowerShell 5.1+).
 
 ```powershell
 cd <repo-root>/scripts/powershell
-.\install-dev-suite.ps1              # core agents → ~/.copilot
-.\install-dev-suite.ps1 -Mode full   # all agents  → ~/.copilot
+.\install-dev-suite.ps1              # full dev suite → ~/.copilot
+.\install-dev-suite.ps1 -Mode full   # same as default (mode reserved for future filtering)
 .\install-dev-suite.ps1 -TargetBase ".\.copilot"  # → workspace folder
 .\install-dev-suite.ps1 -Models @('sda-dev=Claude Opus 4 (Copilot)')  # with model overrides
 .\install-dev-suite.ps1 -Models @('commit=Claude Haiku 4.5')  # override commit agent model
+.\install-dev-suite.ps1 -Exclude commit  # skip commit agent + its prompts
 .\install-dev-suite.ps1 -Action uninstall  # remove all dev suite files
 ```
 
@@ -29,7 +30,7 @@ cd <repo-root>/scripts/powershell
 # Install dev suite to user-level .copilot (default)
 .\install-dev-suite.ps1
 
-# Install with all SDA agents
+# Install with mode full (reserved — same as default)
 .\install-dev-suite.ps1 -Mode full
 
 # Install with custom models for SDA agents
@@ -46,6 +47,9 @@ cd <repo-root>/scripts/powershell
 
 # Override model for commit agent
 .\install-dev-suite.ps1 -Models @('commit=Claude Haiku 4.5')
+
+# Install without the commit agent and its prompts
+.\install-dev-suite.ps1 -Exclude commit
 
 # Combine mode + models
 .\install-dev-suite.ps1 -Mode full -Models @('sda-dev=Claude Opus 4 (Copilot)')
@@ -66,7 +70,7 @@ cd <repo-root>/scripts/powershell
 .\install-tool.ps1 -Name "sda" -TargetBase ".\.copilot"
 
 # Install a single skill
-.\install-skill.ps1 -Name "commit"
+.\install-skill.ps1 -Name "troubleshooting"
 
 # Install a single tool
 .\install-tool.ps1 -Name "sda"
@@ -74,8 +78,11 @@ cd <repo-root>/scripts/powershell
 # Install a tool with only specific agents
 .\install-tool.ps1 -Name "sda" -AgentFilter @('sda-toolscan','sda-dev')
 
-# Install a tool with model overrides (passed to custom install script)
-.\install-tool.ps1 -Name "sda" -Models @('sda-dev=Claude Opus 4 (Copilot)')
+# Install a tool, excluding specific agents
+.\install-tool.ps1 -Name "sda" -AgentExclude @('sda-qa')
+
+# Install a tool with model overrides (passed to the custom install script)
+.\install-tool.ps1 -Name "sda" -ScriptArgs 'sda-dev=Claude Opus 4 (Copilot)'
 ```
 
 ## Custom Install Scripts
@@ -90,21 +97,24 @@ the default copy logic. Any extra arguments (`ScriptArgs`) are passed through.
 | Tool | `tools/{name}/_installation/powershell/install.ps1` |
 
 Custom skill scripts receive: `-DestFolder <path> [-ScriptArgs <string>]`
+Custom tool scripts receive: `-TargetBase <path> [-AgentFilter <list>] [-AgentExclude <list>] [-ScriptArgs <string>]`
 
 ## Tests are never installed
 
 Both installers prune files named `_*.Tests.*` from the installed copy — at any depth, and on
 both the default and custom paths. Tests live beside the code they test and are development-only.
-Custom tool scripts receive: `-TargetBase <path> [-AgentFilter <list>] [-ScriptArgs <string>]`
 
 ## Common Parameters
 
 | Parameter | Description | Default |
 |---|---|---|
-| `-TargetBase` | Path to the `.copilot` folder | `$env:USERPROFILE\.copilot` |
+| `-TargetBase` | Path to the `.copilot` folder | `$env:USERPROFILE\.copilot` (install-dev-suite); *(required)* otherwise |
 | `-Name` | Component name (skill or tool) | *(required)* |
-| `-Action` | `install` or `uninstall` (install-dev-suite only) | `install` |
-| `-Mode` | `full` or `short` (install-dev-suite only) | `short` |
-| `-Models` | Agent model overrides (install-dev-suite / install-tool) | *(none)* |
-| `-SourcePath` | Override source folder for a skill | `skills/{Name}` |
-| `-AgentFilter` | Array of agent basenames to install (install-tool only) | *(all)* |
+| `-Action` | `install` or `uninstall` (install-dev-suite) | `install` |
+| `-Mode` | `full` or `short` (install-dev-suite) | `short` |
+| `-Exclude` | Dev-suite components to skip; supported: `commit` (install-dev-suite) | *(none)* |
+| `-Models` | Agent model overrides (install-dev-suite) | *(none)* |
+| `-SourcePath` | Override source folder for a skill (install-skill) | `skills/{Name}` |
+| `-AgentFilter` | Array of agent basenames to install (install-tool) | *(all)* |
+| `-AgentExclude` | Array of agent basenames to exclude, applied after `-AgentFilter` (install-tool) | *(none)* |
+| `-ScriptArgs` | Opaque string passed to a custom install script (install-skill / install-tool) | `''` |

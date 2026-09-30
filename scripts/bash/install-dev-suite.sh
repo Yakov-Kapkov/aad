@@ -1,9 +1,11 @@
 #!/usr/bin/env bash
 # Installs or uninstalls the dev suite in the user's .copilot folder.
 #
-# Usage: install-dev-suite.sh [-t <target-base>] [-m "agent=model" ...] [install|uninstall] [full|short]
+# Usage: install-dev-suite.sh [-t <target-base>] [-m "agent=model" ...] [-x <component> ...] [install|uninstall] [full|short]
 #   -t         Path to .copilot folder (default: $HOME/.copilot)
 #   -m         Model assignment for SDA agents (repeatable). E.g. -m "sda-dev=Claude Opus 4"
+#   -x         Dev-suite component to skip (repeatable, comma-separated). Supported: commit
+#              (skips the commit agent and its prompts); ignored on uninstall
 #   install    Install the dev suite (default)
 #   uninstall  Remove all dev suite files
 #   full       All SDA agents
@@ -15,13 +17,23 @@ SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 REPO_ROOT="$(dirname "$(dirname "$SCRIPT_DIR")")"
 TARGET_BASE="$HOME/.copilot"
 MODELS=()
+EXCLUDE=()
 
 # ── Parse options ────────────────────────────────────────────────────────────
-while getopts "t:m:" opt; do
+while getopts "t:m:x:" opt; do
     case $opt in
         t) TARGET_BASE="$OPTARG" ;;
         m) MODELS+=("$OPTARG") ;;
-        *) echo "Usage: $0 [-t <target-base>] [-m agent=model ...] [install|uninstall] [full|short]" >&2; exit 1 ;;
+        x)
+            IFS=',' read -ra parts <<< "$OPTARG"
+            for part in "${parts[@]}"; do
+                case "$part" in
+                    commit) EXCLUDE+=("$part") ;;
+                    *) echo "Error: unsupported exclude component '$part' (supported: commit)" >&2; exit 1 ;;
+                esac
+            done
+            ;;
+        *) echo "Usage: $0 [-t <target-base>] [-m agent=model ...] [-x <component> ...] [install|uninstall] [full|short]" >&2; exit 1 ;;
     esac
 done
 shift $((OPTIND - 1))
@@ -34,11 +46,20 @@ for arg in "$@"; do
         install|uninstall) ACTION="$arg" ;;
         full|short) MODE="$arg" ;;
         *)
-            echo "Usage: $0 [-t <target-base>] [-m agent=model ...] [install|uninstall] [full|short]" >&2
+            echo "Usage: $0 [-t <target-base>] [-m agent=model ...] [-x <component> ...] [install|uninstall] [full|short]" >&2
             exit 1
             ;;
     esac
 done
+
+# ── Excluded components ──────────────────────────────────────────────────────
+should_exclude() {
+    local name="$1" c
+    for c in "${EXCLUDE[@]+"${EXCLUDE[@]}"}"; do
+        [ "$c" = "$name" ] && return 0
+    done
+    return 1
+}
 
 # ── Colors ───────────────────────────────────────────────────────────────────
 CYAN='\033[0;36m'
@@ -97,6 +118,9 @@ fi
 # INSTALL
 # ══════════════════════════════════════════════════════════════════════════════
 echo -e "${CYAN}Mode:   $MODE${NC}"
+if [ ${#EXCLUDE[@]} -gt 0 ]; then
+    echo -e "${CYAN}Exclude: ${EXCLUDE[*]}${NC}"
+fi
 
 echo
 echo -e "${CYAN}=== Installing SDA tool ===${NC}"
@@ -115,12 +139,16 @@ echo -e "${YELLOW}== Installing sda-spec-guide skill ==${NC}"
 "$SCRIPT_DIR/install-skill.sh" -t "$TARGET_BASE" -n "sda-spec-guide" -s "tools/sda/skills/sda-spec-guide"
 
 echo
-echo -e "${YELLOW}== Installing commit agent ==${NC}"
-COMMIT_SRC="$REPO_ROOT/agents/commit/commit.agent.md"
-COMMIT_DST="$TARGET_BASE/agents"
-mkdir -p "$COMMIT_DST"
-cp "$COMMIT_SRC" "$COMMIT_DST/commit.agent.md"
-echo "  commit.agent.md"
+if should_exclude commit; then
+    echo -e "${GRAY}== Skipping commit agent (excluded) ==${NC}"
+else
+    echo -e "${YELLOW}== Installing commit agent ==${NC}"
+    COMMIT_SRC="$REPO_ROOT/agents/commit/commit.agent.md"
+    COMMIT_DST="$TARGET_BASE/agents"
+    mkdir -p "$COMMIT_DST"
+    cp "$COMMIT_SRC" "$COMMIT_DST/commit.agent.md"
+    echo "  commit.agent.md"
+fi
 
 # ── Patch agent models ───────────────────────────────────────────────────────
 if [ ${#MODELS[@]} -gt 0 ]; then
@@ -130,14 +158,18 @@ if [ ${#MODELS[@]} -gt 0 ]; then
 fi
 
 echo
-echo -e "${YELLOW}== Installing commit prompts ==${NC}"
-PROMPTS_SRC="$REPO_ROOT/prompts/commit"
-PROMPTS_DST="$TARGET_BASE/prompts"
-mkdir -p "$PROMPTS_DST"
-for f in "$PROMPTS_SRC"/*.prompt.md; do
-    cp "$f" "$PROMPTS_DST/"
-    echo "  $(basename "$f")"
-done
+if should_exclude commit; then
+    echo -e "${GRAY}== Skipping commit prompts (excluded) ==${NC}"
+else
+    echo -e "${YELLOW}== Installing commit prompts ==${NC}"
+    PROMPTS_SRC="$REPO_ROOT/prompts/commit"
+    PROMPTS_DST="$TARGET_BASE/prompts"
+    mkdir -p "$PROMPTS_DST"
+    for f in "$PROMPTS_SRC"/*.prompt.md; do
+        cp "$f" "$PROMPTS_DST/"
+        echo "  $(basename "$f")"
+    done
+fi
 
 echo
 echo -e "${YELLOW}== Installing standards-compliance skill ==${NC}"
