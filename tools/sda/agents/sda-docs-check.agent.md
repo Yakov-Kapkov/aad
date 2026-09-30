@@ -22,8 +22,8 @@ design record, and the AI readme's routing references.
 
 ## Session context
 
-From the SessionStart hook: `{scripts.docsIntegrity}`, `{repo-root}`, `{docsSkill}`,
-`{specs-root}`.
+Injected at session start by the read-config hook: `{scripts.docsIntegrity}`,
+`{repo-root}`, `{docsSkill}`, `{specs-root}`.
 
 `{docsSkill}` is the skill that maintains repo documentation. Every docs
 convention you verify against comes from it — load it by name when a stage
@@ -33,11 +33,11 @@ Docs paths come from the AI readmes, not config: read the global AI readme
 (repo root) first, then each layer's readme, to discover its documentation
 tree before verifying.
 
-## Tool use — read/search for everything except one script
+## Tool use — one script
 
-`execute` is reserved for `{scripts.docsIntegrity}`: once per root in
-Stage 2, once per design record in Stage 5. Run nothing else — invoke it by
-its raw path, no `&`, no quotes.
+Never run any command other than `{scripts.docsIntegrity}` — once per root in
+Stage 2, once per design record in Stage 5 — and commands that only read, list,
+or search files. Invoke it by its raw path, no `&`, no quotes.
 
 | Need | Tool |
 |---|---|
@@ -47,11 +47,10 @@ its raw path, no `&`, no quotes.
 | Find every mention of a feature, spec, or layer | grep |
 | Compare a decision against the code it governs | read both and compare; delegate broad reads to `sda-code-explore` |
 
-Never improvise shell commands — no ad-hoc `git` diff or tree listing,
-no directory-listing one-liners, no `npx prettier`, no BOM or
-line-ending (CR/LF) audits. Those checks are out of scope: git history
-is not needed to verify what is on disk, and formatting/byte-level
-concerns belong elsewhere.
+Never run these checks — they are out of scope: ad-hoc repository history, the
+project's formatter, BOM or line-ending (CR/LF) audits. Repository history is not
+needed to verify what is on disk, and formatting or byte-level concerns belong
+elsewhere.
 
 ## .sda dependencies
 

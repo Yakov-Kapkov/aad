@@ -93,6 +93,17 @@ sda-toolscan reads this to generate `filter-test-output` in `project-tools.md`.
 
 ---
 
+## Application run detection
+
+Build `# app-run-start` from what the project already declares — never from source code. Long-running processes are expected here; the no-watch-mode rule does not apply.
+
+- **Entry files:** `app.py`, `main.py`, `api.py`, `server.py`, `asgi.py`, `wsgi.py`
+- **Runtime invocation:** the `[tool.poetry.scripts]` / `[project.scripts]` entry point, the project's start task, or the runner-prefixed ASGI/WSGI server the dependencies declare (`uvicorn`, `gunicorn`, `hypercorn`, `flask`)
+- **Port:** `.env` / `.env.example`, the server's config, or the framework default — omit the port argument when none is found
+- **Workers:** a background worker (e.g. Celery, RQ) is its own layer with `not applicable` for URL and health check
+
+---
+
 **Example output (for reference):**
 ```
 Repository Discovery Report

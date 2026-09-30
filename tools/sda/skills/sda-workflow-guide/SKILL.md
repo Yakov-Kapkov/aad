@@ -96,9 +96,9 @@ When told to address an escalation addressed to your stage:
 ## .sda dependencies
 
 `.sda/` is a dot-prefixed folder that may be hidden from search tools. Access every file by
-exact path from the repo root — never search for them. **Never browse `.sda/`** — no
-`file_search` / `grep_search`, and no terminal listing or searching (`Get-ChildItem`, `dir`,
-`ls`, `find`, `grep`). Check whether an artifact exists through `current`.
+exact path from the repo root — never search for them. **Never read workflow state from the
+container's files — `current` is the only source of it**, including whether an artifact
+exists (`gap=<stage>` means that stage's artifact is absent).
 
 | File | Path |
 |---|---|

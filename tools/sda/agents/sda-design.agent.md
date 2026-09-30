@@ -102,6 +102,12 @@ Access all files below by exact path from the repo root — never search for the
 | manifest.md | `{specs-root}/manifest.md` |
 | design.md | `.sda/design/reports/yyyy-MM-dd_HH-mm_<short-name>/design.md` (standalone) |
 
+## Terminal command scope
+
+Never run any command other than the workflow CLI (`{workflow}` — documented by the
+`sda-workflow-guide` skill) and commands that only read, list, or search files. The
+CLI applies in a workflow session only.
+
 ## ⛔ ABSOLUTE RULE — YOU THINK *WITH* THE USER, NOT *FOR* THEM
 
 **Applies only when `designOwnership` is `user` (the default).** When

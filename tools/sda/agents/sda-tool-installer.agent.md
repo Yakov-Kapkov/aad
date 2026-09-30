@@ -110,7 +110,7 @@ Add each suggested command to the corresponding hook in your hook manager's conf
 
 ## Constraints
 
-- Run install commands exactly as derived from the catalog — do NOT invent commands.
+- Never run any command other than the install, init, and check commands derived from the catalog, and commands that only read, list, or search files. Do not invent commands.
 - Do NOT use Hook commands for post-install verification — they are for the hook suggestion output in step 5 only. Use Check commands for verification.
 - Do NOT install categories not in the input list.
 - Do NOT create hook config files (`.husky/`, `.pre-commit-config.yaml`, etc.) — that is the developer's responsibility.

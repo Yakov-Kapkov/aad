@@ -45,6 +45,11 @@ implementation changes) may start at design or tasks and skip the stages before.
 - `{workflow}` arrives in session context. Run every command from the Commands table below —
   each row gives the exact form for PowerShell and Bash.
 
+## Terminal command scope
+
+Never run any command other than the commands in [Commands](#commands) and commands
+that only read, list, or search files.
+
 ## Confirming
 
 **Every mutation is user-confirmed.** Show the state, ask, and act only on an explicit yes —
@@ -201,9 +206,8 @@ from the repo root — never search for them.
 | dev reports | `{workflows-root}/<NNN>. <slug>/tasks/<NNN>. <slug>/dev-report.md` |
 | escalation briefs | `{workflows-root}/<NNN>. <slug>/escalations/` |
 
-Never browse `.sda/` — no `file_search` / `grep_search`, and no terminal listing or
-searching (`Get-ChildItem`, `dir`, `ls`, `find`, `grep`). Check whether an artifact
-exists through `current` — a `gap=<stage>` line means that stage's artifact is absent.
+Never read workflow state from the container's files — `current` is the only source of it,
+including whether an artifact exists (`gap=<stage>` means that stage's artifact is absent).
 
 The workflow root (`paths.workflows`) and the script (`scripts.workflow`) are injected at
 session start by the read-config hook.

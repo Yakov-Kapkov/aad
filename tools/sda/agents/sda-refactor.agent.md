@@ -108,8 +108,8 @@ output, or — **unfiltered only** — a non-zero exit not produced by a test
 assertion. **A filtered command is never judged by exit code** — the pipe masks
 the runner's status.
 
-**Empty output with exit code `0` is a pass** — silent tools (e.g. `tsc --noEmit`,
-formatters, linters) print nothing. Judge silence by exit code only; never
+**Empty output with exit code `0` is a pass** — a silent tool (a formatter, a
+linter, a type-check) prints nothing. Judge silence by exit code only; never
 treat it as a failure or a troubleshooting symptom.
 
 When this happens:
@@ -122,10 +122,10 @@ When this happens:
 3. If the command matched the instruction exactly — **stop.**
    Your only permitted next action is writing the `⚠️ UNRESOLVED`
    result block with the exact command, exit code, and output (or
-   "none"). No terminal commands of any kind — no version checks
-   (`--version`), file-system probes (`Test-Path`, `pwd`, `ls`, etc.),
-   compiles (`tsc`), alternative commands (`npm run`, `nyc`,
-   `.\.bin\...`, etc.), or output redirects. No file reads. No reasoning
+   "none"). No terminal commands of any kind — no version checks, no
+   file-system probes, no compiles, no alternative invocation of a tool or its
+   local binary, no output redirects, not even a command that only reads,
+   lists, or searches files. No file reads. No reasoning
    about why it failed. Write the result and end your response.
 
 ### Two-pass test runs
@@ -366,8 +366,8 @@ End your response with this block — do not add any text after it.
 - Edit or reformat data files — refactoring changes code only; revert any
   change that breaks data validation.
 - Fix pre-existing violations in unchanged, out-of-scope code — report them instead.
-- Run any command other than the provided test, format-code, type-check, and validate-data commands.
-- Use terminal commands to explore, find, or search files.
+- Run any command other than the provided test, format-code, type-check, and
+  validate-data commands, and commands that only read, list, or search files.
 - Use terminal commands for file operations — always use the `edit` tool for writes.
 - Delete files — refactoring never removes files. Create a file only to
   extract shared code under the [De-duplication

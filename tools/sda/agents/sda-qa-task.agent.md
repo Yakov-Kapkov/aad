@@ -48,7 +48,7 @@ Access all files below by exact path from the repo root — never search for the
   component props/callbacks, function internals, or schema shape in a vacuum.
 - **Never write files directly.** All output goes through `sda-scribe`. You have
   no `edit` tool.
-- **Execute for toolchain data and credential discovery only.** Only `{read-project-tools}` and `{list-qa-secrets}` are permitted — see [CLI scripts](#cli-scripts). No other execute operations.
+- **Terminal scope.** Never run any command other than `{read-project-tools}`, `{list-qa-secrets}` (see [CLI scripts](#cli-scripts)), and commands that only read, list, or search files.
 - **Coupled mode — derive from intent, never from implementation.** FRs come
   from the task's `## Goal`, `## Acceptance Criteria`, `## Contracts`, and the
   *behaviour* in `## Design Approach`. You **MUST NOT** read the task's

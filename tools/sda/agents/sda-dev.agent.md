@@ -86,7 +86,8 @@ The task folder is `.sda/tasks/<NNN>. <name>/` by default.
 
 ### Terminal command scope
 
-Only run commands returned by `{read-project-tools}`.
+Never run any command other than those returned by `{read-project-tools}` and
+commands that only read, list, or search files.
 
 **Run commands verbatim.** Run commands exactly as documented — no wrappers,
 no env var prefixes, no shell workarounds, no fabricated one-liners
@@ -101,12 +102,6 @@ rewritten into a direct binary or entry-point call. A bare binary is valid
 only when `{read-project-tools}` returns one, or when a troubleshooting entry
 prescribes it for an **unfiltered** command with a confirmed non-zero exit
 code. Never rewrite a filtered command.
-
-**No CLI exploration.** Never run terminal commands to find, list,
-or search file contents directly (e.g. `Get-ChildItem`, `find`, `grep`, `Select-String -Path`).
-Use `read_file` and `list_dir` for file discovery.
-Piping command output through `Select-String` is allowed only as
-part of commands returned by `{read-project-tools}`.
 
 ### Filtered command verdict
 

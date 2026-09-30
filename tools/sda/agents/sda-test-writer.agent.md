@@ -57,8 +57,8 @@ output, or — **unfiltered only** — a non-zero exit not produced by a test
 assertion. **A filtered command is never judged by exit code** — the pipe masks
 the runner's status.
 
-**Empty output with exit code `0` is a pass** — silent tools (e.g. `tsc --noEmit`,
-formatters, linters) print nothing. Judge silence by exit code only; never
+**Empty output with exit code `0` is a pass** — a silent tool (a formatter, a
+linter, a type-check) prints nothing. Judge silence by exit code only; never
 treat it as a failure or a troubleshooting symptom.
 
 When this happens:
@@ -71,10 +71,10 @@ When this happens:
 3. If the command matched the instruction exactly — **stop.**
    Your only permitted next action is writing the `⚠️ UNRESOLVED`
    result block with the exact command, exit code, and output (or
-   "none"). No terminal commands of any kind — not version checks
-   (`--version`), file-system probes (`Test-Path`, `pwd`, `ls`),
-   compiles (`tsc`), alternative commands (`npm run`, `nyc`,
-   `.\.bin\...`), or output redirection. No file reads. No reasoning
+   "none"). No terminal commands of any kind — no version checks, no
+   file-system probes, no compiles, no alternative invocation of a tool or its
+   local binary, no output redirects, not even a command that only reads,
+   lists, or searches files. No file reads. No reasoning
    about why it failed. Write the result and end your response.
 
 ### Two-pass test runs
@@ -402,7 +402,10 @@ cd {absolute-working-dir}
 - Update state or any tracking files.
 - Reason about whether tests will pass or fail — the expected result
   is given.
-- Run any command other than the provided test commands, type-check, format-code, and validate-data commands — in their exact form. Never strip, omit, or rewrite any part of a provided command, including its output pipe (e.g., `| Select-String`, `| grep`, `| Select-Object`).
+- Run any command other than the provided test commands, type-check, format-code,
+  and validate-data commands, and commands that only read, list, or search files.
+  Run provided commands in their exact form — never strip, omit, or rewrite any
+  part of a provided command, including its output pipe or filter.
 - Use terminal commands to write or create files — always use the `edit` tool for file writes.
 - Add wrappers, env var prefixes, or shell workarounds to commands — or
   replace a runner or script invocation with a direct binary or entry-point call.

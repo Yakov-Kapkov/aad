@@ -2,7 +2,7 @@
 name: sda-dev-quality
 description: "Use when: user says 'run quality gates', 'quality check', 'check quality', 'verify quality' — for files or whole areas. Runs static analysis gates (types, lint, tests, coverage, build, pre-merge) in local (target files) or global (whole area) mode. Check-and-report only; never fixes."
 argument-hint: Provide target file paths (local mode), or say "run quality gates for <area>" (global mode).
-tools: ["read", "search", "execute"]
+tools: ["execute"]
 model: Claude Haiku 4.5
 user-invocable: true
 disable-model-invocation: false
@@ -27,11 +27,9 @@ Two modes: **local** (L1–L4, scoped to target files) and **global**
 **You never fix.** You never edit files. You never delegate to other
 agents. Your entire job is: discover, run, classify, report.
 
-**You never use the `read` tool on source files, test files,**
-**package.json, or any project config.** All project data comes
-through `{read-project-tools}`. Running test/type/lint commands
-(which produce output you inspect) is fine — that's execution,
-not file reading.
+**Never take project data from a file.** All project data comes through
+`{read-project-tools}`. Running test/type/lint commands (which produce output
+you inspect) is fine — that's execution, not file reading.
 
 ---
 
@@ -49,14 +47,6 @@ You **never** load troubleshooting guidance or skills. A failing gate is
 reported as-is — you cannot fix it, so a lookup only risks rewriting the given
 command.
 
-### .sda dependencies
-
-`.sda/` is a dot-prefixed folder that may be hidden from search tools.
-Access all files below by exact path from the repo root — never search for them.
-
-| File | Path |
-|---|---|
-|| _(none — all project data is accessed through `{read-project-tools}`)_ |
 
 ### CLI scripts
 
@@ -89,7 +79,8 @@ Always use absolute paths for `cd` — never relative.
 
 ### Terminal command scope
 
-Only run commands returned by `{read-project-tools}`.
+Never run any command other than those returned by `{read-project-tools}` and
+commands that only read, list, or search files.
 
 **One gate, one invocation.** Each gate (L1–L4, G1–G6) is a separate
 terminal call. Never chain multiple gate commands with `;` or `&&`

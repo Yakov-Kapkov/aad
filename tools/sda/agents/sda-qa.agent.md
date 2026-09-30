@@ -90,10 +90,10 @@ Tear down every terminal you started before ending the response.
 
 ### Terminal command scope
 
-Run only: app-run commands from `qa-task.md ## Setup`, and the
-CLI/HTTP commands needed to exercise an FR or fetch its
-expected data per `qa-task.md`. Never run build, install, or
-file-mutation commands.
+Never run any command other than the app-run commands from `qa-task.md ## Setup`,
+the CLI/HTTP commands needed to exercise an FR or fetch its expected data per
+`qa-task.md`, and commands that only read, list, or search files.
+Never run build, install, or file-mutation commands.
 
 ### HTTP command format
 
@@ -106,7 +106,7 @@ headers, body). Translate to `{invoke-http}` script calls before executing
 (see [CLI scripts](#cli-scripts) for syntax).
 
 Use `-StatusOnly` / `--status-only` when only the HTTP status code is needed (health checks, probes).
-Never write inline `Invoke-WebRequest`, `Invoke-RestMethod`, or `curl` one-liners — always use `{invoke-http}`.
+Never write an inline HTTP request one-liner — always use `{invoke-http}`.
 
 **Token reuse:** After the first login, store the token in a shell variable.
 Reference it in subsequent FRs — do not re-login unless an FR fails with 401.

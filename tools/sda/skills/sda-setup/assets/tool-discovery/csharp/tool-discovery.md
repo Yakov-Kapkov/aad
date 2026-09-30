@@ -52,6 +52,13 @@
    - Scan `Makefile`, `.github/workflows/`, `scripts/` for a custom `build` target wrapping `dotnet build`; prefer the project script if found
    - Report findings: "Build: `dotnet build`"
 
+9. **Git hook manager detection (REQUIRED: always scan, may not exist):**
+   - Scan: `.husky/` for husky.net
+   - Scan: `.pre-commit-config.yaml` for pre-commit
+   - Scan: `.git/hooks/` for raw git hooks
+   - Report findings: "Git hooks: husky.net, pre-commit"
+   - Hook managers route to `### Pre-Commit Checks` only — never to the lint or format sections
+
 ---
 
 ## Test output filter patterns
@@ -60,6 +67,25 @@ Pieces joined with `|`. PS uses `$([char]0x...)` for symbols; bash uses literal.
 sda-toolscan reads this to generate `filter-test-output` in `project-tools.md`.
 
 **dotnet test:** `^\s*[Ff]ail`, `^\s*[Pp]ass`, `Total:?\s+\d`
+
+---
+
+**Command generation rules:**
+
+**`dotnet` CLI (applies to ALL generated commands):** run every command through the `dotnet` CLI (`dotnet test ...`, `dotnet build ...`) — never a bare binary path from a local tool directory.
+
+- A tool installed as a local dotnet tool is invoked as `dotnet tool run {tool} ...`.
+- When a source (README, docs) presents multiple equivalent forms for the same command, always select the `dotnet` form and discard the bare invocation.
+
+---
+
+## Application run detection
+
+Build `# app-run-start` from what the project already declares — never from source code. Long-running processes are expected here; the no-watch-mode rule does not apply.
+
+- **Runtime invocation:** `dotnet run --project <layer project>` — add a configuration flag only when the project's own docs do so
+- **Port:** `Properties/launchSettings.json` (`applicationUrl`), `appsettings.json` (`Kestrel:Endpoints`), or the framework default — omit the URL argument when none is found
+- **Multiple startable projects:** one layer per project; never chain them in one command
 
 ---
 

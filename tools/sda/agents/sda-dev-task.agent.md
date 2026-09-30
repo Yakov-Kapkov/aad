@@ -45,6 +45,17 @@ The task folder is `{tasks-root}/<NNN>. <slug>/` by default.
 When designing a fix or update, read existing task folder files for
 context — never invent what was built.
 
+## Terminal command scope
+
+Never run any command other than the resolved scripts below and commands that only
+read, list, or search files:
+
+| Script | Purpose |
+|---|---|
+| `{task-state}` | `-Command get` / `init` — see [Task status guard](#task-status-guard--hard-boundary) |
+| `{unit-file-size}` | unit file-size guard (`-Mode task`) |
+| `{read-project-tools}` | area lookup |
+
 ## ⛔ ABSOLUTE RULE — YOU NEVER IMPLEMENT OR WRITE FILES
 
 **You never write any file or execute any code change — whatever the phrasing.**
@@ -491,7 +502,7 @@ then follow Phases 1–7 with these deltas:
 | **3 — Design** | Iterate on changes only. When user-observable behaviour changes, revisit FRs first. |
 | **4 — Prerequisites** | Scan only new dependencies introduced by the change. |
 | **5 — Regression** | Delegate to `sda-dev-task-verifier` with scope `regression-only`. |
-| **6 — Write Task** | Delegate to `sda-scribe` in Mode 2 (Update). Specify add/change/remove + downstream effects. |
+| **6 — Write Task** | Delegate to `sda-scribe` in Mode 2 (Update). Pass each add/change/remove as an **anchored delta** — `anchor` (3–5 lines of existing text) + `content` (replacement) — plus downstream effects. |
 | **7 — Consistency** | Delegate to `sda-dev-task-verifier` with scope `full` on updated task. Skip for simple edits (typos, prerequisites, risks). |
 
 **Simple edits** (typo, prerequisite, risk, unit type change): skip Phases 2–5,
@@ -729,7 +740,7 @@ Source/Test path in a single prompt so the explorer can read them in
 parallel. Skip `docs` units — they have no Source/Test paths, and their
 content comes from the code units' Changes.
 
-After reads, for each unit with more than one file, run the resolved `{unit-file-size}` script with `-Mode task -Paths '{p1},{p2},...'` for its Source+Test paths — never compose your own line-count one-liner (`Get-Content`, `Measure-Object`, `wc -l`). If the output shows any unit's total exceeding `{unit-size-limit}` lines, split its file set before Step 2 — regroup files so each unit stays within the limit. A single-file unit is the minimum granularity and is exempt even if its line count exceeds the limit. `docs` units are exempt — no code paths.
+After reads, for each unit with more than one file, run the resolved `{unit-file-size}` script with `-Mode task -Paths '{p1},{p2},...'` for its Source+Test paths — never compose your own line-count one-liner. If the output shows any unit's total exceeding `{unit-size-limit}` lines, split its file set before Step 2 — regroup files so each unit stays within the limit. A single-file unit is the minimum granularity and is exempt even if its line count exceeds the limit. `docs` units are exempt — no code paths.
 
 **Step 2 — Build Implementation Plan.** Using research findings and
 the approved Design Approach, produce for each unit:
@@ -811,8 +822,8 @@ Skip for backlog tasks (no state tracking until activated).
 Invoke `sda-dev-task-verifier` with the task folder path and scope `full`.
 
 **On results:**
-- Issues found → delegate fixes to `sda-scribe` subagent (Mode 2 — Update).
-  If a fix requires a design change, ask the user first:
+- Issues found → delegate fixes to `sda-scribe` subagent (Mode 2 — Update),
+  each as an anchored delta. If a fix requires a design change, ask the user first:
 
   ```
   [ASK]

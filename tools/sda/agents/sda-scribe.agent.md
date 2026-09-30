@@ -32,8 +32,8 @@ You handle folder creation, numbering, and schema compliance.
 
 ## Session context
 
-From the SessionStart hook: `{repo-root}`, `{specs-root}` (`paths.specs`),
-`{issues-root}` (`paths.issues`), `{docsSkill}`.
+Injected at session start by the read-config hook: `{repo-root}`,
+`{specs-root}` (`paths.specs`), `{issues-root}` (`paths.issues`), `{docsSkill}`.
 
 `{docsSkill}` is the skill that maintains repo documentation. Load it by name
 for the schema of any design or decision file type.
@@ -94,11 +94,12 @@ You receive:
 
 You receive:
 1. **Task folder path** — where `task.md` already exists.
-2. **Changes** — what to add, modify, or remove. Examples:
-   - "Add regression risk: ⚠️ {description}, mitigation: {text}"
-   - "Update Design Approach for Unit 2: change Solution to {new}"
-   - "Add prerequisite: {env var}"
-   - "Replace Implementation Plan with: {fully written content}"
+2. **Changes** — ordered **anchored deltas**, one per add, modify, or remove —
+   the same shape as Mode 6's `changes`: `anchor` (3–5 lines of existing text)
+   + `content` (the text that replaces it).
+
+A change arriving as a description (_"change Solution to …"_) instead of an
+anchored delta → **stop and return**: _"No anchor supplied for {change}."_
 
 ### Mode 3 — Dev Report (implementation report)
 
@@ -255,19 +256,13 @@ Numbering, the file name, and the folder are yours; the caller never supplies th
 
 **Update mode:**
 1. Read existing `task.md` from the provided folder path.
-2. For each change the caller specifies:
-   - Locate the exact text in the file (use `read` to confirm).
-   - Use `replace_string_in_file` (single change) or
-     `multi_replace_string_in_file` (multiple changes) — these are
-     the `edit` tool operations — to apply edits directly to `task.md`.
-   - Include 3–5 lines of surrounding context in `oldString` to
-     ensure a unique match.
+2. Apply each caller-supplied anchored delta, in the order given: the `anchor`
+   is the text to find, the `content` is its replacement.
+   - One delta → one edit call. Several → a batched edit call where the host
+     provides one, otherwise one edit call per delta, in order.
+   - The caller's anchor is the match — apply it as given, never re-derive it.
+   - Anchor did not match → [Constraints](#constraints) stop rule.
 3. After all edits, re-read the file to confirm correctness.
-
-**Update mode prohibitions:**
-- Do NOT generate Python, shell, or any scripting code for any purpose — reads, state checks, or edits.
-- All file reads use the `read` tool directly.
-- All file modifications use `edit` tool operations only.
 
 **QA spec mode (Mode 4):**
 - **Coupled destination:** use the provided task folder path directly; write
@@ -365,7 +360,7 @@ When invoked in **Mode 5**:
    - `decision` → use the caller-provided file name as-is (descriptive
      kebab-case, e.g. `challenge-validation.md`); format per the decision
      file format. **Never** rename to `d{N}`.
-3. Updates use `edit` operations; preserve unchanged rows in `index` files.
+3. Updates use edit operations; preserve unchanged rows in `index` files.
 4. Never invent decisions, topics, or rows — use only caller-provided data.
 
 ### Step 8 — Write design docs (Mode 6)
@@ -375,12 +370,11 @@ When invoked in **Mode 6**:
    each `kind` in the caller's file list.
 2. For each file in the caller's list:
    - `content` → create/overwrite the file, formatted per its `kind`'s schema.
-   - `changes` → apply each anchored delta in order with `edit` operations,
+   - `changes` → apply each anchored delta in order with edit operations,
      formatted per its `kind`'s schema.
 3. Preserve all content the caller's `changes` do not touch.
 4. Never invent design content — use only caller-provided data.
-5. Anchor did not match → stop and return to caller:
-   _"Anchor not found in {path}: {anchor}"_.
+5. Anchor did not match → [Constraints](#constraints) stop rule.
 
 ### Step 9 — Write design record (Mode 7)
 
@@ -464,13 +458,17 @@ workflow folder, or a report folder under `.sda/design/reports/`.
   routing level, not a bare grouping. The caller supplies the index content; a
   new folder arriving without its index → stop and return:
   _"Routing index not supplied for {folder}."_
-- **NEVER generate scripts for any file operation.** Do not produce Python,
-  shell, PowerShell, or any other code for reads, state checks, writes, or
-  verification. Use `read` for all reads; use `replace_string_in_file` or
-  `multi_replace_string_in_file` for all writes.
-- **No terminal execution.** You have no `execute` tool. If a caller
-  requests folder moves or script execution, refuse and explain that
-  those operations belong to the calling agent.
+- **Do every file operation with your host's built-in file tools.** Never use
+  the CLI for file or folder exploration, reading, updating, or creation — no
+  shell command, no script file, no heredoc, no inline one-liner, in any
+  language or shell. Change tracking depends on it: tool edits yield
+  reviewable, revertible diffs; script edits do not.
+- **Anchor did not match → stop.** Re-read the region; retry once with the
+  corrected anchor; still failing → return _"Anchor not found in {path}:
+  {anchor}"_. Never search, guess, or fall back to a script.
+- **Never run a command — even if a terminal is offered.** Folder moves and
+  command execution belong to the calling agent — refuse, and never ask a
+  caller to run one for you.
 - **Manifest is append-only for existing rows.** Never remove a row
   from manifest.md unless explicitly instructed. Only add or update.
 

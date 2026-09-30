@@ -74,7 +74,43 @@ sda-toolscan reads this to generate `filter-test-output` in `project-tools.md`.
 **jest:**   ✓, ✕, ` FAIL `, ` PASS `, `Tests:?\s+\d`, `Test\s+Suites:?\s+\d`
 
 ---
+**Command generation rules:**
 
+**Package manager runner (applies to ALL generated commands):** use the runner prefix that matches the package manager detected in step 1. Every CLI command — test runners, type checkers, linters, formatters, and app-run start commands — must be prefixed:
+
+| Detected package manager | Runner prefix |
+|---|---|
+| `npm` | `npx {tool} ...` |
+| `yarn` | `yarn {tool} ...` |
+| `pnpm` | `pnpm exec {tool} ...` |
+| `bun` | `bunx {tool} ...` |
+
+- Never use a bare binary call for a tool declared in the manifest — the local binary directory is not on PATH.
+- When a source (README, docs) presents multiple equivalent forms for the same command, always select the runner-prefixed form and discard the bare invocation.
+
+**Non-interactive invocation:** a runner that defaults to watch or interactive mode must be written in its single-run form.
+
+| Tool | Default behavior | Fix flag |
+|---|---|---|
+| Vitest | interactive menu | `--run` |
+| Jest | watch in dev | `--watchAll=false` or `--forceExit` |
+| Angular CLI `ng test` | watch mode | `--watch=false` |
+| Karma | watch mode | `--single-run` |
+| nodemon | restart loop | do not use — call the underlying binary directly |
+| `tsc` | `--watch` if a script enables it | omit `--watch`, add `--noEmit` |
+
+---
+
+## Application run detection
+
+Build `# app-run-start` from what the project already declares — never from source code. Long-running processes are expected here; the no-watch-mode rule does not apply.
+
+- **Entry files:** `server.ts`, `index.ts`, `main.ts`, `app.ts` — or the same names under `src/`
+- **Runtime invocation:** the project's `start` / `dev` / `serve` script when it starts one process and does not chain commands; otherwise the runner-prefixed runtime or framework CLI the manifest declares
+- **Port:** the framework config, `.env` / `.env.example`, or the framework default — omit the port argument when none is found
+- **Health check:** the path the project declares; `not detected` when it declares none
+
+---
 **Example output (for reference):**
 ```
 Repository Discovery Report

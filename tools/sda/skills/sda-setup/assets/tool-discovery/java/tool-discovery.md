@@ -52,6 +52,12 @@
    - Prefer Gradle wrapper when present — ensures the correct Gradle version is used
    - Report findings: "Build: `./gradlew build -x test`" or "Build: `mvn package -DskipTests`"
 
+9. **Git hook manager detection (REQUIRED: always scan, may not exist):**
+   - Scan: `.pre-commit-config.yaml` for pre-commit
+   - Scan: `.git/hooks/` for raw git hooks
+   - Report findings: "Git hooks: pre-commit"
+   - Hook managers route to `### Pre-Commit Checks` only — never to the lint or format sections
+
 ---
 
 ## Test output filter patterns
@@ -60,6 +66,32 @@ Pieces joined with `|`. PS uses `$([char]0x...)` for symbols; bash uses literal.
 sda-toolscan reads this to generate `filter-test-output` in `project-tools.md`.
 
 **JUnit (mvn):** `Tests run:`, `BUILD`
+
+---
+
+**Command generation rules:**
+
+**Build-tool invocation (applies to ALL generated commands):** every CLI command runs through the project's build tool — never a bare binary:
+
+| Detected build tool | Invocation |
+|---|---|
+| Maven (`pom.xml`) | `mvn {goal} ...` |
+| Gradle with wrapper | `./gradlew {task} ...` — Windows: `gradlew.bat {task} ...` |
+| Gradle without wrapper | `gradle {task} ...` |
+
+- Prefer the wrapper when one is present — it pins the Gradle version.
+- When a source (README, docs) presents multiple equivalent forms for the same command, always select the build-tool form and discard a bare binary invocation.
+
+---
+
+## Application run detection
+
+Build `# app-run-start` from what the project already declares — never from source code. Long-running processes are expected here; the no-watch-mode rule does not apply.
+
+- **Framework plugin:** the framework's run goal (`spring-boot:run` for Maven, `bootRun` for Gradle) when that plugin is present in the build file
+- **Packaged jar:** `java -jar` with the artifact path the build file produces — `target/<artifact>.jar` (Maven) or `build/libs/<artifact>.jar` (Gradle)
+- **Port:** `application.properties` / `application.yml` (`server.port`) or the framework default — omit the port argument when none is found
+- **Multiple startable modules:** one layer per module; never chain them in one command
 
 ---
 

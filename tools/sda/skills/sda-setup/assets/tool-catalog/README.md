@@ -2,7 +2,8 @@
 
 Language-specific `tool-catalog.md` files ship with this skill. The
 sda-setup script copies the matching catalog into `.sda/resources/{language}/`
-at setup time; `sda-setup` (Step 7) and `sda-tool-installer` read it from there.
+at setup time; `sda-setup` (Step 7), `sda-tool-installer`, and `sda-toolscan` read
+it from there.
 
 **`Hook command` convention:** a row's `Hook command` is that tool's canonical
 non-interactive invocation, written in its quietest form — the silence flag it

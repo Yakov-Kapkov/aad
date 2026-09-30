@@ -43,7 +43,9 @@ Access all files below by exact path from the repo root — never search for the
 | File | Path |
 |---|---|
 | project-tools.md | `.sda/project-tools.md` |
+| project-tools-schema.md | `.sda/resources/toolscan/project-tools-schema.md` |
 | tool-discovery.md | `.sda/resources/{language}/tool-discovery.md` |
+| tool-catalog.md | `.sda/resources/{language}/tool-catalog.md` |
 
 ### Toolscan environment rules
 
@@ -58,18 +60,12 @@ Access all files below by exact path from the repo root — never search for the
    - Languages + discovery specs → [PHASE 2](#phase-2-environment).
    - Pre-commit checks → [4.4](#44--pre-commit-checks).
 
-### File reading — use LLM tools, not shell commands
+### Terminal command scope
 
-**Always use your `read` / `search` tools to read project files.** Never run
-shell commands (`Get-Content`, `cat`, `type`, `grep`, etc.) to read file content.
-The `execute` tool is reserved for: the three toolscan scripts in
-`.sda/scripts/toolscan/` — `cleanup-project-tools`, `get-timestamp`, and
-`probe-validators` — `--version` probes of standalone detected tools (see
-[Probe before write](#probe-before-write)).
-No other `execute` calls are permitted.
-
-This avoids unnecessary terminal approval prompts and keeps detection entirely
-within the agent's own file-access tools.
+Never run any command other than the toolscan scripts in `.sda/scripts/toolscan/`
+([Toolscan script invocation](#toolscan-script-invocation)), the tool probes the
+[Detection sub-protocol](#detection-sub-protocol-applies-to-every-step-in-4146)
+defines, and commands that only read, list, or search files.
 
 ### Probe before write
 
@@ -172,7 +168,7 @@ Every phase follows this exact output sequence:
 - **In-progress actions:** italic fragment only during extended silence — no full sentences:
   - ✅ _Reading manifests..._
   - ✅ _Probing validators..._
-  - ❌ ~~"Now let me check the package.json:"~~
+  - ❌ ~~"Now let me check the manifest:"~~
   - ❌ ~~_Scanning complete, proceeding to VALIDATION..._~~
 
 ---
@@ -249,16 +245,15 @@ Every phase follows this exact output sequence:
 
 ### Detection priority — scripts reveal intent, not syntax
 
-**Always read the project's script definitions first** (e.g. `scripts` in
-`package.json`, `[tool.poetry.scripts]`, `Makefile` targets, `Taskfile` tasks).
-Scripts reveal which tools the project uses, which flags matter, and which
-config files apply. Use them as a **discovery source** — never as the command
-you write.
+**Always read the project's script definitions first** — the manifest and task
+files the discovery specs name. Scripts reveal which tools the project uses,
+which flags matter, and which config files apply. Use them as a **discovery
+source** — never as the command you write.
 
 **Scripts use their own shell — never copy their syntax.** Project manifest
-scripts (e.g. npm `scripts` in `package.json`) are executed by a
-POSIX-compatible shell regardless of the user's OS. They contain `&&`, `cd`,
-`rm -rf`, and other bash constructs. When reading scripts:
+scripts are commonly executed by a POSIX-compatible shell regardless of the
+user's OS. They may contain `&&`, `cd`, `rm -rf`, and other POSIX constructs.
+When reading scripts:
 - Extract **what** the script does (which binary, which flags, which paths) —
   not **how** it chains commands.
 - Reconstruct each command as a direct binary invocation in the detected user
@@ -271,8 +266,7 @@ POSIX-compatible shell regardless of the user's OS. They contain `&&`, `cd`,
 
 ### Multi-runner projects
 
-When a project has area-scoped runners (e.g. `client/` uses Jest, `server/`
-uses pytest), treat each area as a separate detection unit: run the full
+When areas use different runners, treat each area as a separate detection unit: run the full
 Extract → Infer sequence independently per area. Record each runner with its
 own section in `project-tools.md`. Never collapse multiple runners into one.
 
@@ -331,7 +325,7 @@ defines — not just its detection items.
 For each **tool category**, work through the four steps below in strict order.
 Stop at the first step that succeeds. **One `execute` probe call per step — never
 chain probes in a single command.** `{tool}` in every probe is the bare binary name
-only — never include subcommands (e.g. `npx vitest --version`, not `npx vitest run --version`).
+only — never include subcommands.
 
 **Load tool-catalog:** Before probing, read `.sda/resources/{language}/tool-catalog.md`
 for each detected language. Extract the `Check command` per tool:
@@ -354,10 +348,9 @@ causes subsequent probes from a different folder to fail.
 **Step 1 — Repo install**
 Search manifests, config files, and project scripts for the tool, walking from
 the area's working directory up to the repo root:
-1. Area's own manifest folder (e.g. `api2/package.json`).
-2. Each ancestor folder up to the repo root (e.g. root `package.json` when the
-   area is a subfolder — root-installed packages are accessible via `npx` from
-   any subdirectory through Node's module resolution).
+1. Area's own manifest folder (e.g. `client/`).
+2. Each ancestor folder up to the repo root — a dependency declared in an
+   ancestor manifest resolves for the area's folders.
 
 For each manifest found, probe **from within the area's working directory** (use
 probe directory isolation when area ≠ repo root):
@@ -378,8 +371,8 @@ For each alternative: probe `{tool} --version`.
 - All fail → continue to Step 4.
 
 **Step 4 — Hook manager fallback**
-Check if any hook manager config (`.pre-commit-config.yaml`, `lefthook.yml`, `.husky/`, etc.)
-declares a tool for this category.
+Check if any hook-manager config — per the loaded discovery specs — declares a tool for
+this category.
 - Found → probe globally: `{tool} --version`.
   - **Passes → the tool is globally runnable as a standalone binary.** Write bare binary command
     exactly as Steps 2–3 would — NOT a hook-manager invocation. **STOP.**
@@ -409,8 +402,8 @@ Infer from lock files or manifest files at project root.
 Read script definitions first, per
 [Detection priority](#detection-priority--scripts-reveal-intent-not-syntax) —
 scripts are the ground truth for which tools apply and how. Do NOT rely solely
-on config files or dependencies: a project may declare both `jest.config.ts` and
-`mocha`, and only the scripts reveal which runner applies where.
+on config files or dependencies: a project may carry a config for one runner and
+depend on another, and only the scripts reveal which applies where.
 
 ### 4.3 — All tool targets
 
@@ -423,18 +416,12 @@ Apply the [Detection sub-protocol](#detection-sub-protocol-applies-to-every-step
 - Multi-area: detect per area manifest.
 
 **Category classification** (determines which output section a detected tool belongs to):
-- **Lint**: reports violations/diagnostics. Fix capability → separate `lint-*-fix` variant, not grounds for reclassification. Examples: `flake8`, `pylint`, `ruff`, `eslint`, `rubocop`, `mypy`, `bandit`.
-- **Format**: rewrites code without emitting diagnostics. A tool that emits pass/fail stays in Lint even if it can `--fix`. Examples: `black`, `isort`, `prettier`, `pyupgrade`, `autoflake`, `docformatter`.
+- **Lint**: reports violations/diagnostics. Fix capability → separate `lint-*-fix` variant, not grounds for reclassification. The discovery spec's detection items name which class each tool belongs to.
+- **Format**: rewrites code without emitting diagnostics. A tool that emits pass/fail stays in Lint even if it can `--fix`.
 
 ### 4.4 — Pre-Commit Checks
 
-Check for hook manager configs regardless of language:
-- `.pre-commit-config.yaml` — pre-commit framework
-- `.husky/` — Husky (Node.js)
-- `lint-staged` key in `package.json` — lint-staged
-- `.overcommit.yml` — Overcommit (Ruby)
-- `lefthook.yml` / `lefthook.local.yml` — Lefthook
-- `.git/hooks/` — raw git hooks
+Check for the hook-manager configs the loaded discovery specs name, plus raw VCS hooks (`.git/hooks/`).
 
 If none found → skip. If found: read the config, extract each hook's `{hook-id}`, write run-all and staged commands only — never standalone linter or formatter commands. When ≥2 hooks map to one slot, see [One selector per grouping invocation](#one-selector-per-grouping-invocation). Multi-area: detect per area manifest.
 
@@ -444,15 +431,15 @@ Detect every long-running process (HTTP servers, dev-servers, background workers
 
 **Detection priority order:**
 
-1. **Project scripts** (`[tool.poetry.scripts]`, `package.json scripts`, Makefile) — extract the exact invocation; rewrite shell syntax for the detected OS if needed.
-2. **`README.md` / `AGENTS.md`** — scan "run", "start", "running locally", "getting started" sections for verbatim shell commands. If a section references a script file (e.g., `./scripts/start.sh`, `./run.ps1`), **read that file in full**. Apply runner-prefix rules to any commands found.
+1. **Project scripts** — extract the exact invocation; rewrite shell syntax for the detected OS if needed.
+2. **`README.md` / `AGENTS.md`** — scan "run", "start", "running locally", "getting started" sections for verbatim shell commands. If a section references a script file, **read that file in full**. Apply runner-prefix rules to any commands found.
 3. **Dockerfile / compose** — extract from `CMD`, `ENTRYPOINT`, or `command:`.
-4. **Entry file inference** — if `api.py`, `app.py`, `main.py`, or `server.ts` exists, construct a start command from the detected runtime and entry file. Port from config only (`.env`, `.env.example`, `docker-compose.yml`); omit `--port` if not found.
+4. **Entry file inference** — apply the discovery spec's application-run detection: it names the entry files, the runtime invocation, and where the port value comes from. Omit the port when none is found.
 5. **Undetermined** — write `# TODO: verify app entry point and start command`; flag in Phase 6.
 
 Attempt steps 1–4 before writing a `# TODO`. When evidence exists (entry file, port in config, framework in deps), construct a specific command rather than a placeholder.
 
-**Never read application source files** (`.py`, `.js`, `.ts`, etc.) — programmatic API calls (e.g. `uvicorn.run(app, port=8000)`) are not CLI commands.
+**Never read application source files** — a programmatic API call in source is not a CLI command.
 
 For each layer record: start command (with runner prefix if local dep), URL/port, health-check URL (`not applicable` for workers; `not detected` if absent).
 
@@ -505,7 +492,7 @@ are hook invocations, not validators.
 3. **Not found** — write `# _Not detected._` for `# build-all`.
 
 **No two-variant requirement** — `# build-all` only.
-**Safety rule** — never write a watch-mode or dev-server command (e.g. `tsc --watch`, `webpack serve`).
+**Safety rule** — never write a watch-mode or dev-server command.
 
 <result>
 | Category        | Detected                                                                |
@@ -527,9 +514,8 @@ are hook invocations, not validators.
 
 <title>⚙️ **VALIDATION**</title>
 
-Many project dependencies install executables locally (e.g. into
-`node_modules/.bin/`, `.venv/bin/`, `vendor/bin/`) — **not on PATH**, so a bare
-call fails. Every command you write must satisfy the canonical command-shape
+Many project dependencies install executables into a local binary directory —
+**not on PATH**, so a bare call fails. Every command you write must satisfy the canonical command-shape
 rules: [Local binary portability](#local-binary-portability) and
 [Orchestrator-managed tools](#orchestrator-managed-tools). In short: manifest
 tool → runner prefix; hook / CI / container-only tool → its orchestrator
@@ -598,8 +584,7 @@ Run the `get-timestamp` script and use the returned value verbatim for the
 - Render every section the schema defines, in schema order.
 - **Output Filter Command is always written** — it has no detection step. It holds only the shell-level machinery and `filter-last-n`, derived from the shell detected in PHASE 2. Placeholder values come from the schema.
 - **`filter-test-output` is area-scoped, not global.** Emit one per area inside that area's `### Test Execution` block. Read the `## Test output filter patterns` section from the tool-discovery spec of that area's language, select the row matching the detected framework, join the pieces with `|`, and wrap them as the schema's `{test-lines-filter}` — `Select-String -Pattern "..." | ForEach-Object { $_.Line }` (PowerShell) or `grep -E "..."` (bash/zsh). For multiple frameworks in one area, union that area's rows. Areas with no test framework emit `# filter-test-output` with `# _Not detected._`.
-- Write using the **`create_file` tool** (or equivalent full-overwrite tool) — this replaces the entire file in one operation.
-- **Never use an `edit` / insert / patch tool** — those append or modify lines and will corrupt the existing file rather than replace it.
+- Write it with the file-creation tool (`create_file` or the host's equivalent).
 - Use a direct path — gitignored folder won't resolve via search tools.
 - Do NOT add any comment, header, or annotation (e.g. `<!-- FULL OVERWRITE -->`) to the file — write only the canonical content defined by the schema.
 
@@ -652,36 +637,25 @@ If a tool doesn't support scoped execution, add:
 ### Safety rules
 
 - **No unintended side effects.** A command must not silently create, overwrite,
-  or delete files beyond its purpose. If a tool emits files by default (e.g.
-  `tsc` emitting JS during type-check), check the project config for a disable
-  flag; if unset, append it explicitly (e.g. `tsc --noEmit`, `gcc -fsyntax-only`).
+  or delete files beyond its purpose. Check the discovery spec for the tool's
+  emit-free form; when a tool emits by default, find the disable flag in the
+  project config and append it explicitly if unset.
 - **Non-interactive — no watch mode.** Every command must run to completion and
   exit on its own; one that waits for a keypress, shows a menu, or enters
   watch/re-run mode blocks the consuming agent indefinitely. Before writing:
-  1. Check whether the runner defaults to watch mode (e.g. Vitest, Jest
-     `--watch`, nodemon, `tsc --watch`, dev-servers).
-  2. Append the single-run flag (`--run`, `--watchAll=false`, `--no-watch`,
-     `--forceExit`, `--singleRun`, etc.).
-  3. If an npm script wraps the runner without a single-run flag, that is why
+  1. Check whether the runner defaults to watch/interactive mode — the catalog's
+     `Hook command` is its non-interactive form; compare against it.
+  2. Append the single-run flag the catalog's `Hook command` or the discovery
+     spec records for that tool.
+  3. If a project script wraps the runner without a single-run flag, that is why
      targeted commands use direct invocation, not the script.
-
-  Common watch-mode killers (illustrative):
-
-  | Tool | Default behavior | Fix flag |
-  |---|---|---|
-  | Vitest | interactive menu | `--run` |
-  | Jest | watch in dev | `--watchAll=false` or `--forceExit` |
-  | tsc | `--watch` if in script | omit `--watch`, add `--noEmit` |
-  | nodemon | restart loop | do not use — call the underlying binary directly |
-  | Angular CLI `ng test` | watch mode | `--watch=false` |
-  | Karma | watch mode | `--single-run` |
 
   **Exception: `## Application Run` is exempt from this rule.** Servers, dev-servers,
   and workers are long-running by design — do NOT add single-run flags.
   See [4.5 — Application run commands](#45--application-run-commands).
 - **Output suppression.** Read the tool's `Hook command` from the
   tool-catalog. Extract its silence flag — the flag that suppresses
-  non-result output (e.g. `--silent`, `-q`, `--quiet`, `--log-level warn`).
+  non-result output.
   Append it to every command generated for that tool: `test-all`,
   `test-path`, `test-path-coverage`, `test-all-coverage`, `format-code-all`,
   `format-code-path`.
@@ -691,10 +665,10 @@ If a tool doesn't support scoped execution, add:
 - **Format commands are emitted from the catalog's in-place form.** `format-code-all`
   is the formatter's `Hook command`; `format-code-path` keeps its binary and flags,
   replacing the whole-codebase target with the path placeholder. The write mode comes
-  from that cell — never emit a read-only variant (`--check`, `--verify-no-changes`).
+  from that cell — never emit a read-only check variant.
   A Format command emits no verdict line — its exit status is the verdict — so it never
   carries a filter tail; never append a pipe or a redirection. When the catalog records
-  no silence flag for the tool (e.g. Biome, Maven plugins), emit the command as it is.
+  no silence flag for the tool, emit the command as it is.
 
 - **Intentional modifications are fine.** Lint-fix / format commands are expected
   to modify files — label them as fix/format variants.
@@ -702,45 +676,27 @@ If a tool doesn't support scoped execution, add:
 ### Local binary portability
 
 **Precondition (hard gate):** a runner prefix is valid **only if** the binary is
-declared in the project's **dependency manifest** (e.g. `devDependencies`,
-`[tool.poetry.dependencies]`, `Gemfile`, `.csproj`). A tool found **only** in a
-hook-manager, CI, or container config is **not** a dependency — never emit
-`{runner} {tool}` for it; use its orchestrator invocation instead (see
-[Orchestrator-managed tools](#orchestrator-managed-tools)).
+declared in the project's **dependency manifest** — the manifest the discovery
+spec names. A tool found **only** in a hook-manager, CI, or container config is
+**not** a dependency — never emit `{runner} {tool}` for it; use its orchestrator
+invocation instead (see [Orchestrator-managed tools](#orchestrator-managed-tools)).
 
 - ❌ `{runner} {tool} {path}` — `{tool}` declared only in a hook-manager config
 - ✅ `{prefix} {hook-manager} run {hook-id} --files {paths}`
 
-When the precondition holds, prefix the binary with the ecosystem's runner so it
-resolves without a global install. Illustrative mappings (non-exhaustive):
-
-| Ecosystem | Runner prefix | Example |
-|---|---|---|
-| npm / yarn / pnpm | `npx` | `npx mocha ...` |
-| Bun | `bunx` | `bunx vitest ...` |
-| Python (poetry) | `poetry run` | `poetry run pytest ...` |
-| Python (pipx) | `pipx run` | `pipx run pytest ...` |
-| .NET | `dotnet` | `dotnet test ...` |
-| Cargo | `cargo` | `cargo test ...` |
+When the precondition holds, prefix the binary with the runner the area's
+discovery spec prescribes for its detected package manager, so it resolves
+without a global install.
 
 Applies to **all** commands — tests, type checkers, linters, formatters,
 validators, app-run — **and to the hook-manager CLI itself**, which follows the
-same precondition (in manifest → prefix; global-only → bare binary).
-Illustrative:
-
-| Hook manager | Installed via | Correct invocation |
-|---|---|---|
-| pre-commit | manifest (e.g. poetry) | `poetry run pre-commit run --all-files` |
-| pre-commit | global | `pre-commit run --all-files` |
-| lefthook | manifest (e.g. npm) | `npx lefthook run pre-commit` |
-| lefthook | global | `lefthook run pre-commit` |
+same precondition: declared in the manifest → runner prefix; global-only → bare
+binary.
 
 **Run-all vs targeted:** "run all" commands (`# test-all`, `# lint-all`,
-`# type-all`, `# format-all`) may use the project's **script alias** (e.g.
-`npm test`, `poetry run pytest`) — but only if it (1) does not enter
-watch/interactive mode (else append the single-run flag, e.g. `npm test -- --run`)
-and (2) runs a single tool, not a chain (`lint && test && build`). Otherwise use
-direct invocation. **Targeted** commands (specific file/folder) always use direct
+`# type-all`, `# format-all`) may use the project's **script alias** — but only
+if it (1) does not enter watch/interactive mode (else append the single-run flag)
+and (2) runs a single tool, not a chain of tools. Otherwise use direct invocation. **Targeted** commands (specific file/folder) always use direct
 invocation — see [Targeted commands](#targeted-commands--always-direct-invocation).
 
 ### Orchestrator-managed tools
@@ -749,7 +705,7 @@ A tool is **orchestrator-managed** when it appears only in an orchestrator confi
 
 | Config file (only source) | Orchestrator | Run all | Targeted (specific files) |
 |---|---|---|---|
-| `.pre-commit-config.yaml`, `lefthook.yml`, `.husky/`, etc. | Hook manager | `{prefix} {hook-manager} run {hook-id} --all-files` | `{prefix} {hook-manager} run {hook-id} --files {path1} {path2}` |
+| Hook-manager config (per the discovery specs) | Hook manager | `{prefix} {hook-manager} run {hook-id} --all-files` | `{prefix} {hook-manager} run {hook-id} --files {path1} {path2}` |
 | `docker-compose.yml` / `compose.yaml` | Docker Compose | `docker compose run --rm {service} {command}` | `docker compose run --rm {service} {command} {path}` |
 | CI config only (`.github/workflows/`, `Jenkinsfile`, etc.) | CI pipeline | Not locally runnable — **omit** | Not locally runnable — **omit** |
 
@@ -763,24 +719,23 @@ A tool is **orchestrator-managed** when it appears only in an orchestrator confi
 ### One selector per grouping invocation
 
 A grouping tool selects the sub-command to run with a **single** identifier per
-invocation — hook-id (`pre-commit`, `lefthook`), script name (`npm run`,
-`poetry run`), service (`docker compose run`), or target (`make`). That selector
+invocation — a hook-id, a script name, a service, or a build target. That selector
 is **singular**: exactly one per invocation.
 
 - **Never append extra selectors as arguments** to one parent invocation:
-  - ❌ `poetry run pre-commit run black isort --files {paths}`
-  - ❌ `npm run lint test`
-- When one command slot maps to **N** sub-commands (e.g. `black` + `isort` behind
-  a single `format-code-path`), emit **N complete invocations** joined by the
+  - ❌ `{prefix} {grouping} {selector-a} {selector-b}`
+  - ❌ `{grouping} {selector-a} {selector-b}`
+- When one command slot maps to **N** sub-commands (two tools behind a single
+  `format-code-path`), emit **N complete invocations** joined by the
   detected shell **Command Separator** (`;` PowerShell / `&&` bash/zsh — recorded
   in PHASE 2):
-  - ✅ `poetry run pre-commit run black --files {paths} ; poetry run pre-commit run isort --files {paths}`
+  - ✅ `{prefix} {grouping} {selector-a} {paths} ; {prefix} {grouping} {selector-b} {paths}`
 - Repeat the path / `--files` argument in **every** invocation of the chain — one
   per selector, never shared across selectors.
 - **Preserve source order.** Chain the invocations in the **exact order the
   selectors appear in the hook manager config** (or ordered source). The manager
-  runs hooks in listed order and the result can depend on it (e.g. `isort` before
-  vs after `black`). Never reorder alphabetically or by any other criterion.
+  runs hooks in listed order and the result can depend on it (one formatter
+  before vs after another). Never reorder alphabetically or by any other criterion.
 
 ### Targeted commands — always direct invocation
 
@@ -790,7 +745,7 @@ wrappers. No coverage wrappers on file/folder commands.
 
 **Apply the package manager prefix rule to ALL targeted commands** — tests, type checking, linting, formatting, validation.
 
-**Why:** `npm test -- src/foo` appends to hardcoded globs — it doesn't
+**Why:** a script alias appends the path to its hardcoded globs — it does not
 replace them.
 
 **Construction rule:** Read project scripts to understand which runner and
@@ -805,14 +760,13 @@ flags are used, then construct direct invocation with:
 1. Direct binary call (not a script)?
 2. Targets ONLY the specified file/folder (no glob)?
 3. No coverage wrapper on file/folder commands?
-4. No CI-only flags (`--bail`, `--forbid-only`)?
-5. No duplicate `npm test` entry for the same path?
+4. No CI-only flags?
+5. No duplicate script-alias entry for the same path?
 
 ### File targeting — path not name
 
-"Run specific file" must use **file path**, not test-name pattern matching
-(`--grep`, `-k`, `--filter`). Pass file as positional argument or use a
-file-pattern flag (`--testPathPattern`, `--spec`, `--file`).
+"Run specific file" selects by **file path**, never by test-name pattern. Pass the
+file as a positional argument or with the runner's own file-selection flag.
 
 ### Coverage — correct scoping
 
@@ -830,8 +784,7 @@ filesystem paths are valid — some tools need importable module names.
 - Value = folder path **relative to workspace root, prefixed with `./`**. Never
   absolute; never without the `./` prefix.
 - Use `./` when the root manifest owns the area's scripts directly.
-- Determine it from where the manifest that owns the area's dependencies lives
-  (e.g. `package.json`, `pyproject.toml`, `pom.xml`).
+- Determine it from where the manifest that owns the area's dependencies lives.
 - If a root script delegates via `cd {folder} && ...`, the working directory is
   `./{folder}` — write only the command, never the `cd`.
 - Write every command as if the shell is already in that directory.
@@ -855,7 +808,7 @@ Examples: root → `./`; subfolder app → `./client`; nested package → `./pac
 - Columns: `Area`, `Language`, `Working directory`, `File patterns`
 - Area names must match the `## {Area name}` headings used below.
 - **Order:** Backend first, Frontend second, then other areas alphabetically.
-- File patterns list all source file extensions for that area (e.g. `*.ts, *.tsx`).
+- File patterns list all source file extensions for that area.
 - Consuming agents use this table to map a file path to its area — no area guessing from paths.
 
 ---

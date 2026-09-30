@@ -32,7 +32,7 @@ Access all files below by exact path from the repo root — never search for the
 | manifest.md | `{specs-root}/manifest.md` |
 | spec files | `{specs-root}/{domain}/*` |
 
-**⛔ Never search, glob, or use `file_search` / `grep_search` to find any `.sda/` file.**
+**⛔ Never use `file_search` / `grep_search` to locate a `.sda/` file** — neither can see it. Read the exact path.
 
 ### CLI scripts
 
@@ -45,7 +45,7 @@ Access all files below by exact path from the repo root — never search for the
 | `{unit-file-size}` | `scripts.unitFileSize` |
 | `{unit-size-limit}` | `devTaskUnitSizeLimit` |
 
-**Never compose your own line-count script or one-liner** (`Get-Content`, `Measure-Object`, `wc -l`). Always run `{unit-file-size}`, substituting the placeholder for its resolved path.
+**Never compose your own line-count script or one-liner.** Always run `{unit-file-size}`, substituting the placeholder for its resolved path.
 
 **Example — PowerShell:**
 - ✅ `.sda/scripts/some-script.ps1 -Mode verify -Paths 'api/foo.ts,api/foo.test.ts' -Limit 2500`
@@ -282,7 +282,7 @@ Return a structured report to the calling agent:
 ## Constraints
 
 - **NEVER edit any file.** You are read-only.
-- **`execute` scope:** only to run `{unit-file-size}` for line counting (see [CLI scripts](#cli-scripts)). No other commands. Never compose a custom line-count command.
+- **`execute` scope:** never run any command other than `{unit-file-size}` for line counting (see [CLI scripts](#cli-scripts)) and commands that only read, list, or search files. Never compose a custom line-count command.
 - **NEVER make design decisions.** Report findings; the caller decides
   what to do.
 - **Return the full report** — do not summarize or omit sections.

@@ -247,9 +247,10 @@ finds — it reports, and leaves routing (sda-dev-task vs ad-hoc sda-dev) to you
 | `sda-ba` | Business Analyst — elicits a raw requirement into one ready User Story (Actor + Gherkin + measurable NFRs) and owns the durable requirements tree, gated by the Definition of Ready | Claude Sonnet 4.6 | read, search, agent, edit, execute |
 | `sda-design` | System architecture + feature design — components, contracts, diagrams, decision docs | Claude Sonnet 4.6 | read, search, agent, execute |
 | `sda-dev-task` | Designs atomic task specs (`task.md`) with test scenarios and implementation plans | project config | read, search, agent, execute |
-| `sda-qa-task` | Authors the black-box acceptance spec (`qa-task.md`) — coupled (from a finalized task) or standalone | Claude Sonnet 4.6 | read, search, agent |
-| `sda-dev` | TDD implementation orchestrator — delegates RED/GREEN to subagents to keep context small; routes `docs` units to sda-scribe + sda-docs-check; owns the workflow's `dev` stage | project config | read, edit, execute, agent |
-| `sda-qa` | Runtime acceptance QA — starts the app, drives a real browser/CLI through the functional requirements, writes `qa-report.md` (read-only on source) | Claude Sonnet 4.6 | read, edit, search, execute, browser, web |
+| `sda-qa-task` | Authors the black-box acceptance spec (`qa-task.md`) — coupled (from a finalized task) or standalone | Claude Sonnet 4.6 | read, search, execute, agent |
+| `sda-dev` | TDD implementation orchestrator — delegates RED/GREEN to subagents to keep context small; routes `docs` units to sda-scribe + sda-docs-check; owns the workflow's `dev` stage | project config | read, execute, agent |
+| `sda-qa` | Runtime acceptance QA — starts the app, drives a real browser/CLI through the functional requirements, writes `qa-report.md` (read-only on source) | Claude Sonnet 4.6 | read, edit, search, execute, browser |
+| `sda-workflow` | Workflow advisor surface — reports where a container sits, names the single next action and its owner, owns `init` and a user-requested escalation, and delegates the escalation brief to sda-scribe. Never triggers a producer, never resolves an escalation | Claude Sonnet 4.6 | read, edit, agent, execute |
 
 ### Subagents (invoked by pipeline agents)
 
@@ -262,9 +263,10 @@ finds — it reports, and leaves routing (sda-dev-task vs ad-hoc sda-dev) to you
 | `sda-test-writer` | Writes tests for TDD slices (RED) and tests-only slices. Mechanical worker: makes domain decisions within the assigned unit; stops and reports anything outside scope. | project config | read, edit, search, execute |
 | `sda-coder` | Implements production code (GREEN) and integration slices. Mechanical worker: makes domain decisions within the assigned unit; stops and reports anything outside scope. | project config | read, edit, search, execute |
 | `sda-refactor` | Runs the REFACTOR pass without changing behaviour: per-unit (refactors the code each unit added or modified) plus a final cross-unit duplication pass; reverts any change that breaks a test. | project config | read, edit, search, execute |
-| `sda-dev-quality` | Runs quality gates (types, lint, tests, coverage, build, pre-merge) in **local** (target files) or **global** (whole area) mode. Check-and-report only — never fixes. Invoked by sda-dev (Phase 5, global) or standalone. | Claude Haiku 4.5 | read, search, execute |
+| `sda-dev-quality` | Runs quality gates (types, lint, tests, coverage, build, pre-merge) in **local** (target files) or **global** (whole area) mode. Check-and-report only — never fixes. Invoked by sda-dev (Phase 5, global) or standalone. | Claude Haiku 4.5 | execute |
 | `sda-docs-check` | Verifies the docs tree (global + per-layer) + decision-doc integrity + drift and AI-readme routing (AGENTS.md/CLAUDE.md links, feature list) against reality. Full scope, or targeted on a `docs` unit's files. Check-and-report only — never fixes. Invoked by sda-design and sda-dev. | Claude Sonnet 4.6 | read, search, execute, agent |
 | `sda-tool-installer` | Installs required development tools — reads tool-catalog.md, runs install commands, handles git-hooks init, reports pass/fail per tool. Invoked by sda-setup skill (Step 7). | Claude Haiku 4.5 | read, execute |
+| `sda-diagram-writer` | Renders Mermaid diagrams from structured `DIAGRAM` blocks into `.md` files, returning the written path. Invoked by sda-design. | Claude Sonnet 4.6 | edit |
 
 **Model configuration:** Implementation agents use models from `project-config.json`. Default: Claude Sonnet. Run sda-setup (or say "update sda") to resolve family names and apply to agent files. See [Model configuration](#model-configuration).
 
@@ -278,7 +280,7 @@ All pipeline agents are user-invokable and used as needed.
 
 | Skill | Role |
 |---|---|
-| `sda-setup` | Scaffolds `.sda/` folder with resource files (bootstrap, tool-discovery, config example) |
+| `sda-setup` | Scaffolds `.sda/` folder with resource files (bootstrap, tool-discovery, tool-catalog, config example) |
 | `sda-workflow-guide` | Workflow-mode operating instructions for stage agents — the workflow CLI, the stage gate, finish/escalate/resolve steps, and one stage card per producer |
 | `sda-spec-guide` | Contract spec conventions — the spec model, storage layout, metadata, and content rules |
 
@@ -382,6 +384,7 @@ All resources are read from a `.sda/` folder in the project root (may be git-ign
 | Project config | `.sda/project-config.json` |
 | Project config reference | `.sda/project-config.reference.yml` |
 | Tool-discovery spec | `.sda/resources/{language}/tool-discovery.md` |
+| Tool catalog | `.sda/resources/{language}/tool-catalog.md` |
 | User Story schema | `.sda/resources/ba/user-story-schema.md` |
 | User Story | `.sda/stories/<slug>/user-story.md` |
 | Task spec | `.sda/tasks/<NN>-<task-name>/task.md` |

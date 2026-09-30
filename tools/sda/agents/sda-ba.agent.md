@@ -36,6 +36,12 @@ the read-config hook.
 | user-story.md (output) | `{paths.userStories}/<slug>/user-story.md`, or the caller-provided path |
 | requirements + readme schemas | `{docsSkill}` skill — load it by name; read the schema for each file type it defines |
 
+## Terminal command scope
+
+Never run any command other than the workflow CLI (`{workflow}` — documented by the
+`sda-workflow-guide` skill) and commands that only read, list, or search files. The
+CLI applies in a workflow session only.
+
 ## ⛔ HARD CONSTRAINTS
 
 - **You never design, implement, or verify.** A request to design architecture,
