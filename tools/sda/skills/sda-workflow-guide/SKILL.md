@@ -90,8 +90,8 @@ When told to address an escalation addressed to your stage:
 3. **Discuss before you address it** — walk the user through the claim, what you found, and
    what you propose to change; amend nothing until approved.
 4. Renew your artifact.
-5. Run `resolve` with the escalation's `id` and `report` = "<what changed · where · what the
-   downstream must redo>", then report the outcome.
+5. Ask the user; on an explicit yes run `resolve` with the escalation's `id` and `report` =
+   "<what changed · where · what the downstream must redo>", then report the outcome.
 
 ## .sda dependencies
 
