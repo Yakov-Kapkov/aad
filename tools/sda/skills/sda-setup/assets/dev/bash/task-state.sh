@@ -7,7 +7,7 @@ set -euo pipefail
 #   task-state.sh init   <task-folder> <task-name> <units-json>
 #   task-state.sh get    <task-folder>
 #   task-state.sh next   <task-folder>
-#   task-state.sh update <task-folder> <unit-number> <state>
+#   task-state.sh update <task-folder> <unit-number> <state> [symbols-json]
 
 COMMAND="${1:-}"
 TASK_FOLDER="${2:-}"
@@ -96,7 +96,7 @@ case "$COMMAND" in
       '{
         task: $task,
         status: "PENDING",
-        units: [$units | to_entries[] | {number: (.value.number // (.key + 1)), name: .value.name, state: "PENDING", scenarios: (.value.scenarios // 0)}]
+        units: [$units | to_entries[] | {number: (.value.number // (.key + 1)), name: .value.name, state: "PENDING", scenarios: (.value.scenarios // 0), symbols: []}]
       }' > "$STATE_FILE"
 
     unit_count=$(jq '.units | length' "$STATE_FILE")
@@ -150,9 +150,16 @@ case "$COMMAND" in
       exit 1
     fi
 
-    jq --argjson idx "$idx" --arg s "$NEW_STATE" \
-      '.units[$idx].state = $s' \
-      "$STATE_FILE" > "$STATE_FILE.tmp" && mv "$STATE_FILE.tmp" "$STATE_FILE"
+    SYMBOLS_JSON="${5:-}"
+    if [[ -n "$SYMBOLS_JSON" ]]; then
+      jq --argjson idx "$idx" --arg s "$NEW_STATE" --argjson sym "$SYMBOLS_JSON" \
+        '.units[$idx].state = $s | .units[$idx].symbols = $sym' \
+        "$STATE_FILE" > "$STATE_FILE.tmp" && mv "$STATE_FILE.tmp" "$STATE_FILE"
+    else
+      jq --argjson idx "$idx" --arg s "$NEW_STATE" \
+        '.units[$idx].state = $s' \
+        "$STATE_FILE" > "$STATE_FILE.tmp" && mv "$STATE_FILE.tmp" "$STATE_FILE"
+    fi
 
     update_task_status "$STATE_FILE"
 

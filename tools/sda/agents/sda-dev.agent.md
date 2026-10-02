@@ -260,6 +260,8 @@ Use `{task-state}` for all state operations (see [CLI scripts](#cli-scripts) for
 
 Run `update` at each phase's State-update step when `{state-tracking}` is true and the phase produced a clean result. Skip if failure handling ended the response, or `{state-tracking}` is false.
 
+The State-update commands below are the PowerShell form; on Bash/zsh, use the positional form from [CLI scripts](#cli-scripts).
+
 ### File reading strategy
 
 Read all files in parallel, 500 lines at a time. After each batch,
@@ -480,7 +482,7 @@ search the codebase, or delegate exploration in this sub-flow.
    |---|---|---|---|
    | `PENDING` | continue to step 3 | run (step 3) | run (step 3) |
    | `RED` | resuming — skip Phase 2, go to Phase 3 (GREEN) | skip | skip — treat as clear |
-   | `GREEN` | resuming — mark unit DONE, go to Phase 4·U | skip | skip — treat as clear |
+   | `GREEN` | resuming — go to Phase 4·U | skip | skip — treat as clear |
    | `{"done": true}` | [ASK] proceed anyway? | n/a | n/a |
 
    On resume, skip baseline capture because `{baseline-failures}` does
@@ -657,7 +659,7 @@ or:
 
 ### State update
 
-When `{state-tracking}`: run `{task-state}` `-Command update -UnitNumber <N> -State RED` (TDD unit) or `-State DONE` (tests-only unit).
+When `{state-tracking}`: run `{task-state}` `-Command update -TaskFolder <task-folder> -UnitNumber <N> -State RED -Symbols '<test names json>'` (TDD unit) or `-State GREEN -Symbols '<test names json>'` (tests-only unit) — `Symbols` = the `test_name`s from the returned `### Tests written` list, as a JSON string array.
 
 <result>
 ### RED gate
@@ -712,7 +714,7 @@ When `{state-tracking}`: run `{task-state}` `-Command update -UnitNumber <N> -St
 
 ### State update
 
-When `{state-tracking}`: run `{task-state}` `-Command update -UnitNumber <N> -State DONE`.
+When `{state-tracking}`: run `{task-state}` `-Command update -TaskFolder <task-folder> -UnitNumber <N> -State GREEN -Symbols '<json>'` — `Symbols` = source `symbol_name`s from the returned `### Implemented` list, plus (for `tests required`) the `test_name`s from `### Tests written`.
 
 <result>
 ### GREEN gate
@@ -736,7 +738,7 @@ When `{state-tracking}`: run `{task-state}` `-Command update -UnitNumber <N> -St
    - No findings → output the `<result>` block below.
    - Findings → re-delegate to `sda-scribe` **once**, each finding as an anchored delta, then re-run `sda-docs-check`.
    - Findings after the retry → **not a failure** ([Failure handling & escalation](#failure-handling--escalation)): present the report verbatim and ask the user to resolve what remains — a `Recommendation: fix code` or "caller decides" finding is the user's decision, never a troubleshooting lookup. Act on the answer; if a finding stays open, stop and report it.
-4. **State update** — same as Phase 3.
+4. **State update** — `{task-state}` `-Command update -TaskFolder <task-folder> -UnitNumber <N> -State DONE` (docs units have no refactor).
 
 <result>
 ### Docs gate
@@ -756,7 +758,7 @@ Refactoring runs in two scopes:
   inter-unit duplication only. Runs when `{multi-unit}` is true; skip when false.
 
 **Sourcing `In-scope symbols`:**
-- For `tests required` / `tests only` / `integration only` units: take them from the subagent results you already hold — the source `symbol_name`s from each unit's GREEN `### Implemented` list, plus the `test_name`s from its RED `### Tests written` list.
+- For `tests required` / `tests only` / `integration only` units: take them from the subagent results you already hold — the source `symbol_name`s from each unit's GREEN `### Implemented` list, plus the `test_name`s from its RED `### Tests written` list. On GREEN resume (no held results), use the unit's stored `symbols` field — returned by Phase 1's `task-state next`.
 - For `refactoring` units: derive from the unit's Changes blocks — the symbol names in each `**\`symbol\`**` entry.
 Never read files to derive them. Use `{file}: *` only when a unit created that file whole.
 
@@ -809,9 +811,12 @@ Changes:
 
 When `sda-refactor` returns — apply [Delegation discipline](#delegation-discipline). Clean result → output the result block below.
 
+### State update
+
+When `{state-tracking}`: run `{task-state}` `-Command update -TaskFolder <task-folder> -UnitNumber <N> -State DONE`.
+
 <result>
-### Refactoring
-{None needed. | Done.}
+{Refactoring is not needed. | Refactoring is done.}
 
 ### ⚠️ Pre-existing issues (not fixed)
 - {file} `{symbol}`: {violation} → carried forward to Follow-up Opportunities

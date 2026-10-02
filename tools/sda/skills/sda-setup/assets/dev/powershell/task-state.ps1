@@ -24,6 +24,9 @@
 
 .PARAMETER State
     (update only) New state: PENDING, RED, GREEN, DONE
+
+.PARAMETER Symbols
+    (update only) JSON array of in-scope symbols (source symbols + test names), persisted for GREEN resume
 #>
 
 param(
@@ -45,7 +48,10 @@ param(
 
     [Parameter(Position = 5)]
     [ValidateSet('PENDING', 'RED', 'GREEN', 'DONE')]
-    [string] $State
+    [string] $State,
+
+    [Parameter(Position = 6)]
+    [string] $Symbols
 )
 
 Set-StrictMode -Version Latest
@@ -168,6 +174,7 @@ switch ($Command) {
                 name      = $u.name
                 state     = 'PENDING'
                 scenarios = [int]$u.scenarios
+                symbols   = @()
             }
             $i++
         }
@@ -231,6 +238,10 @@ switch ($Command) {
         $target = $obj.units[$idx]
 
         $target.state = $State
+        if ($Symbols) {
+            $parsed = ConvertFrom-Json -InputObject $Symbols
+            $target.symbols = @($parsed)
+        }
         $obj = Update-TaskStatus $obj
         Write-State $obj
         Write-Output "Unit $UnitNumber -> $State. Task status: $($obj.status)."
