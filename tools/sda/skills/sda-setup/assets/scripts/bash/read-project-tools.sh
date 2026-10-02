@@ -2,7 +2,7 @@
 set -uo pipefail
 
 FOLDER="${1:-}"
-COMMANDS="${2:-test-path,type-path,format-code-path,filter-last-n,filter-tool,filter-test-output,validate}"
+COMMANDS="${2:-test-path,type-path,format-code-path,filter-last-n,filter-test-output,validate}"
 
 if [ -z "$FOLDER" ]; then
     echo "error=Usage: read-project-tools.sh <folder> [commands]"
@@ -152,12 +152,6 @@ if 'filter-last-n' in commands:
     v = get_command(all_lines, 'filter-last-n')
     if v:
         out.append(f"filter-last-n={v}")
-
-# Global: filter-tool (alias for filter-last-n)
-if 'filter-tool' in commands:
-    v = get_command(all_lines, 'filter-last-n')
-    if v:
-        out.append(f"filter-tool={v}")
 
 # Global: validate-*-path labels (batch `validate`, or one label per extension)
 validate_labels = ('validate-json-path', 'validate-yaml-path', 'validate-xml-path', 'validate-toml-path')

@@ -60,7 +60,7 @@ command.
 |---|---|
 | `{read-project-tools}` | `scripts.readProjectTools` |
 
-**`{read-project-tools}` — one call per unique folder.**
+**`{read-project-tools}` — one call per unique folder per label set. Hold every returned template for the session; never re-request a label you already hold.**
 Call form: `{read-project-tools} {folder} [{labels}]`
 Expand per `{shell}`:
 - **PowerShell:** `{read-project-tools} -Folder {folder} -Commands "{labels}"`
@@ -95,7 +95,7 @@ re-invocation that already covered the same files.
 **Decompose chained commands.** If a command returned by
 `{read-project-tools}` contains `;` or `&&`, split it on those
 separators and run each segment as a separate terminal call,
-each with its own `filter-tool`. The gate result is
+each with its own `filter-last-n`. The gate result is
 the aggregate: all segments must pass.
 
 **Run commands verbatim.** Only three edits are permitted:
@@ -114,15 +114,14 @@ filter template carries a literal `{N}` — substitute the `{cap}` value for it.
 Fixed values, defined once, in the table below.
 
 **Cap noisy output.** Any command that may produce more than ~100 lines
-must use `filter-tool`. For test commands, use `filter-last-n` for the first
-pass (shows summary). Skip the filter only for commands that are inherently
+must use `filter-last-n`. Skip the filter only for commands that are inherently
 concise (type-checking).
 
 | Filter | Verdict pass | Failure detail (one re-run) |
 |---|---|---|
 | `filter-last-n` (tests) | `{cap}` = 10 | — |
 | `filter-test-output` (tests) | — | `{cap}` = 100 |
-| `filter-tool` (findings gates) | `{cap}` = 10 | `{cap}` = 50 |
+| `filter-last-n` (findings gates) | `{cap}` = 10 | `{cap}` = 50 |
 
 **Judge filtered gates by output, not exit code.** The filter pipe masks the
 runner's status — apply each gate's pass condition to the returned output.
@@ -234,8 +233,8 @@ For each area with target files:
 immediately (e.g., `L1 Types: ✅`). Accumulate all results for the
 final report in Phase 6.
 
-1. **Fetch commands** — call `{read-project-tools} {workdir} ["type-path,lint-path,test-path,test-path-coverage,filter-last-n,filter-test-output,filter-tool"]`.
-   Omit `lint-path` / `type-path` / `test-path-coverage` / `filter-last-n` / `filter-tool` / `filter-test-output` when absent.
+1. **Fetch commands** — call `{read-project-tools} {workdir} ["type-path,lint-path,test-path,test-path-coverage,filter-last-n,filter-test-output"]`.
+   Omit `lint-path` / `type-path` / `test-path-coverage` / `filter-last-n` / `filter-test-output` when absent.
 
 2. **L1 — Types:**
    - N/A if no `type-path`. Never substitute another label.
@@ -244,7 +243,7 @@ final report in Phase 6.
 
 3. **L2 — Lint:**
    - N/A if no `lint-path`.
-   - Fill `{path}` with area's target Source + Test file paths. Apply `filter-tool`.
+   - Fill `{path}` with area's target Source + Test file paths. Apply `filter-last-n`.
    - Pass condition: zero errors.
 
 4. **L3 — Tests:**
@@ -256,7 +255,7 @@ final report in Phase 6.
 
 5. **L4 — Coverage:**
    - ⏭️ Skip if `tests.coverage.enabled` is `false`. N/A if no `test-path-coverage`.
-   - Fill `{path}` with area's target Test file paths. Apply `filter-tool`.
+   - Fill `{path}` with area's target Test file paths. Apply `filter-last-n`.
    - Pass condition: zero errors in the output.
 
 ### Phase 5 — Run global gates per area
@@ -269,7 +268,7 @@ For each area:
 immediately (e.g., `G1 Types: ✅`). Accumulate all results for the
 final report in Phase 6.
 
-1. **Fetch commands** — call `{read-project-tools} {workdir} ["type-all,lint-all,test-all,test-all-coverage,build-all,precommit-all,filter-last-n,filter-test-output,filter-tool"]`.
+1. **Fetch commands** — call `{read-project-tools} {workdir} ["type-all,lint-all,test-all-coverage,build-all,precommit-all"]`. Reuse the `test-all`, `filter-last-n`, and `filter-test-output` templates held from Phase 3 — re-fetch them only when Phase 3 was skipped (baseline provided).
    Fetch `precommit-all` from `{read-project-tools} . ["precommit-all"]` (project-global) **only when the area's working directory is not `./`** — otherwise the call above already carries it.
 
 2. **G1 — Types:**
@@ -279,12 +278,12 @@ final report in Phase 6.
 
 3. **G2 — Lint:**
    - N/A if no `lint-all`.
-   - Apply `filter-tool`.
+   - Apply `filter-last-n`.
    - Pass condition: zero errors/warnings.
    - Commands may auto-fix files. Re-run once before reporting failure.
 
 4. **G3 — Tests:**
-   - N/A if no `test-all`.
+   - ❌ unable to verify if no `test-all` — a missing test runner may mean a stale scan; re-run sda-toolscan.
    - **First pass:** Reuse the Phase 3 `test-all` output for this area — do not run it again. Run it only when Phase 3 was skipped, or G2 lint auto-fixed files. Use `filter-last-n`.
    - **If a failure marker appears:** Re-run with `filter-test-output` for detailed output.
    - Pass condition: all green.
@@ -296,17 +295,17 @@ final report in Phase 6.
    - N/A if no `precommit-all`. Command fetched from `{read-project-tools} .` (project-global).
    - Apply [Decompose chained commands](#terminal-command-scope) — `precommit-all`
      often chains multiple tools with `;`. Run each segment as a
-     separate call with `filter-tool`.
+     separate call with `filter-last-n`.
    - Pass condition: every segment reports zero errors.
 
 6. **G5 — Build:**
    - N/A if no `build-all`.
-   - Apply `filter-tool`.
+   - Apply `filter-last-n`.
    - Pass condition: zero errors in the output.
 
 7. **G6 — Coverage:**
    - ⏭️ Skip if `tests.coverage.enabled` is `false`. N/A if no `test-all-coverage`.
-   - Apply `filter-tool`.
+   - Apply `filter-last-n`.
    - Pass condition: no threshold error in the output.
 
 ### Phase 6 — Produce final report

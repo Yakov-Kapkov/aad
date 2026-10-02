@@ -181,7 +181,11 @@ Expand per `{shell}`:
 Omit `[{labels}]` when no labels are needed.
 Fallback for app-run commands when qa-task.md lacks them.
 
-An absent key in `{read-project-tools}` output means the tool was not detected — skip silently.
+An absent key means the tool was not detected. Optional labels
+(`app-run-url`, `app-run-healthcheck`) → skip silently. The core label
+`app-run-start` absent where the layer needs it → surface
+`⚠️ app-run-start not found — toolchain may have changed; re-run sda-toolscan.`
+instead of skipping.
 
 ---
 

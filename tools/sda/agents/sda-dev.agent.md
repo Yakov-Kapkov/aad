@@ -200,7 +200,11 @@ Expand per `{shell}`:
 - **Bash/zsh:**   `{read-project-tools} {folder} {labels}`
 Omit `[{labels}]` when no labels are needed.
 
-An absent key in `{read-project-tools}` output means the tool was not detected — skip silently.
+An absent key means the tool was not detected. Optional labels
+(`format-code-path`, `type-path`, `validate-*`) → skip silently. A core
+label (`test-all`, `test-path`) absent where the unit needs it → surface
+`⚠️ {label} not found — toolchain may have changed; re-run sda-toolscan.`
+instead of skipping.
 
 **Command labels** — request exactly these labels from `{read-project-tools}`:
 
