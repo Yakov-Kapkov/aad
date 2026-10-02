@@ -203,6 +203,7 @@ that returned exactly 500 lines.
 ### Terminal working directory
 
 Always use absolute paths for `cd` — never relative.
+- `Working directory` is always `{repo-root}`-relative — never the terminal's CWD.
 - `Working directory` = `./` → `{absolute-working-dir}` = `{repo-root}`.
 - `Working directory` = `<subfolder>` → `{absolute-working-dir}` = `{repo-root}/<subfolder>` (strip leading `./`).
 - Command form: `cd {absolute-working-dir}; <command>`.

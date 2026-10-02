@@ -67,15 +67,20 @@ Expand per `{shell}`:
 - **Bash/zsh:**   `{read-project-tools} {folder} {labels}`
 Omit `[{labels}]` when no labels are needed.
 
+The `{folder}` argument only selects an area — it never affects the returned `working-dir=`.
+
 An absent key in `{read-project-tools}` output means the tool was not detected — the gate is N/A, unless the gate's own rule says otherwise (G1 → ❌ unable to verify).
 
 ### Terminal working directory
 
 Always use absolute paths for `cd` — never relative.
+- `Working directory` is always `{repo-root}`-relative — never the terminal's CWD.
 - `Working directory` = `./` → `{absolute-working-dir}` = `{repo-root}`.
 - `Working directory` = `<subfolder>` → `{absolute-working-dir}` = `{repo-root}/<subfolder>` (strip leading `./`).
 - Command form: `cd {absolute-working-dir}; <command>`.
+  No trailing `cd {repo-root}` — unnecessary with absolute paths.
 - Strip the subfolder prefix from all path arguments.
+  Example: `Working directory: ./api`, repo root `/home/user/project` → `cd /home/user/project/api; <command>`, file `api/features/dtos.ts` → `features/dtos.ts`.
 
 ### Terminal command scope
 

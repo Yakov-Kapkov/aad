@@ -142,6 +142,7 @@ troubleshooting guidance or rewrite the command into a bare binary.
 ### Terminal working directory
 
 Always use absolute paths for `cd` — never relative.
+- `Working directory` is always `{repo-root}`-relative — never the terminal's CWD.
 - `Working directory` = `./` → `{absolute-working-dir}` = `{repo-root}`.
 - `Working directory` = `<subfolder>` → `{absolute-working-dir}` = `{repo-root}/<subfolder>` (strip leading `./`).
 - Command form: `cd {absolute-working-dir}; <command>`.
@@ -199,6 +200,8 @@ Expand per `{shell}`:
 - **PowerShell:** `{read-project-tools} -Folder {folder} -Commands "{labels}"`
 - **Bash/zsh:**   `{read-project-tools} {folder} {labels}`
 Omit `[{labels}]` when no labels are needed.
+
+The `{folder}` argument only selects an area — it never affects the returned `working-dir=`.
 
 An absent key means the tool was not detected. Optional labels
 (`format-code-path`, `type-path`, `validate-*`) → skip silently. A core

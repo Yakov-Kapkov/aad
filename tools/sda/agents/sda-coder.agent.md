@@ -214,6 +214,7 @@ If the command fails to execute — apply [Hard stop on execution failure](#hard
 ### Terminal working directory
 
 Always use absolute paths for `cd` — never relative.
+- `Working directory` is always `{repo-root}`-relative — never the terminal's CWD.
 - `Working directory` = `./` → `{absolute-working-dir}` = `{repo-root}`.
 - `Working directory` = `<subfolder>` → `{absolute-working-dir}` = `{repo-root}/<subfolder>` (strip leading `./`).
 - Command form: `cd {absolute-working-dir}; <command>`.

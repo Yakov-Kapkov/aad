@@ -242,7 +242,7 @@ Remember the folder that held the spec → `{spec-folder}` (used for the report)
 For each layer in `## Setup`:
 1. Read start command, working directory, URL, and health check from the layer's entry in `qa-task.md ## Setup`.
    **Fallback** (start command absent — old qa-task.md format): call `{read-project-tools} . ["areas"]` to get all areas and their working directories; match the layer name to its `area.{Name}` entry, then call `{read-project-tools} {workdir} ["app-run-start,app-run-url,app-run-healthcheck"]` to get the layer's run data.
-2. Start the start command in its **own async terminal** from `{working-dir}`.
+2. Start the start command in its **own async terminal** from `{working-dir}` — always `{repo-root}`-relative.
 3. Confirm the layer is up using the URL, health check, or expected log line from `qa-task.md`. If a layer fails to start, mark every FR that needs it `⚠️ NOT VERIFIED — {layer} failed to start`, capture the startup output as evidence, and continue with FRs that don't need it.
 
 ### Phase 4 — Verify each functional requirement
