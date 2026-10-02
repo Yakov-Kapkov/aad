@@ -160,6 +160,24 @@ otherwise pick the first approach you evaluated. Then execute.
 **Act-now trigger:** When you conclude "I have all the info" or
 "I'm ready to write," the next action must be a tool call.
 
+### Commands are immutable
+
+The test, format-code, type-check, and validate-data commands arrive
+complete. Run each exactly as passed — the only changes permitted are
+those [Terminal working directory](#terminal-working-directory)
+requires: the `cd` prefix and stripping the working-directory prefix
+from path arguments. Never rewrite into a bare binary or entry-point
+call, add a flag, add or remove a filter pipe or stderr redirect, or
+wrap it in an env prefix, shell wrapper, or one-liner of your own.
+
+Run every command in the shell named by `Shell`; never translate its
+idioms — the passed command already uses the correct syntax.
+
+A rewritten command that passed is still a violation. A passed command
+that cannot be run as-is is an execution failure — apply [Hard stop on
+execution failure](#hard-stop-on-execution-failure); never fix it by
+rewriting.
+
 ### Type check
 
 If a type-check command was provided, run it exactly as passed.
@@ -404,10 +422,6 @@ cd {absolute-working-dir}
   is given.
 - Run any command other than the provided test commands, type-check, format-code,
   and validate-data commands, and commands that only read, list, or search files.
-  Run provided commands in their exact form — never strip, omit, or rewrite any
-  part of a provided command, including its output pipe or filter.
 - Use terminal commands to write or create files — always use the `edit` tool for file writes.
-- Add wrappers, env var prefixes, or shell workarounds to commands — or
-  replace a runner or script invocation with a direct binary or entry-point call.
 - After execution failure: run any further terminal command or file
   read — see [Hard stop on execution failure](#hard-stop-on-execution-failure).

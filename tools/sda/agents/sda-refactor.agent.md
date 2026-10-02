@@ -233,14 +233,21 @@ that returned exactly 500 lines.
 
 ### Commands are immutable
 
-The test commands, format-code command, type-check command, and validate-data commands arrive complete. Run each exactly
-as passed. Never extend, modify, re-wrap, or substitute them — in
-particular, never replace a runner or script invocation with a direct
-binary or entry-point call. Each test command already includes its output
-filter pipe.
+The test, format-code, type-check, and validate-data commands arrive
+complete. Run each exactly as passed — the only changes permitted are
+those [Terminal working directory](#terminal-working-directory)
+requires: the `cd` prefix and stripping the working-directory prefix
+from path arguments. Never rewrite into a bare binary or entry-point
+call, add a flag, add or remove a filter pipe or stderr redirect, or
+wrap it in an env prefix, shell wrapper, or one-liner of your own.
 
-Run every command in the shell named by `Shell`. Never translate a command
-to another shell's idioms — the passed command already uses the correct syntax.
+Run every command in the shell named by `Shell`; never translate its
+idioms — the passed command already uses the correct syntax.
+
+A rewritten command that passed is still a violation. A passed command
+that cannot be run as-is is an execution failure — apply [Hard stop on
+execution failure](#hard-stop-on-execution-failure); never fix it by
+rewriting.
 
 ### Type check
 
