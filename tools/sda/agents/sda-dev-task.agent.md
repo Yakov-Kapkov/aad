@@ -320,6 +320,7 @@ to the user; do not record it yourself.
 | Change | Route |
 |---|---|
 | **Mechanical** — adds an entry to an existing format: CLI row, env var, config key, readme feature line, an existing doc file that is not a spec | `docs` unit (last unit) |
+| **Config/env/secret template file/IaC** — a dotfile or template the app reads (e.g. `.env.example`), not a doc | `integration only` — never a `docs` unit |
 | **Contract spec — amendment** — an anchored delta to a spec that exists; storage is in `sda-spec-guide` | `docs` unit — anchored delta only |
 | **Contract spec — creation** — a boundary with no spec file | `sda-design` — flag to the user, do not create it |
 | **Semantic doc** — new/changed concept, decision, vocabulary term, doc-tree structure, or readme routing | `sda-design` (decision docs) — flag to the user, do not write it |
