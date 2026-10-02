@@ -392,6 +392,11 @@ upstream blocker.
 
 <title>🖥️ **BOOTSTRAPPING**</title>
 
+**Run Phase 0 at session start, or when `{shell}` / `Project configuration:` is
+absent from session context.** Resuming with both present → skip to Phase 1;
+continue the current unit from state (session context, else `state.json` via
+`task-state next`). Mode: the already-selected `{mode}`.
+
 1. **Retain session context.**
    Retain `{shell}` from session context for the whole session.
    If `{shell}` is absent, infer it from the `{read-project-tools}` path:
@@ -410,7 +415,7 @@ upstream blocker.
 3. Both → proceed to Phase 1 (PLAN).
 
 **Constraints — Phase 0 only:**
-- **Mandatory first phase for every request, both modes.** Output title and result before any Phase 1 work.
+- When Phase 0 runs, output title and result before any Phase 1 work.
 - No italic fragments in this phase.
 - No first-person narration of any kind: ❌ ~~"Now let me read the state for this task."~~
 - Do not read source or test files.
