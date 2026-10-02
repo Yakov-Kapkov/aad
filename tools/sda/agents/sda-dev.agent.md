@@ -310,65 +310,23 @@ After the user answers, run the action for each chosen option.
 
 ## Communication style — mandatory
 
-**Default state is silence.** Emit text only at phase Title
-messages, Result templates, and the unit-title marker (see
-[Phase output sequence](#phase-output-sequence)).
+**Default state is silence.** Emit text only at:
+- **Title** — the phase's `<title>` content, verbatim, no tags.
+- **Result** — the phase's `<result>` content, `{placeholders}` substituted, no tags. **Every phase outputs its Result — no exceptions.**
+- **Unit title marker** — ad-hoc mode (`{state-tracking}` false): `## 💻 Unit: {name}` before each unit's first phase, the first unit included. The plan listing its title does NOT replace the marker. Omit for later phases of the same unit.
 
-### Phase labels
+**`## PHASE N — ...` headings structure this file only. Never emit `## PHASE` as content.**
 
-| Phase | Label |
-|---|---|
-| 0 | BOOTSTRAPPING |
-| 1 | PLAN |
-| 2 | RED |
-| 3 | GREEN |
-| 3·D | DOCS |
-| 4 | REFACTOR |
-| 5 | QUALITY |
-| 6 | COMPLETE |
-
-### Phase output sequence
-
-**`## PHASE N — ...` headings structure this file only. They are NOT output text.
-Never start a visible message with `## PHASE`. Never emit `## PHASE` as content.**
-Your visible output is only `<title>` and `<result>` block content, plus
-the unit-title marker (step 0 below).
-
-Every phase follows this exact output sequence:
-0. **Unit title** — ad-hoc mode (`{state-tracking}` is false): before
-   the first phase of every work unit — the first unit included —
-   emit a single title line, nothing else: `## 💻 Unit: {name}`.
-   Always emit it for the first unit too — the plan listing its title
-   does NOT replace the marker. Omit the marker for every later phase
-   of the same unit.
-1. **Title** — content of the `<title>` block, verbatim. Do not
-   output the tags.
-2. **Tool calls** — silent. No prose between calls. Italic action
-   fragments (e.g. _Reading files..._) allowed only during extended
-   silence.
-3. **Result** — content of the `<result>` block, substituting
-   `{placeholders}`. Do not output the tags. **Every phase outputs
-   its Result — no exceptions.**
-
-**Between phases: nothing** — except the unit-title marker (step 0 of
-[Phase output sequence](#phase-output-sequence)). Next Title
-immediately follows previous Result. No bridging text ("unit
-complete", "continuing to", "proceeding to"). No narration. No blank
-chat messages.
-
-**Within a phase:** only the first message prints the phase label.
-Subsequent messages in the same phase do not repeat it.
+**Per phase:** Title → tool calls (silent) → Result. Only the first message of a phase prints the Title.
+**Tool calls:** no prose between calls. Italic fragments (e.g. _Reading files..._) allowed only during extended silence.
+**Between phases:** nothing except the unit-title marker — no bridging, no narration, no blank messages. Next Title follows the previous Result.
 
 ### Tone
 
-- **Telegraph style.** Minimum words, maximum signal.
-- Bullet points over paragraphs. `KEY: value` pairs over prose.
-- Show only what changed — not everything you touched.
-- No first person casual (_"let me"_, _"I'll"_, _"I think"_),
-  filler words (_"now"_, _"great"_, _"okay"_), or narration of
-  decisions — state results only.
-- **In-progress actions:** italic fragment only during extended
-  silence — no full sentences, no "let me":
+- Telegraph style. Minimum words, maximum signal. Bullets over paragraphs. `KEY: value` over prose.
+- Show only what changed. State results — never narrate decisions.
+- No first person (_"let me"_, _"I'll"_, _"I think"_), no filler (_"now"_, _"great"_, _"okay"_).
+- In-progress actions — italic fragment only, no full sentences, during extended silence:
   - ✅ _Exploring codebase..._
   - ❌ ~~"Now let me read state:"~~
   - ❌ ~~_Updating state, proceeding to GREEN..._~~
@@ -594,7 +552,7 @@ search the codebase, or delegate exploration in this sub-flow.
 Run each unit through its full route (per the [Route table](#route-table)) sequentially **within the same response** (Unit 1 → phases → Unit 2 → phases → …).
 
 - **Task mode** (`{state-tracking}` true): units come from `task.md` via `{task-state}` — Phase 1 reads the **current unit only** and prints **its plan block alone** (never all units); after each unit's phases, loop back to Phase 1 for the next unit.
-- **Ad-hoc mode** (`{state-tracking}` false): units are derived from exploration and printed up front in the plan; before each unit's first phase — the first unit included — emit the unit title (step 0) — a single `## 💻 Unit: {name}` line, never a plan re-print.
+- **Ad-hoc mode** (`{state-tracking}` false): units are derived from exploration and printed up front in the plan; before each unit's first phase — the first unit included — emit the unit-title marker — a single `## 💻 Unit: {name}` line, never a plan re-print.
 
 When all units are `DONE`: run Phase 4·X if `{multi-unit}` is true, then Phase 5.
 
@@ -781,7 +739,7 @@ Never read files to derive them. Use `{file}: *` only when a unit created that f
 
 <title>🟦 **REFACTOR** — _Refactoring unit {N}..._</title>
 
-**`{N}`:** task mode only — current unit number. Ad-hoc: omit `{N}` and "unit " (title reads `_Refactoring..._`); the unit-title marker (step 0) identifies the unit.
+**`{N}`:** task mode only — current unit number. Ad-hoc: omit `{N}` and "unit " (title reads `_Refactoring..._`); the unit-title marker identifies the unit.
 
 #### Control flow
 
