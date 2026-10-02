@@ -74,7 +74,7 @@
 Pieces joined with `|`. PS uses `$([char]0x...)` for symbols; bash uses literal.
 sda-toolscan reads this to generate `filter-test-output` in `project-tools.md`.
 
-**pytest:** `FAILED`, `PASSED`, `FAILURES`, `\d+\s+failed`, `\d+\s+passed`
+**pytest:** `FAILED`, `ERROR`, `failed`, `passed`, `error`
 
 ---
 
