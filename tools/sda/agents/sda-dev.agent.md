@@ -213,6 +213,7 @@ An absent key in `{read-project-tools}` output means the tool was not detected �
 | `test-path` | delegation — run one unit's tests |
 | `format-code-path` | delegation — format source/test files |
 | `type-path` | delegation — type-check |
+| `validate` | Plan — fetch once; returns every `validate-{ext}-path` template (global label) |
 | `validate-{ext}-path` | delegation — validate data files (one per extension) |
 
 ### No file output for command results
@@ -466,6 +467,13 @@ Run `test-all` per [Two-pass test runs](#two-pass-test-runs).
 First pass clean → baseline is clear; no output → not a pass — apply [Filtered command verdict](#filtered-command-verdict).
 Failure marker → the failure-detail pass names the failing tests.
 Merge all failing test names into `{baseline-failures}`; a fully-passing result across all areas → `{baseline-failures}` = `[]`.
+
+### Validate commands
+
+Request `validate` once per session — a global label, area-independent (pass the
+first area's working directory). Hold every returned `validate-{ext}-path`
+template for the session. Each delegation selects the template matching its
+data-file extensions — normalize `.yml` → yaml.
 
 ### Task mode
 

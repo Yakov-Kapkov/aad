@@ -159,9 +159,10 @@ if 'filter-tool' in commands:
     if v:
         out.append(f"filter-tool={v}")
 
-# Global: validate-*-path labels
-if 'validate' in commands:
-    for lbl in ('validate-json-path', 'validate-yaml-path', 'validate-xml-path', 'validate-toml-path'):
+# Global: validate-*-path labels (batch `validate`, or one label per extension)
+validate_labels = ('validate-json-path', 'validate-yaml-path', 'validate-xml-path', 'validate-toml-path')
+for lbl in validate_labels:
+    if 'validate' in commands or lbl in commands:
         v = get_command(all_lines, lbl)
         if v:
             out.append(f"{lbl}={v}")

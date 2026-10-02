@@ -143,9 +143,10 @@ if ('filter-tool' -in $requestedCmds) {
     if ($v) { $out.Add("filter-tool=$v") }
 }
 
-# Global: validate-*-path labels
-if ('validate' -in $requestedCmds) {
-    foreach ($lbl in @('validate-json-path','validate-yaml-path','validate-xml-path','validate-toml-path')) {
+# Global: validate-*-path labels (batch `validate`, or one label per extension)
+$validateLabels = @('validate-json-path','validate-yaml-path','validate-xml-path','validate-toml-path')
+foreach ($lbl in $validateLabels) {
+    if ('validate' -in $requestedCmds -or $lbl -in $requestedCmds) {
         $v = Get-CommandByLabel $allArr $lbl
         if ($v) { $out.Add("$lbl=$v") }
     }
