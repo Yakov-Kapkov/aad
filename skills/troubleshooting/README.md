@@ -8,8 +8,7 @@ A Copilot skill that provides a troubleshooting dictionary for unexpected comman
 
 | File / Folder | Purpose |
 |---|---|
-| `SKILL.md` | Skill definition — when and how to use the dictionary |
-| `references/troubleshooting.md` | Symptom → cause → fix dictionary |
+| `SKILL.md` | Skill definition plus the symptom → cause → fix dictionary |
 
 ---
 
@@ -23,9 +22,7 @@ Copy the `skills/troubleshooting/` folder into your target project's Copilot ski
     └── copilot/
         └── skills/
             └── troubleshooting/
-                ├── SKILL.md
-                └── references/
-                    └── troubleshooting.md
+                └── SKILL.md
 ```
 
 ---
@@ -34,8 +31,12 @@ Copy the `skills/troubleshooting/` folder into your target project's Copilot ski
 
 The skill activates when a command returns a confirmed failure. The agent checks
 the exit code first — empty output with exit code `0` is a success for silent
-tools and ends the skill immediately. Only a confirmed non-zero exit code (from
-an unfiltered run) or unexpected output reaches a dictionary match.
+tools and ends troubleshooting of the current issue immediately. Only a confirmed non-zero exit code (from
+an unfiltered run) or unexpected output reaches a dictionary lookup.
+
+A keyword match only routes the agent to a section — it is not evidence. The
+agent verifies every condition in the matched row before applying its fix; a
+partial match is treated as no match.
 
 If no symptom matches, the agent diagnoses and solves normally — the dictionary is a shortcut, not a constraint.
 
@@ -43,10 +44,10 @@ If no symptom matches, the agent diagnoses and solves normally — the dictionar
 
 ## Adding New Entries
 
-Add rows to the appropriate category table in `references/troubleshooting.md`. Each entry needs:
+Add rows to the appropriate category table in `SKILL.md`. Each entry needs:
 
 | Column | Content |
 |---|---|
-| Symptom | Observable error message or behavior |
+| Symptom | Every condition the agent must verify before applying the fix |
 | Cause | Why it happens |
 | Fix | What to do about it |
