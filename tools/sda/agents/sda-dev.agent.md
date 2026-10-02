@@ -250,9 +250,9 @@ evaluated and execute.
 "I'm ready to write," the next action must be a tool call — not
 more reasoning.
 
-**Resume decisions are one-shot.** In task mode, map the state field
+**Resume decisions are one-shot.** In task mode, map the checkpoint field
 to the resume table (Phase 1 step 2) once per unit entry — never
-re-derive "what does this state mean" or "do I capture baseline".
+re-derive "what does this checkpoint mean" or "do I capture baseline".
 
 - Never skip or defer any unit.
 
@@ -449,9 +449,9 @@ search the codebase, or delegate exploration in this sub-flow.
    in a workflow session. Pass that path to every `{task-state}` call: the script
    resolves a bare folder name under `.sda/tasks/` or `.sda/backlog/` only.
 2. **Read state.** Run `{task-state} -Command next -TaskFolder <task-folder>`. Read the returned
-   `state` field once and act from the table — never re-derive it:
+   `checkpoint` field once and act from the table — never re-derive it:
 
-   | state | Action | Prereq / regression checks | Baseline capture |
+   | checkpoint | Action | Prereq / regression checks | Baseline capture |
    |---|---|---|---|
    | `PENDING` | continue to step 3 | run (step 3) | run (step 3) |
    | `RED` | resuming — skip Phase 2, go to Phase 3 (GREEN) | skip | skip — treat as clear |
@@ -632,7 +632,7 @@ or:
 
 ### State update
 
-When `{state-tracking}`: run `{task-state}` `-Command update -TaskFolder <task-folder> -UnitNumber <N> -State RED -Symbols '<test names json>'` (TDD unit) or `-State GREEN -Symbols '<test names json>'` (tests-only unit) — `Symbols` = the `test_name`s from the returned `### Tests written` list, as a JSON string array.
+When `{state-tracking}`: run `{task-state}` `-Command update -TaskFolder <task-folder> -UnitNumber <N> -Checkpoint RED -Symbols '<test names json>'` (TDD unit) or `-Checkpoint GREEN -Symbols '<test names json>'` (tests-only unit) — `Symbols` = the `test_name`s from the returned `### Tests written` list, as a JSON string array.
 
 <result>
 ### RED gate
@@ -687,7 +687,7 @@ When `{state-tracking}`: run `{task-state}` `-Command update -TaskFolder <task-f
 
 ### State update
 
-When `{state-tracking}`: run `{task-state}` `-Command update -TaskFolder <task-folder> -UnitNumber <N> -State GREEN -Symbols '<json>'` — `Symbols` = source `symbol_name`s from the returned `### Implemented` list, plus (for `tests required`) the `test_name`s from `### Tests written`.
+When `{state-tracking}`: run `{task-state}` `-Command update -TaskFolder <task-folder> -UnitNumber <N> -Checkpoint GREEN -Symbols '<json>'` — `Symbols` = source `symbol_name`s from the returned `### Implemented` list, plus (for `tests required`) the `test_name`s from `### Tests written`.
 
 <result>
 ### GREEN gate
@@ -711,7 +711,7 @@ When `{state-tracking}`: run `{task-state}` `-Command update -TaskFolder <task-f
    - No findings → output the `<result>` block below.
    - Findings → re-delegate to `sda-scribe` **once**, each finding as an anchored delta, then re-run `sda-docs-check`.
    - Findings after the retry → **not a failure** ([Failure handling & escalation](#failure-handling--escalation)): present the report verbatim and ask the user to resolve what remains — a `Recommendation: fix code` or "caller decides" finding is the user's decision, never a troubleshooting lookup. Act on the answer; if a finding stays open, stop and report it.
-4. **State update** — `{task-state}` `-Command update -TaskFolder <task-folder> -UnitNumber <N> -State DONE` (docs units have no refactor).
+4. **State update** — `{task-state}` `-Command update -TaskFolder <task-folder> -UnitNumber <N> -Checkpoint DONE` (docs units have no refactor).
 
 <result>
 ### Docs gate
@@ -786,7 +786,7 @@ When `sda-refactor` returns — apply [Delegation discipline](#delegation-discip
 
 ### State update
 
-When `{state-tracking}`: run `{task-state}` `-Command update -TaskFolder <task-folder> -UnitNumber <N> -State DONE`.
+When `{state-tracking}`: run `{task-state}` `-Command update -TaskFolder <task-folder> -UnitNumber <N> -Checkpoint DONE`.
 
 <result>
 {Refactoring is not needed. | Refactoring is done.}

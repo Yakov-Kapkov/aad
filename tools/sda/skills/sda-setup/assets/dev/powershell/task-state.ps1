@@ -22,8 +22,8 @@
 .PARAMETER UnitNumber
     (update only) Unit number to update (1-based).
 
-.PARAMETER State
-    (update only) New state: PENDING, RED, GREEN, DONE
+.PARAMETER Checkpoint
+    (update only) New checkpoint: PENDING, RED, GREEN, DONE
 
 .PARAMETER Symbols
     (update only) JSON array of in-scope symbols (source symbols + test names), persisted for GREEN resume
@@ -48,7 +48,7 @@ param(
 
     [Parameter(Position = 5)]
     [ValidateSet('PENDING', 'RED', 'GREEN', 'DONE')]
-    [string] $State,
+    [string] $Checkpoint,
 
     [Parameter(Position = 6)]
     [string] $Symbols
@@ -141,8 +141,8 @@ function Update-TaskStatus($obj) {
     $allDone = $true
     $anyStarted = $false
     foreach ($u in $obj.units) {
-        if ($u.state -ne 'DONE') { $allDone = $false }
-        if ($u.state -ne 'PENDING') { $anyStarted = $true }
+        if ($u.checkpoint -ne 'DONE') { $allDone = $false }
+        if ($u.checkpoint -ne 'PENDING') { $anyStarted = $true }
     }
     if ($allDone) {
         $obj.status = 'DONE'
@@ -170,11 +170,11 @@ switch ($Command) {
         foreach ($u in $unitList) {
             $num = if ($u.PSObject.Properties['number']) { [int]$u.number } else { $i }
             $numbered += [ordered]@{
-                number    = $num
-                name      = $u.name
-                state     = 'PENDING'
-                scenarios = [int]$u.scenarios
-                symbols   = @()
+                number     = $num
+                name       = $u.name
+                checkpoint = 'PENDING'
+                scenarios  = [int]$u.scenarios
+                symbols    = @()
             }
             $i++
         }
@@ -202,7 +202,7 @@ switch ($Command) {
         $obj = Read-State
         $found = $null
         foreach ($u in $obj.units) {
-            if ($u.state -ne 'DONE') {
+            if ($u.checkpoint -ne 'DONE') {
                 $found = $u
                 break
             }
@@ -220,8 +220,8 @@ switch ($Command) {
             Write-Host "Error: UnitNumber must be >= 1." -ForegroundColor Red
             exit 1
         }
-        if (-not $State) {
-            Write-Host "Error: State is required for update command." -ForegroundColor Red
+        if (-not $Checkpoint) {
+            Write-Host "Error: Checkpoint is required for update command." -ForegroundColor Red
             exit 1
         }
 
@@ -237,13 +237,13 @@ switch ($Command) {
 
         $target = $obj.units[$idx]
 
-        $target.state = $State
+        $target.checkpoint = $Checkpoint
         if ($Symbols) {
             $parsed = ConvertFrom-Json -InputObject $Symbols
             $target.symbols = @($parsed)
         }
         $obj = Update-TaskStatus $obj
         Write-State $obj
-        Write-Output "Unit $UnitNumber -> $State. Task status: $($obj.status)."
+        Write-Output "Unit $UnitNumber -> $Checkpoint. Task status: $($obj.status)."
     }
 }

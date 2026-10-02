@@ -7,7 +7,7 @@ set -euo pipefail
 #   task-state.sh init   <task-folder> <task-name> <units-json>
 #   task-state.sh get    <task-folder>
 #   task-state.sh next   <task-folder>
-#   task-state.sh update <task-folder> <unit-number> <state> [symbols-json]
+#   task-state.sh update <task-folder> <unit-number> <checkpoint> [symbols-json]
 
 COMMAND="${1:-}"
 TASK_FOLDER="${2:-}"
@@ -57,12 +57,12 @@ update_task_status() {
   count=$(jq '.units | length' "$file")
 
   for ((i = 0; i < count; i++)); do
-    local unit_state
-    unit_state=$(jq -r ".units[$i].state" "$file")
-    if [[ "$unit_state" != "DONE" ]]; then
+    local unit_checkpoint
+    unit_checkpoint=$(jq -r ".units[$i].checkpoint" "$file")
+    if [[ "$unit_checkpoint" != "DONE" ]]; then
       all_done=false
     fi
-    if [[ "$unit_state" != "PENDING" ]]; then
+    if [[ "$unit_checkpoint" != "PENDING" ]]; then
       any_started=true
     fi
   done
@@ -96,7 +96,7 @@ case "$COMMAND" in
       '{
         task: $task,
         status: "PENDING",
-        units: [$units | to_entries[] | {number: (.value.number // (.key + 1)), name: .value.name, state: "PENDING", scenarios: (.value.scenarios // 0), symbols: []}]
+        units: [$units | to_entries[] | {number: (.value.number // (.key + 1)), name: .value.name, checkpoint: "PENDING", scenarios: (.value.scenarios // 0), symbols: []}]
       }' > "$STATE_FILE"
 
     unit_count=$(jq '.units | length' "$STATE_FILE")
@@ -116,7 +116,7 @@ case "$COMMAND" in
       echo "Error: state.json not found in $TASK_FOLDER" >&2
       exit 1
     fi
-    result=$(jq '[.units[] | select(.state != "DONE")] | first // empty' "$STATE_FILE")
+    result=$(jq '[.units[] | select(.checkpoint != "DONE")] | first // empty' "$STATE_FILE")
     if [[ -z "$result" ]]; then
       echo '{"done": true}'
     else
@@ -126,15 +126,15 @@ case "$COMMAND" in
 
   update)
     UNIT_NUMBER="${3:-}"
-    NEW_STATE="${4:-}"
+    NEW_CHECKPOINT="${4:-}"
 
-    if [[ -z "$UNIT_NUMBER" || -z "$NEW_STATE" ]]; then
-      echo "Error: unit-number and state are required for update." >&2
+    if [[ -z "$UNIT_NUMBER" || -z "$NEW_CHECKPOINT" ]]; then
+      echo "Error: unit-number and checkpoint are required for update." >&2
       exit 1
     fi
 
-    if [[ ! "$NEW_STATE" =~ ^(PENDING|RED|GREEN|DONE)$ ]]; then
-      echo "Error: state must be PENDING, RED, GREEN, or DONE." >&2
+    if [[ ! "$NEW_CHECKPOINT" =~ ^(PENDING|RED|GREEN|DONE)$ ]]; then
+      echo "Error: checkpoint must be PENDING, RED, GREEN, or DONE." >&2
       exit 1
     fi
 
@@ -152,19 +152,19 @@ case "$COMMAND" in
 
     SYMBOLS_JSON="${5:-}"
     if [[ -n "$SYMBOLS_JSON" ]]; then
-      jq --argjson idx "$idx" --arg s "$NEW_STATE" --argjson sym "$SYMBOLS_JSON" \
-        '.units[$idx].state = $s | .units[$idx].symbols = $sym' \
+      jq --argjson idx "$idx" --arg c "$NEW_CHECKPOINT" --argjson sym "$SYMBOLS_JSON" \
+        '.units[$idx].checkpoint = $c | .units[$idx].symbols = $sym' \
         "$STATE_FILE" > "$STATE_FILE.tmp" && mv "$STATE_FILE.tmp" "$STATE_FILE"
     else
-      jq --argjson idx "$idx" --arg s "$NEW_STATE" \
-        '.units[$idx].state = $s' \
+      jq --argjson idx "$idx" --arg c "$NEW_CHECKPOINT" \
+        '.units[$idx].checkpoint = $c' \
         "$STATE_FILE" > "$STATE_FILE.tmp" && mv "$STATE_FILE.tmp" "$STATE_FILE"
     fi
 
     update_task_status "$STATE_FILE"
 
     task_status=$(jq -r '.status' "$STATE_FILE")
-    echo "Unit $UNIT_NUMBER -> $NEW_STATE. Task status: $task_status."
+    echo "Unit $UNIT_NUMBER -> $NEW_CHECKPOINT. Task status: $task_status."
     ;;
 
   *)
