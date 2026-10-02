@@ -2,7 +2,7 @@
 name: sda-diagram-writer
 description: "Diagram writer agent: renders Mermaid diagrams from structured DIAGRAM blocks and saves them as .md files containing ```mermaid fenced blocks. Use when: sda-design delegates diagram generation; or any agent needs a visual diagram written to file."
 tools: ["edit"]
-model: Claude Sonnet 4.6
+model: Claude Sonnet 5
 user-invocable: false
 ---
 

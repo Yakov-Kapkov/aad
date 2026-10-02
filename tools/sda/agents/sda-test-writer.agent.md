@@ -2,7 +2,7 @@
 name: sda-test-writer
 description: "Writes tests for TDD units (RED phase) and tests-only units. Use when: writing tests from unit scenarios, Test Context, and file paths."
 tools: ["read", "edit", "search", "execute"]
-model: Claude Sonnet 4.6
+model: Claude Sonnet 5
 user-invocable: false
 ---
 

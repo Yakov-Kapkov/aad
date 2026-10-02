@@ -2,7 +2,7 @@
 name: sda-coder
 description: "Implements production code to pass tests (GREEN phase) and integration units. Use when: making failing tests pass — receives Changes blocks and file paths."
 tools: ["read", "edit", "search", "execute"]
-model: Claude Sonnet 4.6
+model: Claude Sonnet 5
 user-invocable: false
 ---
 

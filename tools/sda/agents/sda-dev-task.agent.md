@@ -4,7 +4,7 @@ description: "Designs and maintains task specifications. Creates new task.md and
 argument-hint: Describe the task, say "design a task for feature X", or "update task {name}".
 tools: ["read", "search", "agent", "execute", "vscode/askQuestions"]
 agents: ["sda-scribe", "sda-dev-task-verifier", "sda-code-explore", "sda-web-explore"]
-model: Claude Sonnet 4.6
+model: Claude Sonnet 5
 hooks:
   SessionStart:
     - type: command

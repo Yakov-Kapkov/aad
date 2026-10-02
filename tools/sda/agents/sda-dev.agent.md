@@ -4,7 +4,7 @@ description: "Use when: implementing code changes via TDD workflows (RED → GRE
 argument-hint: Provide a task name, say "implement the current task", attach a task.md file, or describe what you want implemented.
 tools: ["read", "execute", "agent", "vscode/askQuestions", "AskUserQuestion", "ask_user"]
 agents: ["sda-code-explore", "sda-test-writer", "sda-coder", "sda-refactor", "sda-scribe", "sda-docs-check", "sda-dev-quality"]
-model: Claude Sonnet 4.6
+model: Claude Sonnet 5
 hooks:
   SessionStart:
     - type: command

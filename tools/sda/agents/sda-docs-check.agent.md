@@ -4,7 +4,7 @@ description: "Read-only verifier of docs vs reality: the global + per-layer docs
 argument-hint: Say "check the docs", point at a decisions/requirements tree, or pass a design.md path. Optionally pass an expected docs structure, or "use the default".
 tools: ["read", "search", "execute", "agent"]
 agents: ["sda-code-explore"]
-model: Claude Sonnet 4.6
+model: Claude Sonnet 5
 hooks:
   SessionStart:
     - type: command

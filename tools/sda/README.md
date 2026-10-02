@@ -244,29 +244,29 @@ finds — it reports, and leaves routing (sda-dev-task vs ad-hoc sda-dev) to you
 | Agent | Role | Model | Tools |
 |---|---|---|---|
 | `sda-toolscan` | Scans toolchain, writes `project-tools.md` | project config | read, search, edit, execute |
-| `sda-ba` | Business Analyst — elicits a raw requirement into one ready User Story (Actor + Gherkin + measurable NFRs) and owns the durable requirements tree, gated by the Definition of Ready | Claude Sonnet 4.6 | read, search, agent, edit, execute |
-| `sda-design` | System architecture + feature design — components, contracts, diagrams, decision docs | Claude Sonnet 4.6 | read, search, agent, execute |
+| `sda-ba` | Business Analyst — elicits a raw requirement into one ready User Story (Actor + Gherkin + measurable NFRs) and owns the durable requirements tree, gated by the Definition of Ready | Claude Sonnet 5 | read, search, agent, edit, execute |
+| `sda-design` | System architecture + feature design — components, contracts, diagrams, decision docs | Claude Sonnet 5 | read, search, agent, execute |
 | `sda-dev-task` | Designs atomic task specs (`task.md`) with test scenarios and implementation plans | project config | read, search, agent, execute |
-| `sda-qa-task` | Authors the black-box acceptance spec (`qa-task.md`) — coupled (from a finalized task) or standalone | Claude Sonnet 4.6 | read, search, execute, agent |
+| `sda-qa-task` | Authors the black-box acceptance spec (`qa-task.md`) — coupled (from a finalized task) or standalone | Claude Sonnet 5 | read, search, execute, agent |
 | `sda-dev` | TDD implementation orchestrator — delegates RED/GREEN to subagents to keep context small; routes `docs` units to sda-scribe + sda-docs-check; owns the workflow's `dev` stage | project config | read, execute, agent |
-| `sda-qa` | Runtime acceptance QA — starts the app, drives a real browser/CLI through the functional requirements, writes `qa-report.md` (read-only on source) | Claude Sonnet 4.6 | read, edit, search, execute, browser |
-| `sda-workflow` | Workflow advisor surface — reports where a container sits, names the single next action and its owner, owns `init` and a user-requested escalation, and delegates the escalation brief to sda-scribe. Never triggers a producer, never resolves an escalation | Claude Sonnet 4.6 | read, edit, agent, execute |
+| `sda-qa` | Runtime acceptance QA — starts the app, drives a real browser/CLI through the functional requirements, writes `qa-report.md` (read-only on source) | Claude Sonnet 5 | read, edit, search, execute, browser |
+| `sda-workflow` | Workflow advisor surface — reports where a container sits, names the single next action and its owner, owns `init` and a user-requested escalation, and delegates the escalation brief to sda-scribe. Never triggers a producer, never resolves an escalation | Claude Sonnet 5 | read, edit, agent, execute |
 
 ### Subagents (invoked by pipeline agents)
 
 | Agent | Role | Model | Tools |
 |---|---|---|---|
 | `sda-scribe` | Universal scribe: writes task.md, qa-task.md, dev-report.md, design-decision docs, design docs, requirements docs, design records, contract specs, manifest.md, and the files of a task's `docs` unit | Claude Haiku 4.5 | read, edit, search |
-| `sda-dev-task-verifier` | Consistency checks + regression analysis on task.md. Delegates file-gathering to sda-code-explore for tasks with >3 files. Runs `unit-file-size` for unit size verification. | Claude Sonnet 4.6 | read, search, agent, execute |
+| `sda-dev-task-verifier` | Consistency checks + regression analysis on task.md. Delegates file-gathering to sda-code-explore for tasks with >3 files. Runs `unit-file-size` for unit size verification. | Claude Sonnet 5 | read, search, agent, execute |
 | `sda-code-explore` | Fast read-only codebase exploration (invoked by sda-dev-task, sda-dev-task-verifier, sda-qa-task, sda-dev, sda-design) | Claude Haiku 4.5 | read, search |
 | `sda-web-explore` | Web research — fetches live API docs and library specs (invoked by sda-dev-task, sda-design) | Claude Haiku 4.5 | web |
 | `sda-test-writer` | Writes tests for TDD slices (RED) and tests-only slices. Mechanical worker: makes domain decisions within the assigned unit; stops and reports anything outside scope. | project config | read, edit, search, execute |
 | `sda-coder` | Implements production code (GREEN) and integration slices. Mechanical worker: makes domain decisions within the assigned unit; stops and reports anything outside scope. | project config | read, edit, search, execute |
 | `sda-refactor` | Runs the REFACTOR pass without changing behaviour: per-unit (refactors the code each unit added or modified) plus a final cross-unit duplication pass; reverts any change that breaks a test. | project config | read, edit, search, execute |
 | `sda-dev-quality` | Runs quality gates (types, lint, tests, coverage, build, pre-merge) in **local** (target files) or **global** (whole area) mode. Check-and-report only — never fixes. Invoked by sda-dev (Phase 5, global) or standalone. | Claude Haiku 4.5 | execute |
-| `sda-docs-check` | Verifies the docs tree (global + per-layer) + decision-doc integrity + drift and AI-readme routing (AGENTS.md/CLAUDE.md links, feature list) against reality. Full scope, or targeted on a `docs` unit's files. Check-and-report only — never fixes. Invoked by sda-design and sda-dev. | Claude Sonnet 4.6 | read, search, execute, agent |
+| `sda-docs-check` | Verifies the docs tree (global + per-layer) + decision-doc integrity + drift and AI-readme routing (AGENTS.md/CLAUDE.md links, feature list) against reality. Full scope, or targeted on a `docs` unit's files. Check-and-report only — never fixes. Invoked by sda-design and sda-dev. | Claude Sonnet 5 | read, search, execute, agent |
 | `sda-tool-installer` | Installs required development tools — reads tool-catalog.md, runs install commands, handles git-hooks init, reports pass/fail per tool. Invoked by sda-setup skill (Step 7). | Claude Haiku 4.5 | read, execute |
-| `sda-diagram-writer` | Renders Mermaid diagrams from structured `DIAGRAM` blocks into `.md` files, returning the written path. Invoked by sda-design. | Claude Sonnet 4.6 | edit |
+| `sda-diagram-writer` | Renders Mermaid diagrams from structured `DIAGRAM` blocks into `.md` files, returning the written path. Invoked by sda-design. | Claude Sonnet 5 | edit |
 
 **Model configuration:** Implementation agents use models from `project-config.json`. Default: Claude Sonnet. Run sda-setup (or say "update sda") to resolve family names and apply to agent files. See [Model configuration](#model-configuration).
 
@@ -475,7 +475,7 @@ The `models` section in `project-config.json` controls which AI model each agent
 | `sda-dev-quality` | Runs per-area quality gates | `Claude Haiku` |
 | `sda-docs-check` | Verifies docs tree + decision docs + AI-readme routing | `Claude Sonnet` |
 
-**Resolution:** `sda-setup` resolves family names to the latest available versioned model (e.g., `"Claude Sonnet"` → `"Claude Sonnet 4.6 (copilot)"`) and writes the result into each agent's `model:` frontmatter. Re-run sda-setup (or say "update sda") to pick up new model versions.
+**Resolution:** `sda-setup` resolves family names to the latest available versioned model (e.g., `"Claude Sonnet"` → `"Claude Sonnet 5 (copilot)"`) and writes the result into each agent's `model:` frontmatter. Re-run sda-setup (or say "update sda") to pick up new model versions.
 
 If the `models` section is absent, the defaults from the table above are applied.
 

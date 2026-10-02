@@ -4,7 +4,7 @@ description: "Turns a raw requirement into a single, ready User Story — one Ac
 argument-hint: Describe the requirement, or say "draft a story for X".
 tools: ["read", "search", "agent", "edit", "execute", "vscode/askQuestions"]
 agents: ["sda-scribe", "sda-code-explore", "sda-web-explore"]
-model: Claude Sonnet 4.6
+model: Claude Sonnet 5
 user-invocable: true
 disable-model-invocation: true
 hooks:

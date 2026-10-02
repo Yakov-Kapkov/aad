@@ -10,7 +10,7 @@ chmod +x *.sh
 ./install-dev-suite.sh          # full dev suite → ~/.copilot
 ./install-dev-suite.sh full     # same as default (mode reserved for future filtering)
 ./install-dev-suite.sh -t ./.copilot  # → workspace folder
-./install-dev-suite.sh -m "sda-dev=Claude Sonnet 4.6"  # with model overrides
+./install-dev-suite.sh -m "sda-dev=Claude Sonnet 5"  # with model overrides
 ./install-dev-suite.sh -m "commit=Claude Haiku 4.5"  # override commit agent model
 ./install-dev-suite.sh -x commit  # skip commit agent + its prompts
 ./install-dev-suite.sh uninstall  # remove all dev suite files
@@ -35,15 +35,15 @@ chmod +x *.sh
 ./install-dev-suite.sh full
 
 # Install with custom models for SDA agents
-./install-dev-suite.sh -m "sda-dev=Claude Sonnet 4.6" -m "sda-coder=Claude Opus 4"
+./install-dev-suite.sh -m "sda-dev=Claude Sonnet 5" -m "sda-coder=Claude Opus 4"
 
 # Override model for all SDA agents at once
 ./install-dev-suite.sh \
     -m "sda-dev-task=Claude Opus 4.6" \
     -m "sda-coder=Claude Haiku 4.5" \
     -m "sda-test-writer=Claude Haiku 4.5" \
-    -m "sda-dev=Claude Sonnet 4.6" \
-    -m "sda-toolscan=Claude Sonnet 4.6"
+    -m "sda-dev=Claude Sonnet 5" \
+    -m "sda-toolscan=Claude Sonnet 5"
 
 # Override model for commit agent
 ./install-dev-suite.sh -m "commit=Claude Haiku 4.5"
@@ -52,7 +52,7 @@ chmod +x *.sh
 ./install-dev-suite.sh -x commit
 
 # Combine mode + models
-./install-dev-suite.sh -m "sda-dev=Claude Sonnet 4.6" full
+./install-dev-suite.sh -m "sda-dev=Claude Sonnet 5" full
 
 # Install to a workspace-level folder
 ./install-dev-suite.sh -t ./.copilot
@@ -82,7 +82,7 @@ chmod +x *.sh
 ./install-tool.sh -n "sda" -e "sda-qa"
 
 # Install a tool with model overrides (passed to the custom install script)
-./install-tool.sh -n "sda" -- "sda-dev=Claude Sonnet 4.6|sda-coder=Claude Opus 4"
+./install-tool.sh -n "sda" -- "sda-dev=Claude Sonnet 5|sda-coder=Claude Opus 4"
 ```
 
 ## Custom Install Scripts

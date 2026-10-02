@@ -4,7 +4,7 @@ description: "Authors a qa-task.md acceptance spec — coupled (from a finalized
 argument-hint: Name a finalized task to spec QA for, or describe existing behaviour to verify.
 tools: ["read", "search", "execute", "agent", "vscode/askQuestions"]
 agents: ["sda-scribe", "sda-code-explore"]
-model: Claude Sonnet 4.6
+model: Claude Sonnet 5
 user-invocable: true
 disable-model-invocation: true
 hooks:

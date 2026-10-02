@@ -3,7 +3,7 @@ name: sda-dev-task-verifier
 description: "Runs consistency checks, regression analysis, and contract compliance on task.md. Returns structured report with findings and proposed solutions. Use when: verifying a task spec for correctness, checking regression risks, or validating task.md against the codebase and contract specifications."
 tools: ["read", "search", "agent", "execute"]
 agents: ["sda-code-explore"]
-model: Claude Sonnet 4.6
+model: Claude Sonnet 5
 user-invocable: true
 hooks:
   SessionStart:

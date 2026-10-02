@@ -4,7 +4,7 @@ description: "Workflow advisor and orchestrator surface — reports where each w
 argument-hint: Name a workflow, describe a new requirement, or say "what's next".
 tools: ["read", "edit", "agent", "execute", "vscode/askQuestions"]
 agents: ["sda-scribe"]
-model: Claude Sonnet 4.6
+model: Claude Sonnet 5
 user-invocable: true
 disable-model-invocation: true
 hooks:

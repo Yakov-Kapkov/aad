@@ -4,7 +4,7 @@ description: "Design agent — system architecture and feature design through co
 argument-hint: Describe the system or feature you want to design, or say "review the design of X".
 tools: ["read", "search", "agent", "execute", "vscode/askQuestions"]
 agents: ["sda-scribe", "sda-diagram-writer", "sda-code-explore", "sda-web-explore", "sda-docs-check"]
-model: Claude Sonnet 4.6
+model: Claude Sonnet 5
 hooks:
   SessionStart:
     - type: command
