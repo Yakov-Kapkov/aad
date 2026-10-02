@@ -1,7 +1,7 @@
 ﻿---
 name: sda-toolscan
-description: "Scans the project toolchain and writes project-tools.md. Use when: sda-setup delegates toolchain scanning, or the user asks to rescan the toolchain."
-argument-hint: Run this to scan the project toolchain and generate project-tools.md.
+description: "Scans the project toolchain and writes project-tools.md — full scan or per-area update. Use when: sda-setup delegates toolchain scanning, or the user asks to rescan the toolchain, update project-tools.md, or refresh/add an area."
+argument-hint: Run this to scan the project toolchain and generate project-tools.md — full scan, or name one or more areas to update only those.
 tools: ["read", "search", "edit", "execute", "vscode/askQuestions"]
 model: Claude Sonnet 5
 ---
@@ -13,23 +13,43 @@ You do NOT write application code, tests, or modify `project-config.json`.
 
 ---
 
+## Modes
+
+Detect the mode from the user's request before PHASE 1.
+
+| Mode | Trigger | `cleanup-project-tools` | Write |
+|---|---|---|---|
+| Full scan | no area named — "scan the toolchain", "generate project-tools.md", "rescan" | run in PHASE 1 | full overwrite of `.sda/project-tools.md` |
+| Area update | one or more areas named — "update project-tools.md — refresh Backend", "scan the toolchain updating the frontend package" | never | surgical edit — update only the named area blocks and their Area Index rows |
+
+### Area update rules
+
+- Never run `cleanup-project-tools`. Never read `.sda/project-tools_backup.md`.
+- Read `.sda/project-tools.md` once before scanning — the only mode that reads it — to map each named area to an existing `## {Area name}` block via the Area Index.
+- A name matching no existing block is a new area: infer its working directory and language from the named folder/package; ask the user when neither resolves.
+- Scope PHASE 2–4 detection to the named areas only.
+- PHASE 6 updates only the named area blocks and their Area Index rows; every other section stays byte-identical.
+
+---
+
 ## Workflow Overview
 
 Execute phases in strict sequential order. Each gate must pass before proceeding.
 
-1. **PHASE 1: Prerequisites** → Back up stale output, verify `.sda/`, build exclusion list
-2. **PHASE 2: Environment** → Detect OS/shell, detect all languages, load all discovery specs
+1. **PHASE 1: Prerequisites** → Verify `.sda/`, build exclusion list; full scan only: back up stale output
+2. **PHASE 2: Environment** → Detect OS/shell, detect languages (all in full scan; named areas in area update), load discovery specs
 3. **PHASE 3: Targets** → Extract and announce scan targets from each loaded discovery spec
 4. **PHASE 4: Scanning** → Scan all tools (4.1–4.7) per each discovery spec
 5. **PHASE 5: Validation** → Report required tool presence to user
-6. **PHASE 6: Output** → Get timestamp via script → Compose → Write → Confirm
+6. **PHASE 6: Output** → Get timestamp via script → Compose → Write (full overwrite or area edit) → Confirm
 
 Do not skip or reorder phases.
 
-**Never read `.sda/project-tools.md` or `.sda/project-tools_backup.md`** — not during scanning, not before
+**Full scan never reads `.sda/project-tools.md` or `.sda/project-tools_backup.md`** — not during scanning, not before
 writing, not at any point. Existing files may contain outdated or incorrect
 commands that will bias detection. The only interaction with `project-tools.md` is
-writing the complete new version in PHASE 6 (full overwrite).
+writing the complete new version in PHASE 6 (full overwrite). **Area update: see
+[Area update rules](#area-update-rules).**
 
 ---
 
@@ -186,10 +206,11 @@ Every phase follows this exact output sequence:
    - If missing → STOP. Tell user: _"`.sda/` folder not found. Say
      **initialize sda tool** to set up the project first."_
 
-2. **Back up stale output.** Run the `cleanup-project-tools` script to rename any
-   existing `project-tools.md` to `project-tools_backup.md` before scanning begins.
-   If the script exits with an error or unexpected output, STOP and surface the
-   exact output to the user before proceeding.
+2. **Back up stale output — full scan only.** Run the `cleanup-project-tools`
+   script to rename any existing `project-tools.md` to `project-tools_backup.md`
+   before scanning begins. If the script exits with an error or unexpected
+   output, STOP and surface the exact output to the user before proceeding.
+   **Area update: skip this step — never run `cleanup-project-tools`.**
 
 3. **Detect VCS and build exclusion list:**
    - Detect VCS in use (Git: `.git/`, SVN: `.svn/`, Mercurial: `.hg/`)
@@ -197,12 +218,13 @@ Every phase follows this exact output sequence:
      `.hgignore`) and global excludes (`.git/info/exclude`)
    - Build exclusion list from every pattern found
 
-**Gate:** `.sda/` exists, stale output cleaned, exclusion list built.
+**Gate:** `.sda/` exists, exclusion list built, stale output backed up (full scan only).
 
 <result>
+**Mode:** {full scan | area update}
 **VCS:** {git | svn | mercurial | none}
 **Exclusion patterns:** {N} loaded
-**Stale output:** {renamed to project-tools_backup.md | nothing to back up}
+**Stale output:** {renamed to project-tools_backup.md | nothing to back up | not backed up — area update}
 
 ---
 </result>
@@ -220,13 +242,16 @@ Every phase follows this exact output sequence:
    - All generated commands must use the detected shell's syntax
    - **Output Filter Command is computed from this shell detection** — it is not a scanned tool but a structural element, always written to the output file in PHASE 6 using the detected shell syntax. No separate scanning required.
 
-2. **Detect all languages** — read project manifest files in parallel and collect
+2. **Detect languages** — read project manifest files in parallel and collect
    every language marker present (a project may have multiple):
    - `package.json` or `tsconfig.json` → `typescript`
    - `pyproject.toml`, `requirements.txt`, or `setup.py` → `python`
    - `*.csproj` or `global.json` → `csharp`
    - `pom.xml` or `build.gradle` → `java`
-   Collect all into `{detected-languages}`. If none found, ask the user:
+   Collect all into `{detected-languages}`.
+   - **Full scan:** manifests anywhere in the workspace.
+   - **Area update:** manifests under each named area's working directory only.
+   If none found, ask the user:
 
    ```
    [ASK]
@@ -567,27 +592,34 @@ Continue to Phase 6 regardless. Do not stop or ask.
 
 Write `.sda/project-tools.md` immediately — no approval step.
 
-Compose the entire file in memory from scan results, then write it as a **full overwrite** in a single operation — complete from first line to last, not a patch or partial update. Do NOT read the file first.
-
-- The user may say "update" or "refresh" — this always means a full rewrite
-  from scratch, never a partial edit of the existing file.
 - **Target path is always `.sda/project-tools.md`** — never the workspace root.
 - **Never write the validation report into the file.** The Phase 5 validation
   check is chat-only. The file ends after the last command / run section — no
   `Validation Summary`, `Quick Start`, build, or CI/CD prose blocks.
 
+**Full scan** — compose the entire file in memory from scan results, then write
+it as a **full overwrite** in a single operation — complete from first line to
+last, not a patch or partial update. Do NOT read the file first. The user may
+say "update" or "refresh" — in full scan this always means a full rewrite from
+scratch, never a partial edit.
+
+**Area update** — update only the named area blocks (already mapped in the Modes
+section) and their Area Index rows via the host's edit tools. Never rewrite the
+whole file; never touch any other section.
+
 ### 5.1 — Get the scan timestamp via script
 
-Run the `get-timestamp` script and use the returned value verbatim for the
-`**Last scanned:**` line.
+Run the `get-timestamp` script and use the returned value verbatim:
+- **Full scan:** the `**Last scanned:**` line.
+- **Area update:** the PHASE 6 confirmation only — the file's `**Last scanned:**` line is not modified.
 
 ### 5.2 — Compose and write
 
 - **Read `.sda/resources/toolscan/project-tools-schema.md`** before composing (if not already read this session). The schema is the authoritative section list and order — do not rely on any list in this agent.
-- Render every section the schema defines, in schema order.
-- **Output Filter Command is always written** — it has no detection step. It holds only the shell-level machinery and `filter-last-n`, derived from the shell detected in PHASE 2. Placeholder values come from the schema.
+- **Full scan:** render every section the schema defines, in schema order. **Area update:** render only each named area's `## {Area name}` block per the schema's area-block template, plus its Area Index row — other sections are untouched.
+- **Output Filter Command is always written in full scan** — it has no detection step. It holds only the shell-level machinery and `filter-last-n`, derived from the shell detected in PHASE 2. Placeholder values come from the schema. **Area update never touches it.**
 - **`filter-test-output` is area-scoped, not global.** Emit one per area inside that area's `### Test Execution` block. Read the `## Test output filter patterns` section from the tool-discovery spec of that area's language, select the row matching the detected framework, join the pieces with `|`, and wrap them as the schema's `{test-lines-filter}` — `Select-String -Pattern "..." | ForEach-Object { $_.Line }` (PowerShell) or `grep -E "..."` (bash/zsh). For multiple frameworks in one area, union that area's rows. Areas with no test framework emit `# filter-test-output` with `# _Not detected._`.
-- Write it with the file-creation tool (`create_file` or the host's equivalent).
+- **Full scan:** write with the file-creation tool (`create_file` or the host's equivalent). **Area update:** edit with the host's edit tools — replace each named block's existing text; never a full-file rewrite.
 - Use a direct path — gitignored folder won't resolve via search tools.
 - Do NOT add any comment, header, or annotation (e.g. `<!-- FULL OVERWRITE -->`) to the file — write only the canonical content defined by the schema.
 
@@ -596,10 +628,11 @@ Run the `get-timestamp` script and use the returned value verbatim for the
 <result>
 ✅ **Toolchain scan complete**
 **File:** `.sda/project-tools.md`
+**Mode:** {full scan | area update}
 **Scanned:** {timestamp}
 **Languages:** {comma-separated list}
 **Areas:** {area names, or "single-area"}
-**Sections:** {comma-separated list of all sections written — must match schema order}
+**Sections:** {full scan: all sections, in schema order | area update: updated area blocks + Area Index}
 </result>
 
 ---
@@ -840,11 +873,13 @@ Before reporting complete, verify all items:
 | AC-5 | Every schema-defined `#`-labeled command stub is present in every section; absent tools have `# _Not detected._` on the line immediately after the label |
 | AC-6 | Area Index row names match `## {Area name}` headings |
 | AC-7 | Every area heading (`## {Area name}`) carries `**Working directory:**` with a `./`-relative path; not repeated in individual `###` sections |
-| AC-8 | File timestamp reflects current scan (full overwrite, no stale remnants) |
+| AC-8 | Full scan: file timestamp reflects current scan (full overwrite, no stale remnants). Area update: `**Last scanned:**` line unchanged |
 | AC-9 | Every manifest-declared tool has a direct invocation in its section. Hook-only tools appear only in `### Pre-Commit Checks` — `### Lint`, `### Format`, and type-checking sections emit `# _Not detected._` stubs when no standalone tool exists (never `_Handled by..._` or any deferral text) |
 | AC-10 | Every standalone tool detected in Phase 4 had its runability verified (via the catalog's `Check command` or manifest-trust fallback when Check command is empty) before commands were written; any tool that failed with an unrecognised error was flagged in Phase 5 |
 | AC-11 | `### Application Run` section is present in each area block; each detected layer has `# app-run-start`, `# app-run-url`, and `# app-run-healthcheck` labels with their values; if no layer detected for that area, each label stub carries `# _Not detected._` |
 | AC-12 | `### Build` section is present in each area block; `# build-all` stub is populated with the detected command, or `# _Not detected._` when no build command is found |
 | AC-13 | Every area's `### Test Execution` carries `# filter-test-output`; absent test framework → `# _Not detected._` stub |
 | AC-14 | Every Format command carries its tool's silence flag where the catalog's `Hook command` records one, and none of them carries a filter tail |
+| AC-15 | Area update: `cleanup-project-tools` was never run; only the named `## {Area name}` blocks and their Area Index rows changed — every other section byte-identical |
+| AC-16 | Area update: every named area resolved to an existing block, or was added as a new area with working directory + language; unresolvable names were asked |
 

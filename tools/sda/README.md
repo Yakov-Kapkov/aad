@@ -243,7 +243,7 @@ finds — it reports, and leaves routing (sda-dev-task vs ad-hoc sda-dev) to you
 
 | Agent | Role | Model | Tools |
 |---|---|---|---|
-| `sda-toolscan` | Scans toolchain, writes `project-tools.md` | project config | read, search, edit, execute |
+| `sda-toolscan` | Scans toolchain, writes `project-tools.md` — full scan or per-area update | project config | read, search, edit, execute |
 | `sda-ba` | Business Analyst — elicits a raw requirement into one ready User Story (Actor + Gherkin + measurable NFRs) and owns the durable requirements tree, gated by the Definition of Ready | Claude Sonnet 5 | read, search, agent, edit, execute |
 | `sda-design` | System architecture + feature design — components, contracts, diagrams, decision docs | Claude Sonnet 5 | read, search, agent, execute |
 | `sda-dev-task` | Designs atomic task specs (`task.md`) with test scenarios and implementation plans | project config | read, search, agent, execute |
@@ -315,6 +315,7 @@ INIT  (once per project)
   sda-toolscan detects OS, shell, and language(s) from project markers.
   Reads all matching tool-discovery specs → scans for test runner, linter, type checker, etc.
   Writes .sda/project-tools.md and .sda/project-config.json.
+  Re-runs later update one or more named areas in place (no backup rename).
 
 TASK DESIGN  (sda-dev-task)
   sda-dev-task brainstorms the task with the user.
@@ -456,7 +457,7 @@ The `models` section in `project-config.json` controls which AI model each agent
 | Key | Role | Default |
 |---|---|---|
 | `sda-workflow` | Workflow advisor: container position, next action, `init` (writes the container's `issue.md`) / `escalate` (`advance` on request) | `Claude Sonnet` |
-| `sda-toolscan` | Scans project toolchain | `Claude Haiku` |
+| `sda-toolscan` | Scans project toolchain — full scan or per-area update | `Claude Haiku` |
 | `sda-tool-installer` | Installs required development tools (delegated by sda-setup) | `Claude Haiku` |
 | `sda-ba` | Authors User Stories from raw requirements | `Claude Sonnet` |
 | `sda-design` | System + feature design; owns the doc tree and readmes | `Claude Sonnet` |
