@@ -329,7 +329,7 @@ TASK DESIGN  (sda-dev-task)
 sda-dev execution — phases 0–6 (per sda-dev.agent.md)
 
 PHASE 0 — BOOTSTRAP  (once per conversation)
-  Verifies tooling, loads standards, detects mode.
+  Retains shell + project config from session context; detects mode.
   Ad-hoc: delegates exploration, then derives the work unit.
   Task: proceeds to PLAN.
 

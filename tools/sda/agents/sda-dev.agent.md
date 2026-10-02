@@ -181,13 +181,14 @@ After 3 delegations still failing → surface the last failure verbatim and end 
 **Use the raw relative path — no `&`, no quotes, no absolute paths, no `bash`/`sh`/`zsh` prefix.** On `error=...` → **🚨 HARD STOP**: print the exact message, end your response.
 
 **Example — PowerShell:**
-- ✅ `.sda/scripts/some-script.ps1 -Folder . -Commands "shell"`
-- ❌ `& '.sda/scripts/some-script.ps1' -Folder . -Commands "shell"`
+- ✅ `.sda/scripts/some-script.ps1 -Folder . -Commands "test-all,filter-last-n"`
+- ❌ `& '.sda/scripts/some-script.ps1' -Folder . -Commands "test-all,filter-last-n"`
 
 | Placeholder | Session context key |
 |---|---|
 | `{task-state}` | `scripts.taskState` |
 | `{read-project-tools}` | `scripts.readProjectTools` |
+| `{shell}` | `shell` |
 
 **`{task-state}` (PowerShell):** `{task-state} -Command {cmd} -TaskFolder {folder} [...]`
 **`{task-state}` (Bash/zsh):** `{task-state} {cmd} {folder} [...]`
@@ -205,7 +206,7 @@ An absent key in `{read-project-tools}` output means the tool was not detected �
 
 | Label | Used for |
 |---|---|
-| `shell` | Phase 0 — detect shell |
+| `shell` | fallback — re-detect shell when `{shell}` is absent from session context |
 | `test-all` | baseline — run the full test suite |
 | `filter-last-n` | baseline + delegation — first pass (summary) |
 | `filter-test-output` | baseline + delegation — failure detail (failing lines + summary) |
@@ -390,9 +391,10 @@ upstream blocker.
 
 <title>🖥️ **BOOTSTRAPPING**</title>
 
-1. **Verify tooling.**
-   Call `{read-project-tools} . ["shell"]`.
-   Retain `{shell}` from the script output for the whole session.
+1. **Retain session context.**
+   Retain `{shell}` from session context for the whole session.
+   If `{shell}` is absent, infer it from the `{read-project-tools}` path:
+   `.ps1` → `powershell`; `.sh` → `bash`.
    Retain the `Project configuration:` block from session context as `{project-configuration}` — **all `key=value` lines, verbatim, in the original order. No filtering, no reformatting, no summarizing.**
 
 2. **Select mode** — see [Mode registry](#mode-registry):

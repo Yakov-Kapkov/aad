@@ -171,6 +171,12 @@ json_escape() {
 lines="Project configuration:"$'\n'"repoRoot=${REPO_ROOT}"
 system_message=""
 
+# Detected shell — authoritative source is project-tools.md (same value the `shell` label returns)
+if [ -f ".sda/project-tools.md" ]; then
+    shell_val=$(awk '/^\*\*Detected shell:\*\*/ { sub(/^\*\*Detected shell:\*\*[[:space:]]*/, ""); print; exit }' ".sda/project-tools.md")
+    [ -n "$shell_val" ] && lines="${lines}"$'\n'"shell=${shell_val}"
+fi
+
 if [ -f "$CONFIG_FILE" ]; then
     for key in $KEYS; do
         val=$(json_get "$CONFIG_FILE" "$key")

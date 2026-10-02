@@ -68,6 +68,14 @@ $lines = [System.Collections.Generic.List[string]]::new()
 $lines.Add('Project configuration:')
 $lines.Add("repoRoot=$repoRoot")
 
+# Detected shell — authoritative source is project-tools.md (same value the `shell` label returns)
+if (Test-Path '.sda/project-tools.md') {
+    $shellLine = Get-Content '.sda/project-tools.md' | Where-Object { $_ -match '^\*\*Detected shell:\*\*\s+(.+)$' } | Select-Object -First 1
+    if ($shellLine -match '^\*\*Detected shell:\*\*\s+(.+)$') {
+        $lines.Add("shell=$($matches[1].Trim())")
+    }
+}
+
 $systemMessage = $null
 
 if (Test-Path $configPath) {
