@@ -52,7 +52,7 @@ read, list, or search files:
 
 | Script | Purpose |
 |---|---|
-| `{task-state}` | `-Command get` / `init` — see [Task status guard](#task-status-guard--hard-boundary) |
+| `{task-state}` | `get` / `init` — see [Task status guard](#task-status-guard--hard-boundary) |
 | `{unit-file-size}` | unit file-size guard (`-Mode task`) |
 | `{read-project-tools}` | area lookup |
 
@@ -347,22 +347,22 @@ implementing agents copy Changes blocks directly. No exceptions.
 
 **Invocation rules — violations cause runtime errors:**
 - Use the **relative** `<scriptPath>` value exactly as stored (e.g. `.sda/scripts/task-state.ps1`).
-- Named parameters only (`-Command`, `-TaskFolder`, etc.) — never positional.
+- **Parameter style follows the script extension:** `.ps1` → named parameters (`-Command`, `-TaskFolder`, …); `.sh` → positional arguments (`<command> <task-folder> …`). Never mix them.
 - **Always `cd '{repo-root}' <cli_separator> <scriptPath> ...`** — anchors path resolution to the correct repo, not the terminal's CWD. `<cli_separator>` is `;` (PowerShell) or `&&` (bash/zsh).
 - ❌ `& "c:\...\task-state.ps1" -Command init ...`
 - ❌ `.sda/scripts/task-state.ps1 -Command init -TaskFolder ...` (no `cd` — CWD may be a different repo)
+- ❌ `.sda/scripts/dev/task-state.sh -Command init ...` (bash variant takes positional arguments)
 
+| Command | PowerShell (`.ps1`) | Bash/zsh (`.sh`) | Purpose |
+|---|---|---|---|
+| `get` | `<scriptPath> -Command get -TaskFolder <task-folder>` | `<scriptPath> get <task-folder>` | Full task state (all units + task status). |
+| `init` | `<scriptPath> -Command init -TaskFolder <task-folder> -TaskName <task-name> -Units '<units-json>'` | `<scriptPath> init <task-folder> <task-name> '<units-json>'` | Creates `state.json` with all units `PENDING`. |
 
-| Command | Syntax | Purpose |
-|---|---|---|
-| `get` | `<scriptPath> -Command get -TaskFolder <task-folder>` | Full task state (all units + task status). |
-| `init` | `<scriptPath> -Command init -TaskFolder <task-folder> -TaskName <task-name> -Units '<units-json>'` | Creates `state.json` with all units `PENDING`. |
-
-When this document says "run `task-state` `-Command <value>`" —
-use the exact syntax from this table, substituting placeholders.
+When this document says "run `task-state` `get`" or `init` —
+use the exact syntax from this table for the script's extension, substituting placeholders.
 ❌ `-Action` — this parameter does not exist and causes errors.
 
-Before editing any existing `task.md`, run `task-state` `-Command get`
+Before editing any existing `task.md`, run `task-state` `get`
 and check the `status` field.
 
 | Status | Action |
@@ -816,12 +816,12 @@ yourself (ask the user in chat if needed), then re-delegate with
 corrected input.
 
 **Step 5 — Initialize state.json.** After the writer confirms
-`task.md` is saved, run `task-state` `-Command init`
+`task.md` is saved, run `task-state` `init`
 (see [Task status guard](#task-status-guard--hard-boundary) Command table).
 
-- `-TaskFolder` — relative path within `{repo-root}` to the task folder — `{tasks-root}/<NNN>. <slug>`, or the workflow task folder in a workflow session. Use the path confirmed by `sda-scribe` — never infer from the terminal's CWD.
-- `-TaskName` — kebab-case task name.
-- `-Units` — JSON array from Implementation Plan units: `[{"number": N, "name": "...", "scenarios": N}, ...]`.
+- `TaskFolder` — relative path within `{repo-root}` to the task folder — `{tasks-root}/<NNN>. <slug>`, or the workflow task folder in a workflow session. Use the path confirmed by `sda-scribe` — never infer from the terminal's CWD.
+- `TaskName` — kebab-case task name.
+- `Units` — JSON array from Implementation Plan units: `[{"number": N, "name": "...", "scenarios": N}, ...]`.
 
 Skip for backlog tasks (no state tracking until activated).
 
