@@ -113,6 +113,17 @@ never ask it to judge.
      name, code snippet, or import path inside it — Design Approach is
      conceptual what/why only; that detail belongs in the Implementation
      Plan steps.
+   - If `## Design Approach` exists: each per-unit subsection (excluding
+     `### Summary`) must carry non-empty `**Implements:**` and
+     `**Tests & verifies:**`. Flag a missing or empty either.
+   - If `## Design Approach` exists: each unit's `**Implements:**` must
+     match the unit's `**Type:**` — flag when it claims new behaviour on a
+     `refactoring` or `tests only` unit, or names a deliverable the unit's
+     scenarios and steps do not produce.
+   - If `## Design Approach` exists: each unit's `**Tests & verifies:**` must
+     match the unit's scenarios — `tests required` / `tests only` units state
+     an observable outcome asserted by ≥1 scenario `Then:`; `integration
+     only` / `refactoring` units state no behaviour change. Flag a mismatch.
    - Every unit's `**Type:**` field is exactly one of: `tests required`,
      `tests only`, `integration only`, `refactoring`, or `docs`. Flag any other value as invalid.
    - `tests required` units must have a `**Test:**` file. If `**Test:**`
@@ -242,6 +253,9 @@ Return a structured report to the calling agent:
 - ❌ Symbol `{name}` used in Unit {N} but not created until Unit {M}
 - ❌ Unit {N} — file group exceeds size limit ({total} lines > limit)
 - ❌ `{risk}` — no mitigation
+- ❌ Unit {N} — Design Approach `**Implements:**`/`**Tests & verifies:**` missing or empty
+- ❌ Unit {N} — Design Approach `**Implements:**` contradicts unit type {type}
+- ❌ Unit {N} — Design Approach `**Tests & verifies:**` names an outcome no scenario asserts
 
 ### Structural
 - ✅ `{path}::{symbol}` — matches spec

@@ -25,14 +25,22 @@ Layer: {layer-name}
 ## Design Approach
 {Omit for small, obvious changes. Subsections must map 1:1 to
 Implementation Plan units using the same `Unit N — {name}` headings;
-`docs` units are exempt. Include `### Summary` for decisions that span
-multiple units.}
+`docs` units are exempt. Include `### Summary` only for decisions that
+span multiple units.}
 
 ### Summary
-{Optional — overall design decisions and rationale that apply across
-all units. Omit when every decision fits neatly into a single unit.}
+{Optional — the few decisions and rationale that genuinely span units.
+Keep it to 2-3 lines; per-unit decisions live in the unit subsections.}
 
 ### Unit 1 — {unit name}
+
+**Implements:** {one line — the behaviour, component, or contract this
+unit delivers.}
+
+**Tests & verifies:** {one line — the observable outcome this unit's
+scenarios assert. For units with no scenarios (`integration only`,
+`refactoring`), state that the unit makes no behaviour change and relies
+on existing tests.}
 
 **Problem:** {1-2 sentences — what is wrong or missing today.}
 — OR —
@@ -273,15 +281,17 @@ Domain: {subdirectory name} · Boundary: {e.g. UI → Backend} · Format: {e.g. 
 - Do not add setup dependencies to `## Regression Risks`.
 
 ### Design Approach
-- High-level explanation of the solution — the "what and why" a dev needs before reading the detailed Implementation Plan.
+- High-level explanation of the solution — the "what and why" a human needs before reading the detailed Implementation Plan.
 - Subsections map 1:1 to Implementation Plan units: `### Unit N — {name}` (same name as the unit). `docs` units are exempt — their content is the file text itself.
-- `### Summary` (optional) — overall decisions that span multiple units.
-- Per-unit content uses **Problem/Context → Solution → Details** structure.
+- `### Summary` (optional) — only the decisions and rationale that genuinely span units. Keep it to 2-3 lines; per-unit decisions live in the unit subsections.
+- Per-unit content uses **Implements / Tests & verifies / Problem/Context → Solution → Details** structure.
+- **Implements:** one line naming the behaviour, component, or contract the unit delivers (e.g. "Token refresh — silent refresh of an expired access token"). No file or function names.
+- **Tests & verifies:** one line stating the observable outcome the unit's scenarios assert (e.g. "An expired token is refreshed without the user re-authenticating"). For units with no scenarios (`integration only`, `refactoring`), state that the unit makes no behaviour change and relies on existing tests.
 - **Problem:** for bug fixes and regressions (what is broken today).
 - **Context:** for new features and refactors (relevant current state).
 - **Solution:** bullet list — one decision per bullet, no justification prose.
 - **Details:** optional — edge cases, backward compat, concurrency notes. Conceptual only: describe what could go wrong, not which file or function handles it. No file/function/type/class names, no code snippets, no import paths — those belong in the Implementation Plan.
-- Keep per-unit descriptions proportional: trivial units (`integration only`, `refactoring`) get 2-3 lines; complex units get full Problem/Context + Solution + Details.
+- Keep per-unit descriptions proportional: trivial units (`integration only`, `refactoring`) get Implements + Tests & verifies only; complex units get the full structure.
 - Keep language non-technical — save implementation specifics (file paths, signatures, test details) for the Implementation Plan.
 
 ### Source References

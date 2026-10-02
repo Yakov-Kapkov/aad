@@ -257,10 +257,15 @@ The `{unit-file-size}` line-count guard still applies.
 verify values). For `tests required` units, every scenario includes
 `Expected (RED): FAIL` or `vacuous PASS`.
 
-**Design Approach:** capture the *what and why* — decisions and rationale
-only, in conceptual terms. No file names, symbol names, import paths, or
-code snippets; route those into the Implementation Plan content you hand
-to scribe (format per the task-schema).
+**Design Approach:** capture the *what and why* for a human reader, in
+conceptual terms. Per-unit subsections state **Implements** (the
+behaviour, component, or contract the unit delivers) and **Tests &
+verifies** (the observable outcome its scenarios assert; or "no behaviour
+change, relies on existing tests" for `integration only` and
+`refactoring` units). No file names, symbol names, import paths, or code
+snippets; route those into the Implementation Plan content you hand to
+scribe (format per the task-schema). Keep `### Summary` to the few
+decisions that genuinely span units.
 
 **Other:** test + docs consistency (pre-existing test breakage fixed in the
 same unit; a `docs` unit stays in sync with the code units it describes),
@@ -747,6 +752,11 @@ After reads, for each unit with more than one file, run the resolved `{unit-file
 the approved Design Approach, produce for each unit:
 - Unit header (name, type, area, Source/Test paths each annotated with the
   language(s) it contains, and the derived **Language** union).
+- Design Approach subsection — `**Implements:**` (behaviour, component, or
+  contract delivered) and `**Tests & verifies:**` (observable outcome its
+  scenarios assert; "no behaviour change, relies on existing tests" for
+  `integration only` and `refactoring` units). Conceptual only — no
+  file/symbol names.
 - Test Context (Patterns, Object construction, Mock boundaries).
 - Scenarios, Changes, and step structure. Each must assert **behaviour**,
   never structure (shape checks must also verify values).
@@ -790,7 +800,7 @@ each mapped to ≥1 scenario: `- [ ] {criterion} _(Unit N, scenarios X–Y)_`.
 - **Scope** — `Feature: {name}` + `Layer: {layer}`, or `Global` + `Layer: {layer}`
 - **Goal** (1-2 sentences)
 - **Context** — workflow session only: the workflow id + slug and the relative design-record link. Omit for a standalone task — the scribe writes no `## Context` header
-- **Design Approach** (from Phase 3)
+- **Design Approach** (Phase 3 summary + per-unit Implements / Tests & verifies from Step 2)
 - **Acceptance Criteria** (from Step 3)
 - **Implementation Plan** (from Step 2)
 - **Contracts** (the existing specs this task must conform to — per `task-schema.md`)

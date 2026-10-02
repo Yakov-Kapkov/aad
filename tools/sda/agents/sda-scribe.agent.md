@@ -79,7 +79,7 @@ You receive:
 3. **Scope** — `Feature: {name}` + `Layer: {layer}`, or `Global` + `Layer: {layer}`.
 4. **Goal** — 1-2 sentences.
 5. **Context** — (workflow mode only) the workflow id + slug, and the relative link to the design record. Omit for a standalone task.
-6. **Design Approach** — units with Problem/Context → Solution → Details.
+6. **Design Approach** — per unit: Implements / Tests & verifies / Problem/Context → Solution → Details.
 7. **Acceptance Criteria** — fully written checkbox list.
 8. **Implementation Plan** — fully written content per unit:
    - Unit header (name, type, area, language, Source, Test paths).
