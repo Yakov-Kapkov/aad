@@ -290,8 +290,9 @@ hierarchies.
 
 ### Contract & data-flow integrity
 
-**Trigger:** Task touches ≥2 layers OR modifies/extends a boundary
-contract — even if only one layer is changed.
+**Trigger:** Task touches ≥2 layers, changes a producer or consumer of a
+specified boundary, or modifies/extends a boundary contract — even when only
+one layer changes.
 
 When the trigger is met, load the `sda-spec-guide` skill — it supplies the spec
 model, storage, and content rules. Otherwise never load it.
@@ -301,9 +302,16 @@ file when you start — you never create one, and a missing spec is a hard stop
 that sends the user back to `sda-design`. You **may** record this task's own
 delta into that spec as a `docs`-unit step carrying an anchored delta.
 
-Contract details are inlined into task.md's Implementation Plan — the
-implementation agents (`sda-dev` and its subagents) never read spec files.
-`## Contracts` semantics are in `task-schema.md`.
+**Contract invariants.** List applicable specs in `## Contracts`, then map
+each relevant invariant — fields, types, optionality, errors, and
+producer/consumer completeness — into the Implementation Plan. Implementers
+never read spec files.
+- Put invariants in Changes wherever code changes; add observable scenarios
+  wherever coverage is missing. Cite existing `Related tests` only when they
+  cover each invariant and the full boundary flow.
+- Listing a spec in `## Contracts` is not sufficient.
+- If code conflicts with the spec, plan conformance or stop for `sda-design`
+  to resolve spec intent. Never leave the mismatch unresolved.
 
 The executable contract-trace steps run during Design — see
 [Phase 3 → Contract trace](#phase-3--design).
@@ -617,12 +625,13 @@ Options:
    f. **No spec file → hard stop.** Name the boundary and tell the user it is
       `sda-design`'s deliverable — do not proceed, do not create one, and do
       not offer to.
-   g. A boundary that **has** a spec is verified against it — an unintended
-      mismatch is a finding to raise. Where this task's own change must be
-      recorded in that spec, prepare a `docs`-unit step with an **anchored
-      delta** — never a whole-file replacement.
-   h. Plan integration test scenarios for each verified crossing
-      (included in Implementation Plan).
+   g. A boundary that **has** a spec is verified against it. Resolve
+      mismatches per the spec-invariant rule above before task writing. Where
+      this task's own change must be recorded in that spec, prepare a
+      `docs`-unit step with an **anchored delta** — never a whole-file
+      replacement.
+   h. Plan contract checks for each mapped invariant according to the unit
+      type and the spec-invariant rule above.
 
 **Summary:** One-line restatement of the agreed approach.
 
@@ -701,8 +710,9 @@ Assess risk for **changes** (modified behaviour) and **additions**
 1. **Trace data flows.** Identify every existing code path the new
    artefact will pass through.
 2. **Check for existing tests** covering affected paths.
-   - Tests exist → **integration-only** unit (run as baseline).
-   - No tests → **tests-only** unit (write them).
+   - Code conforms and existing tests cover every invariant → **integration only**.
+   - Code conforms but tests miss an invariant → **tests only**.
+   - Code violates the spec → **tests required**, even when tests exist.
 3. **Scope the blast radius.** Target tests in affected modules
    only — not the entire suite.
 4. **Flag semantic mismatches.** Watch for naming/type
@@ -761,11 +771,11 @@ the approved Design Approach, produce for each unit:
 - Test Context (Patterns, Object construction, Mock boundaries).
 - Scenarios, Changes, and step structure. Each must assert **behaviour**,
   never structure (shape checks must also verify values).
+- Require integration-test coverage for every boundary crossing: exercise the
+  producer-to-consumer flow and assert its observable outcome. Existing
+  `Related tests` count only if they cover that full flow.
 - Cap each unit at 6 scenarios — split overflow into sequential units.
 - Continuous scenario numbering across all units.
-- **Integration test units** for each boundary crossing identified
-  during contract trace (type: `integration`). Scenarios assert
-  contract compliance: correct fields, types, shapes, error handling.
 - **`docs` unit (one max, always last).** Include it only when the task's own
   changes make documentation stale. Content = step entries, one per file:
   `File:` + `Kind:` + the exact content (full file) or an anchored delta.

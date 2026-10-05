@@ -215,10 +215,21 @@ Load the `sda-spec-guide` skill first — verify the specs listed in
    e. For each boundary crossing in the implementation plan:
       - Verify conformance to the spec — the `sda-spec-guide` **Content**
         obligations are the criteria.
-      - Verify integration test scenarios assert the contract (correct
-        fields, types, error cases).
-   f. Flag mismatches: field missing, type mismatch, shape divergence,
-      undocumented error case, missing integration test for a boundary.
+      - List relevant fields, types, optionality, errors, and producer/consumer
+        obligations for each task-touched operation or schema.
+      - Require each invariant in Changes when code changes, plus a behavior
+        scenario (`tests required` / `tests only`) or `Related tests`
+        (`integration only` / `refactoring`).
+      - Require each boundary crossing to have integration-test coverage that
+        exercises producer through consumer and asserts the observable result.
+        Existing `Related tests` count only when they cover that full flow.
+      - A Contracts path alone is insufficient; field-presence checks do not
+        prove values, types, optionality, or error behavior.
+  f. Flag mismatches: field missing, type mismatch, shape divergence,
+    undocumented error case, or missing unit-appropriate contract evidence.
+      Also flag any source/spec mismatch that the task neither corrects in a
+      unit nor resolves through a `contract-spec` delta approved during
+      design. An unresolved mismatch fails contract compliance.
    g. **Cross-check manifest.md:** verify every spec referenced in
       `## Contracts` has a corresponding row in manifest.md.
    h. If the `docs` unit carries a `contract-spec` delta: verify it amends the
@@ -276,7 +287,9 @@ Return a structured report to the calling agent:
 - ✅ `{spec file}` — all fields match implementation plan
 - ❌ `{spec file}::{field}` — type mismatch: spec says {X}, task says {Y}
 - ❌ `{spec file}::{field}` — field missing from consumer/producer
-- ❌ Boundary `{A} → {B}` — no integration test scenario
+- ❌ `{spec file}::{invariant}` — missing plan or test evidence
+- ❌ `{spec file}::{invariant}` — unresolved code/spec mismatch
+- ❌ Boundary `{producer} → {consumer}` — no integration test asserts its observable outcome
 - ⚠️ Contract trace missing — task touches multiple layers without `## Contracts`
 
 ### Risks not in task.md
