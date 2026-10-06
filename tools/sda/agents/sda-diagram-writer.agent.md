@@ -61,6 +61,7 @@ sequenceDiagram
 - Use `->>` for synchronous calls, `-->>` for return messages.
 - One flow step per line. Arrow labels on calls.
 - Max 7 participants before flagging a split.
+- Do not use `;` as a separator in `Label` — use a single line of text.
 
 ### Component diagram
 
