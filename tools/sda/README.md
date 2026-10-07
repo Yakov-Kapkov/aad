@@ -280,7 +280,7 @@ All pipeline agents are user-invokable and used as needed.
 
 | Skill | Role |
 |---|---|
-| `sda-setup` | Scaffolds `.sda/` folder with resource files (bootstrap, tool-discovery, tool-catalog, config example) |
+| `sda-setup` | Scaffolds `.sda/` folder with resource files — schemas, scripts, tool-discovery + tool-catalog specs, and config example |
 | `sda-workflow-guide` | Workflow-mode operating instructions for stage agents — the workflow CLI, the stage gate, finish/escalate/resolve steps, and one stage card per producer |
 | `sda-spec-guide` | Contract spec conventions — the spec model, storage layout, metadata, and content rules |
 
@@ -299,6 +299,7 @@ All pipeline agents are user-invokable and used as needed.
 | `sda.workflow.status` | Reports where the workflow containers sit, ending with the single next action and the agent that owns it |
 | `sda.workflow.advance` | Moves a workflow forward one stage, after showing the state and confirming |
 | `sda.workflow.escalate` | Sends a workflow back a stage — elicits what is wrong, writes the evidence brief, then raises |
+| `sda.workflow.handle-escalation` | Handles the open escalation in the current session — the escalated-to stage agent runs its resolve steps |
 | `sda.workflow.story.issue` | Starts the story stage from the container's `issue.md` — switches to the sda-ba agent |
 | `sda.workflow.design.issue` | Starts the design stage from the container's `issue.md` — switches to the sda-design agent |
 | `sda.workflow.task.issue` | Starts the tasks stage from the container's `issue.md` — switches to the sda-dev-task agent |
@@ -503,6 +504,8 @@ Written by the `sda-setup` skill. Stores project-level settings injected into ea
 | `paths.secrets` | `string` | `.sda/secrets` | Git-ignored folder holding `qa.secrets.env` credentials used by sda-qa. |
 | `paths.userStories` | `string` | `.sda/stories` | Root folder for User Stories authored by sda-ba. Written by sda-ba when no output path is given. |
 | `paths.workflows` | `string` | `.sda/workflows` | Root folder for workflow containers. Read by the `sda-workflow-guide` skill (in workflow sessions) and the `sda-workflow` advisor. |
+| `scripts.taskState` | `string` | `.sda/scripts/dev/task-state.ps1` | Path to the task-state script — the only writer of a task's `state.json`. Used by `sda-dev-task` (initialize) and `sda-dev` (checkpoint / status). Use the `.sh` variant on Bash/Unix. |
+| `scripts.readProjectTools` | `string` | `.sda/scripts/read-project-tools.ps1` | Path to the area-aware command lookup script. Called by `sda-dev`, `sda-dev-quality`, `sda-dev-task`, `sda-qa-task`, and `sda-qa` with a folder + command label to resolve the `project-tools.md` command for that area. Use the `.sh` variant on Bash/Unix. |
 | `scripts.loadQaSecrets` | `string` | `.sda/scripts/qa/load-qa-secrets.ps1` | Path to the QA secrets loader script (legacy — superseded by `qaSessionInit`). Still used as a fallback when `qaSessionInit` is absent. Use the `.sh` variant on Bash/Unix. |
 | `scripts.listQaSecrets` | `string` | `.sda/scripts/qa/list-qa-secrets.ps1` | Path to the QA secrets lister script. Called by sda-qa-task to discover existing credential key names. Use the `.sh` variant on Bash/Unix. |
 | `scripts.qaSessionInit` | `string` | `.sda/scripts/qa/qa-session-init.ps1` | Path to the QA session init script. Dot-sourced by sda-qa at Phase 2; sets UTF-8 encoding and loads credentials. Outputs a combined summary and `var_name \| is_empty` table. Use the `.sh` variant on Bash/Unix. |

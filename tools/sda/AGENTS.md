@@ -19,7 +19,7 @@ tools/sda/
 ├── agents/
 │   ├── sda-workflow.agent.md           ← advisor: container position, next action + owner, `init` / user-requested `escalate` (`advance` on request)
 │   ├── sda-toolscan.agent.md           ← toolchain scanning (full or area update) + project-tools generation
-│   └── sda-tool-installer.agent.md    ← subagent: installs required dev tools (delegated by sda-setup skill)
+│   ├── sda-tool-installer.agent.md    ← subagent: installs required dev tools (delegated by sda-setup skill)
 │   ├── sda-ba.agent.md                ← Business Analyst: raw requirement → ready User Story (one Actor + Gherkin)
 │   ├── sda-design.agent.md            ← system + feature design
 │   ├── sda-dev-task.agent.md              ← task specification design
@@ -48,6 +48,7 @@ tools/sda/
 │   ├── sda.workflow.status.prompt.md      ← where the containers sit + the single next action
 │   ├── sda.workflow.advance.prompt.md     ← move one stage forward
 │   ├── sda.workflow.escalate.prompt.md    ← send a workflow back a stage
+│   ├── sda.workflow.handle-escalation.prompt.md ← handle the open escalation in the current session
 │   ├── sda.workflow.story.issue.prompt.md ← story stage, from the container's issue.md (sda-ba)
 │   ├── sda.workflow.design.issue.prompt.md ← design stage, from the container's issue.md (sda-design)
 │   ├── sda.workflow.task.issue.prompt.md   ← tasks stage, from the container's issue.md (sda-dev-task)
@@ -83,10 +84,14 @@ tools/sda/
             │   ├── qa.example.secrets.env     ← placeholder QA credentials → .sda/secrets/
             │   ├── bash/
             │   │   ├── load-qa-secrets.sh     ← loads QA credentials into current shell session; outputs var_name | is_empty table → .sda/scripts/qa/
-            │   │   └── list-qa-secrets.sh     ← lists credential names + descriptions → .sda/scripts/qa/
+            │   │   ├── list-qa-secrets.sh     ← lists credential names + descriptions → .sda/scripts/qa/
+            │   │   ├── qa-session-init.sh     ← dot-sourced by sda-qa; sets UTF-8 encoding + loads credentials → .sda/scripts/qa/
+            │   │   └── invoke-http.sh         ← HTTP helper for sda-qa CLI/HTTP requests → .sda/scripts/qa/
             │   └── powershell/
             │       ├── load-qa-secrets.ps1    ← loads QA credentials into current session; outputs var_name | is_empty table → .sda/scripts/qa/
-            │       └── list-qa-secrets.ps1    ← lists credential names + descriptions → .sda/scripts/qa/
+            │       ├── list-qa-secrets.ps1    ← lists credential names + descriptions → .sda/scripts/qa/
+            │       ├── qa-session-init.ps1    ← dot-sourced by sda-qa; sets UTF-8 encoding + loads credentials → .sda/scripts/qa/
+            │       └── invoke-http.ps1        ← HTTP helper for sda-qa CLI/HTTP requests → .sda/scripts/qa/
             ├── toolscan/                      ← toolscan schema + scripts
             │   ├── project-tools-schema.md    ← project-tools.md template + content rules → .sda/resources/toolscan/
             │   ├── bash/
@@ -237,6 +242,7 @@ sda-dev ─delegates─▸ sda-dev-quality             per-area quality gates (P
 | `sda-workflow` agent + the `/sda.workflow.{init,status,advance,escalate}` prompts (orchestrator surface) | `sda-scribe` (Mode 8 writes the brief a raise requires), `{workflow}` script, the start stage's owner — `sda-ba` / `sda-design` / `sda-dev-task` — (started by the human on the new container from its `issue.md`), `sda-ba` / `sda-design` / `sda-dev-task` (name `sda-workflow` when offering to create a container) | The prompts carry intent only and set `agent: "sda-workflow"`, so the agent's own instructions plus its hook-injected `{workflow}` do the work — a prompt must **omit `tools:`**, which would otherwise run it in the default agent. The advisor never invokes a producer and never runs `resolve` |
 | `issue.md` (container entry artifact) | `sda-workflow` (writes it at `init` — the only file it writes), `sda-ba` / `sda-design` / `sda-dev-task` / `sda-dev` (handed it by their stage-entry prompt), `workflow-schema.md` (container template lists it) | The stage owners' conversation starter: container name + the three artifact paths + the issue in the user's words — an outline, not a requirements spec, and no design or implementation detail. **Not state** — the script never creates, reads, or checks it, so it is never a `gap=` and never blocks `advance`; absent on containers that predate it |
 | Stage-entry prompts (`/sda.workflow.story.issue`, `/sda.workflow.design.issue`, `/sda.workflow.task.issue`, `/sda.workflow.dev.issue`) | `sda-ba` / `sda-design` / `sda-dev-task` / `sda-dev` (the `agent:` each one sets), `sda-workflow-guide` (the skill each prompt points the owner to), `sda-workflow` (names the start stage's prompt at `init`), `issue.md` (the artifact they hand the owner) | Each carries intent only and sets `agent:` to the stage's owner — a prompt must **omit `tools:`**. Each also declares workflow mode and points the owner at the `sda-workflow-guide` skill. Unlike the advisor prompts these target producers, not `sda-workflow` |
+| `/sda.workflow.handle-escalation` prompt | `sda-ba` / `sda-design` / `sda-dev-task` / `sda-dev` (the escalated-to stage's session runs it), `sda-workflow-guide` (its Resolve steps carry the procedure) | A resolve trigger, not a stage entry: it sets no `agent:`, so it runs in whichever producer session is open, and the guide's Resolve steps — not the prompt — carry the procedure |
 | Question mechanics (`[ASK]` = short gates; elicitation = chat text with context + pros/cons) | `sda-dev-task`, `sda-dev`, `sda-qa-task`, `sda-toolscan`, `sda-ba`, `sda-design` | Shared interaction convention — changing the split in one agent must not diverge from the others. Escalation handling is a shared case of it: both ends discuss it with the user and act only on direct approval, and an escalation never transfers a decision the target stage's ownership rules reserve |
 | Standards compliance rules | `sda-dev`, `sda-test-writer`, `sda-coder`, `sda-refactor` | All code-producing agents enforce standards |
 | Unexpected-failure / troubleshooting handling | `sda-dev`, `sda-dev-quality` (never loads troubleshooting guidance) | Troubleshooting is a workflow decision — subagents stop and report; the orchestrator diagnoses and recovers |
