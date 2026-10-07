@@ -5,8 +5,8 @@ A suite of coordinated AI agents that implement a Specification-Driven Developme
 `sda-ba` (optional front-end) turns a raw requirement into a ready User Story — one Actor + Gherkin — that feeds `sda-dev-task`:
 
 ```
-sda-ba  →  sda-setup skill  →  sda-toolscan  →  sda-dev-task  →  sda-dev
-(story)     (once, skill)       (once)           (tasks)      (implement)
+sda-setup skill  →  sda-toolscan  →  sda-ba  →  sda-design →  sda-dev-task  →  sda-dev
+(once, skill)       (once)           (story)     (design)     (tasks)          (implement)
 ```
 
 ---
