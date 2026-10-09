@@ -76,7 +76,7 @@ You receive:
    standalone tasks root, or `<wf>/tasks/` in workflow mode. The scribe numbers the
    folder — there is no default.
 2. **Task name** — in kebab-case.
-3. **Scope** — `Feature: {name}` + `Layer: {layer}`, or `Global` + `Layer: {layer}`.
+3. **Scope** — `Feature: {name}` or `Global`, plus `Areas: {a}, {b}`.
 4. **Goal** — 1-2 sentences.
 5. **Context** — (workflow mode only) the workflow id + slug, and the relative link to the design record. Omit for a standalone task.
 6. **Design Approach** — per unit: Implements / Tests & verifies / Problem/Context → Solution → Details.
@@ -314,7 +314,7 @@ Extract data from caller input and format per `task-schema.md`:
 - `# Task: {name}`
 - `## Goal` — from input.
 - `## Context` — from input (omit for a standalone task).
-- `## Scope` — `Feature: {name}` / `Global`, plus `Layer: {layer}`.
+- `## Scope` — `Feature: {name}` / `Global`, plus `Areas: {a}, {b}`.
 - `## Contracts` — from input (omit if none).
 - `## Prerequisites` — from input (omit if none).
 - `## Design Approach` — from input, formatted per schema.

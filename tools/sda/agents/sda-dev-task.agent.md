@@ -808,7 +808,7 @@ each mapped to ≥1 scenario: `- [ ] {criterion} _(Unit N, scenarios X–Y)_`.
 - **Repo root** (`{repo-root}`) — absolute path; scribe must anchor all folder creation and numbering here
 - **Task parent folder** — where the numbered task folder goes: `{tasks-root}/`, or the workflow's `tasks/` folder in a workflow session. The scribe numbers and creates the folder
 - **Task name** (kebab-case)
-- **Scope** — `Feature: {name}` + `Layer: {layer}`, or `Global` + `Layer: {layer}`
+- **Scope** — `Feature: {name}` or `Global`, plus `Areas: {a}, {b}` (unit `Area` values, deduplicated, in unit order)
 - **Goal** (1-2 sentences)
 - **Context** — workflow session only: the workflow id + slug and the relative design-record link. Omit for a standalone task — the scribe writes no `## Context` header
 - **Design Approach** (Phase 3 summary + per-unit Implements / Tests & verifies from Step 2)

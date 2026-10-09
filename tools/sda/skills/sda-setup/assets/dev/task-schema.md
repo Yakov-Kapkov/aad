@@ -15,7 +15,7 @@
 
 ## Scope
 Feature: {feature-name}
-Layer: {layer-name}
+Areas: {area-1}, {area-2}
 
 ## Prerequisites
 {Omit if the task has no setup dependencies.}
@@ -270,9 +270,9 @@ Domain: {subdirectory name} · Boundary: {e.g. UI → Backend} · Format: {e.g. 
 - Required. First line: `Feature: {name}` (exact match to a feature listed in
   the repo's `AGENTS.md` features section) or `Global` (cross-cutting /
   maintenance work not tied to a feature).
-- Second line: `Layer: {layer}` — the architectural layer the task primarily
-  touches (from the AI readme's architecture section / `architecture.md`),
-  e.g. `Backend`, `Persistence`.
+- Second line: `Areas: {area-1}, {area-2}` — the unit `Area` values,
+  deduplicated, in unit order. Never a name that is not a unit `Area`
+  (see [Units](#units)); never `Global`.
 
 ### Prerequisites
 - Checkboxes (`- [ ]`). Omit section if none.

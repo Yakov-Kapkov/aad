@@ -6,7 +6,7 @@ description: "Sets up or updates the SDA tool in the current project. Use when t
 # SDA Project Setup
 
 Scaffold the `.sda/` folder in a project so the SDA agents can work.
-After scaffolding, hand off to the `sda-toolscan` agent for toolchain scanning.
+After scaffolding, hand off to the `sda-toolscan` agent for toolchain scanning (Step 6; skippable on request).
 
 You do NOT write application code, tests, or scan the toolchain.
 
@@ -89,7 +89,7 @@ Use `read_file` with the **exact literal paths** `.sda/project-tools.md` and `.s
 - **Both exist** → **Post:** `Mode: Update` → Skip Step 2. **Go directly to Step 3.**
 - **Either missing** → **Post:** `Mode: First-time setup` → **Go to Step 2.**
 
-> Steps 3–8 run for **both** modes. The only difference is that first-time setup runs Step 2 first.
+> Steps 3–8 run for **both** modes — first-time setup runs Step 2 first. Step 6's skip rule is the sole exception.
 
 ### Step 2 — Detect language
 
@@ -154,6 +154,8 @@ Adds missing fields, preserves existing values. **Mandatory — do not skip.**
 ### Step 6 — Toolchain scan
 
 **Post:** `**Step 6 — Toolchain scan.**`
+
+**Skip rule.** If the request says to skip the toolchain scan, **Post:** `> Skipped toolchain scan (Steps 6–7).` Skip to Step 8; if `.sda/project-tools.md` is missing, also **Post:** `> Run **sda-toolscan** before running SDA workflows.`
 
 - **First-time setup** — run automatically.
 - **Update** — ask (title: _"Toolchain scan"_): _"Re-scan to update `project-tools.md`?"_ `Yes` ← default / `No — keep existing`. If `No` → read `.sda/project-tools.md`. If it exists, proceed to Step 7. If missing, skip to Step 8.
