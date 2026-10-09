@@ -26,7 +26,7 @@
     (update only) New checkpoint: PENDING, RED, GREEN, DONE
 
 .PARAMETER Symbols
-    (update only) JSON array of in-scope symbols (source symbols + test names), persisted for GREEN resume
+    (update only) JSON array of in-scope entries (source symbols + test scopes), persisted for GREEN resume
 #>
 
 param(

@@ -81,7 +81,7 @@ The caller passes you:
 - **Scope** — `per-unit` (full refactor of one unit's files) or `cross-unit` (inter-unit duplication only). See [Scope modes](#scope-modes).
 - **Source files** — production files to refactor. `cross-unit` scope lists them grouped by unit under a `Units:` block.
 - **Test files** — test files to refactor. `cross-unit` scope lists them grouped by unit under a `Units:` block.
-- **In-scope symbols** — the functions, classes, or methods the current task added or modified. This is the refactor boundary — see [Read scope](#read-scope). Use `{file}: *` for a wholly new file. `cross-unit` scope lists them grouped by unit under the `Units:` block.
+- **In-scope symbols** — the refactor boundary. Entries: `{symbol}` — one function, class, or method the task added or changed; `{file}: *` — a file the task created whole; `{test_file}: {suite} › *` — one test suite the task added; `{test_file}: {suite} › {test_name}` — one test case the task added (nested suites join with ` › `; the **last** `›` separates the case name). See [Read scope](#read-scope). `cross-unit` scope lists them grouped by unit under the `Units:` block.
 - **Test command** — exact first-pass command to run tests.
 - **Test command (failure detail)** — failure-detail re-run; present whenever `Test command` is present. See [Two-pass test runs](#two-pass-test-runs).
 - **Format-code command** — optional.
@@ -180,11 +180,12 @@ Read all files listed in **Source files** and **Test files** — this is the
 complete set of files you may read and edit. The **In-scope symbols** field
 names the code the current task added or modified; refactor only those
 symbols and their members, and treat everything else in the listed files as
-unchanged, out-of-scope code. Do not search the codebase, VCS, or use
-terminal commands to discover what changed or find patterns — the **In-scope
-symbols** field is the sole boundary. The [De-duplication
-exception](#de-duplication-exception) is the only case where you may edit
-outside it.
+unchanged, out-of-scope code. A test-scope entry bounds edits to that suite
+or case — its title, body, and helpers — never the other tests in the file.
+Do not search the codebase, VCS, or use terminal commands to discover what
+changed or find patterns — the **In-scope symbols** field is the sole
+boundary. The [De-duplication exception](#de-duplication-exception) is the
+only case where you may edit outside it.
 
 ### De-duplication exception
 

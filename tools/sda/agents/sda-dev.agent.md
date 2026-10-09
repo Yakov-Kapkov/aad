@@ -269,7 +269,11 @@ Use `{task-state}` for all state operations (see [CLI scripts](#cli-scripts) for
 
 Run `update` at each phase's State-update step when `{state-tracking}` is true and the phase produced a clean result. Skip if failure handling ended the response, or `{state-tracking}` is false.
 
-The State-update commands below are the PowerShell form; on Bash/zsh, use the positional form from [CLI scripts](#cli-scripts).
+Every State-update step uses this form — the step supplies only the checkpoint and, when present, the symbols payload:
+
+`{task-state}` `-Command update -TaskFolder <task-folder> -UnitNumber <N> -Checkpoint <checkpoint> [-Symbols '<entries json>']`
+
+PowerShell form shown; on Bash/zsh, use the positional form from [CLI scripts](#cli-scripts).
 
 ### File reading strategy
 
@@ -639,7 +643,7 @@ or:
 
 ### State update
 
-When `{state-tracking}`: run `{task-state}` `-Command update -TaskFolder <task-folder> -UnitNumber <N> -Checkpoint RED -Symbols '<test names json>'` (TDD unit) or `-Checkpoint GREEN -Symbols '<test names json>'` (tests-only unit) — `Symbols` = the `test_name`s from the returned `### Tests written` list, as a JSON string array.
+Run `{task-state}` `update` per [State updates](#state-updates) — **Checkpoint:** `RED` (TDD unit) or `GREEN` (tests-only unit); **Symbols:** the [test scopes](#sourcing-in-scope-symbols) from the returned `### Tests written` list, as a JSON string array.
 
 <result>
 ### RED gate
@@ -694,7 +698,7 @@ When `{state-tracking}`: run `{task-state}` `-Command update -TaskFolder <task-f
 
 ### State update
 
-When `{state-tracking}`: run `{task-state}` `-Command update -TaskFolder <task-folder> -UnitNumber <N> -Checkpoint GREEN -Symbols '<json>'` — `Symbols` = source `symbol_name`s from the returned `### Implemented` list, plus (for `tests required`) the `test_name`s from `### Tests written`.
+Run `{task-state}` `update` per [State updates](#state-updates) — **Checkpoint:** `GREEN`; **Symbols:** source `symbol_name`s from the returned `### Implemented` list, plus (for `tests required`) the [test scopes](#sourcing-in-scope-symbols) from `### Tests written`.
 
 <result>
 ### GREEN gate
@@ -718,7 +722,7 @@ When `{state-tracking}`: run `{task-state}` `-Command update -TaskFolder <task-f
    - No findings → output the `<result>` block below.
    - Findings → re-delegate to `sda-scribe` **once**, each finding as an anchored delta, then re-run `sda-docs-check`.
    - Findings after the retry → **not a failure** ([Failure handling & escalation](#failure-handling--escalation)): present the report verbatim and ask the user to resolve what remains — a `Recommendation: fix code` or "caller decides" finding is the user's decision, never a troubleshooting lookup. Act on the answer; if a finding stays open, stop and report it.
-4. **State update** — `{task-state}` `-Command update -TaskFolder <task-folder> -UnitNumber <N> -Checkpoint DONE` (docs units have no refactor).
+4. **State update** — run `{task-state}` `update` per [State updates](#state-updates) — **Checkpoint:** `DONE` (docs units have no refactor).
 
 <result>
 ### Docs gate
@@ -737,10 +741,15 @@ Refactoring runs in two scopes:
 - **4·X (cross-unit)** — a single thin pass after all units are DONE, scoped to
   inter-unit duplication only. Runs when `{multi-unit}` is true; skip when false.
 
-**Sourcing `In-scope symbols`:**
-- For `tests required` / `tests only` / `integration only` units: take them from the subagent results you already hold — the source `symbol_name`s from each unit's GREEN `### Implemented` list, plus the `test_name`s from its RED `### Tests written` list. On GREEN resume (no held results), use the unit's stored `symbols` field — returned by Phase 1's `task-state next`.
-- For `refactoring` units: derive from the unit's Changes blocks — the symbol names in each `**\`symbol\`**` entry.
-Never read files to derive them. Use `{file}: *` only when a unit created that file whole.
+### Sourcing in-scope symbols
+
+One entry per line in the delegation field:
+
+- `tests required` / `tests only` / `integration only` — from the subagent results you hold: the `symbol_name`s in each unit's GREEN `### Implemented` list, plus the test scopes in its RED `### Tests written` list, copied as written.
+- `refactoring` — the symbol names in the unit's Changes blocks.
+- On resume — fill whatever the held results lack from the unit's stored `symbols` field (`task-state next`).
+
+Never read files to derive them.
 
 ### Phase 4·U — Per-unit refactor
 
@@ -757,7 +766,7 @@ Invoke `sda-refactor` by name:
 Scope: per-unit
 Source files: {current unit's source files}
 Test files: {current unit's test files}
-In-scope symbols: {symbols this unit added or modified; "{file}: *" for a wholly new file}
+In-scope symbols: {the unit's in-scope entries — source symbols and test scopes}
 Test command: {test-path with {path}=test file paths; filter-last-n ({cap}=10)}
 Test command (failure detail): {test-path with {path}=test file paths; filter-test-output ({cap}=100)}
 Format-code command: {format-code-path with {path}=source + test file paths — omit if absent}
@@ -774,7 +783,7 @@ Repo root: {repo-root}
 Scope: per-unit
 Source files: {current unit's source files}
 Test files: {current unit's test files — omit if none}
-In-scope symbols: {symbols from Changes blocks; "{file}: *" for a wholly new file}
+In-scope symbols: {symbol names from the unit's Changes blocks}
 Test command: {test-path with {path}=Related tests paths; filter-last-n ({cap}=10) — omit both lines if no Related tests}
 Test command (failure detail): {test-path with {path}=Related tests paths; filter-test-output ({cap}=100)}
 Format-code command: {format-code-path with {path}=source file paths — omit if absent}
@@ -793,7 +802,7 @@ When `sda-refactor` returns — apply [Delegation discipline](#delegation-discip
 
 ### State update
 
-When `{state-tracking}`: run `{task-state}` `-Command update -TaskFolder <task-folder> -UnitNumber <N> -Checkpoint DONE`.
+Run `{task-state}` `update` per [State updates](#state-updates) — **Checkpoint:** `DONE`.
 
 <result>
 {Refactoring is not needed. | Refactoring is done.}
@@ -821,11 +830,11 @@ Units:
 - Unit {N} ({name}):
   Source files: {unit N source files}
   Test files: {unit N test files}
-  In-scope symbols: {symbols unit N added or modified; "{file}: *" for a wholly new file}
+  In-scope symbols: {unit N's in-scope entries — source symbols and test scopes}
 - Unit {M} ({name}):
   Source files: {unit M source files}
   Test files: {unit M test files}
-  In-scope symbols: {symbols unit M added or modified; "{file}: *" for a wholly new file}
+  In-scope symbols: {unit M's in-scope entries — source symbols and test scopes}
 Test command: {test-path with {path}=test file paths; filter-last-n ({cap}=10)}
 Test command (failure detail): {test-path with {path}=test file paths; filter-test-output ({cap}=100)}
 Format-code command: {format-code-path with {path}=source + test file paths — omit if absent}

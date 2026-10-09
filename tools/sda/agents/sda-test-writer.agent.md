@@ -335,11 +335,13 @@ End your response with this block — do not add any text after it.
 
 **Every scenario must appear in the result** — including vacuously passing ones. Do not omit scenarios that passed. Mark each test with `❌ FAIL` or `✅ vacuous — {why}` so the caller can see the full picture without guessing.
 
+**Report each test's locator, not its bare name** — `{test_file}: {suite} › {test_name}`: the file you wrote it to, its suite/group name, and its case name. When the framework has no suite/group level, use the test's class or module as the suite. Nested groups join with ` › `.
+
 **For RED result:**
 
 <result>
 ### Tests written
-{N}. {scenario name} — `{test_name}` — [❌ FAIL | ✅ vacuous — {why}]
+{N}. {scenario name} — `{test_file}: {suite} › {test_name}` — [❌ FAIL | ✅ vacuous — {why}]
 ...
 
 ### RED gate
@@ -379,7 +381,7 @@ cd {absolute-working-dir}
 
 <result>
 ### Tests written
-{N}. {scenario name} — `{test_name}` — [✅ PASS]
+{N}. {scenario name} — `{test_file}: {suite} › {test_name}` — [✅ PASS]
 ...
 
 ### GREEN gate
