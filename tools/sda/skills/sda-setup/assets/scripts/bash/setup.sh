@@ -75,10 +75,6 @@ cp "$TOOLSCAN_SRC/cleanup-project-tools.sh"        "$TARGET_DIR/scripts/toolscan
 cp "$TOOLSCAN_SRC/get-timestamp.sh"                "$TARGET_DIR/scripts/toolscan/get-timestamp.sh"
 cp "$TOOLSCAN_SRC/probe-validators.sh"             "$TARGET_DIR/scripts/toolscan/probe-validators.sh"
 
-DOCS_SRC="$ASSETS_DIR/docs/bash"
-mkdir -p "$TARGET_DIR/scripts/docs"
-cp "$DOCS_SRC/docs-integrity.sh"                  "$TARGET_DIR/scripts/docs/docs-integrity.sh"
-
 # Copy workflow script
 WORKFLOW_SRC="$ASSETS_DIR/workflow/bash"
 mkdir -p "$TARGET_DIR/scripts/workflow"
@@ -99,7 +95,8 @@ fi
 # Setup only creates and copies, so a path that moved or was replaced leaves a
 # stale copy behind in an existing install. Each entry is a shipped location.
 LEGACY_PATHS=(
-  "$TARGET_DIR/scripts/decisions"                        # docs-integrity moved to scripts/docs/
+  "$TARGET_DIR/scripts/decisions"                        # docs-integrity's first location
+  "$TARGET_DIR/scripts/docs"                             # docs-integrity's second location — the checkers now ship in the docs skills
   "$TARGET_DIR/resources/design/design-report-schema.md"  # replaced by design-record-schema.md
 )
 for legacy in "${LEGACY_PATHS[@]}"; do

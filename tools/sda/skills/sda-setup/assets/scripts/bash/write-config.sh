@@ -8,7 +8,8 @@
 #       <template-file> \
 #       <config-file>
 #
-# Adds fields missing from the config. Existing field values are preserved.
+# Adds fields missing from the config, and drops fields no longer shipped.
+# Existing field values are preserved.
 # Requires: python3 (used for JSON manipulation)
 
 set -euo pipefail
@@ -54,10 +55,6 @@ SHIPPED = {
     "listQaSecrets": (".sda/scripts/qa/list-qa-secrets.ps1", ".sda/scripts/qa/list-qa-secrets.sh"),
     "qaSessionInit": (".sda/scripts/qa/qa-session-init.ps1", ".sda/scripts/qa/qa-session-init.sh"),
     "invokeHttp":    (".sda/scripts/qa/invoke-http.ps1",     ".sda/scripts/qa/invoke-http.sh"),
-    # docsIntegrity: the first pair is the pre-rename location — kept so existing
-    # installs migrate to the new folder instead of keeping a stale path.
-    "docsIntegrity": (".sda/scripts/decisions/docs-integrity.ps1", ".sda/scripts/decisions/docs-integrity.sh",
-                      ".sda/scripts/docs/docs-integrity.ps1",      ".sda/scripts/docs/docs-integrity.sh"),
     "workflow":      (".sda/scripts/workflow/workflow.ps1",  ".sda/scripts/workflow/workflow.sh"),
 }
 PLATFORM = {
@@ -68,7 +65,6 @@ PLATFORM = {
     "listQaSecrets": ".sda/scripts/qa/list-qa-secrets.sh",
     "qaSessionInit": ".sda/scripts/qa/qa-session-init.sh",
     "invokeHttp":    ".sda/scripts/qa/invoke-http.sh",
-    "docsIntegrity": ".sda/scripts/docs/docs-integrity.sh",
     "workflow":      ".sda/scripts/workflow/workflow.sh",
 }
 scripts = config.setdefault("scripts", {})
@@ -76,6 +72,10 @@ for key, platform_value in PLATFORM.items():
     current = scripts.get(key)
     if current is None or current in SHIPPED[key]:
         scripts[key] = platform_value
+
+# Step 3: Drop retired fields — a field no longer shipped must not linger.
+for key in ("docsIntegrity",):
+    scripts.pop(key, None)
 
 with open("$CONFIG_FILE", "w") as f:
     json.dump(config, f, indent=2)

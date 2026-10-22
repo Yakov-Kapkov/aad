@@ -320,8 +320,8 @@ The executable contract-trace steps run during Design — see
 
 Task-scoped decisions live in `task.md`'s Design Approach — you own those.
 A **durable cross-cutting** decision (a rule, convention, or architecture
-that outlives this task) belongs to `sda-design`'s decision docs — flag it
-to the user; do not record it yourself.
+that outlives this task) belongs in the repo's design docs — a convention or
+an ADR — flag it to the user; do not record it yourself.
 
 **Docs routing — by change kind:**
 
@@ -331,7 +331,7 @@ to the user; do not record it yourself.
 | **Config/env/secret template file/IaC** — a dotfile or template the app reads (e.g. `.env.example`), not a doc | `integration only` — never a `docs` unit |
 | **Contract spec — amendment** — an anchored delta to a spec that exists; storage is in `sda-spec-guide` | `docs` unit — anchored delta only |
 | **Contract spec — creation** — a boundary with no spec file | `sda-design` — flag to the user, do not create it |
-| **Semantic doc** — new/changed concept, decision, vocabulary term, doc-tree structure, or readme routing | `sda-design` (decision docs) — flag to the user, do not write it |
+| **Semantic doc** — new/changed concept, convention, ADR, vocabulary term, doc-tree structure, or readme routing | `sda-design` (design docs) — flag to the user, do not write it |
 | **Semantic requirements** — a new/changed FR or NFR, or an NFR's metric or threshold | `sda-ba` (requirements tree) — flag to the user, do not write it |
 
 Uncertain → treat it as semantic and flag it. A requirements entry is never mechanical —

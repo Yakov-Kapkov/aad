@@ -71,10 +71,6 @@ Copy-Item "$toolscanSrc/cleanup-project-tools.ps1"      "$targetDir/scripts/tool
 Copy-Item "$toolscanSrc/get-timestamp.ps1"              "$targetDir/scripts/toolscan/get-timestamp.ps1"
 Copy-Item "$toolscanSrc/probe-validators.ps1"           "$targetDir/scripts/toolscan/probe-validators.ps1"
 
-$docsSrc = Join-Path (Join-Path $scriptDir 'docs') 'powershell'
-New-Item -ItemType Directory -Force -Path "$targetDir/scripts/docs" | Out-Null
-Copy-Item "$docsSrc/docs-integrity.ps1"                "$targetDir/scripts/docs/docs-integrity.ps1"
-
 # Copy workflow script
 $workflowSrc = Join-Path (Join-Path $scriptDir 'workflow') 'powershell'
 New-Item -ItemType Directory -Force -Path "$targetDir/scripts/workflow" | Out-Null
@@ -91,7 +87,8 @@ if (Test-Path $tdSource) {
 # Setup only creates and copies, so a path that moved or was replaced leaves a
 # stale copy behind in an existing install. Each entry is a shipped location.
 $legacyPaths = @(
-    "$targetDir/scripts/decisions"                     # docs-integrity moved to scripts/docs/
+    "$targetDir/scripts/decisions"                     # docs-integrity's first location
+    "$targetDir/scripts/docs"                          # docs-integrity's second location — the checkers now ship in the docs skills
     "$targetDir/resources/design/design-report-schema.md"  # replaced by design-record-schema.md
 )
 foreach ($legacy in $legacyPaths) {

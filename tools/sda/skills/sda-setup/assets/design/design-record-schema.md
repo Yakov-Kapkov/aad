@@ -29,7 +29,10 @@ read and updated, never duplicated into a new location.
 - {named pattern, and the problem it solves here}
 
 ## Decisions
-- {decision title} — {one line: why it matters here} — [{decision doc}]({path})
+- {decision title} — {one line: why it matters here} — [{ADR doc}]({path})
+
+## Conventions
+- {convention title} — {one line: the rule it establishes} — [{convention doc}]({path})
 
 ## Docs
 - [{document}]({path}) — {what it covers}
@@ -73,15 +76,22 @@ read and updated, never duplicated into a new location.
 
 ### Decisions
 - **Pointers**, one line each: decision title — why it matters here — link to the durable
-  decision doc.
-- The decision doc is the authoritative home. The record may never be the **sole** home of a
+  ADR doc.
+- The ADR doc is the authoritative home. The record may never be the **sole** home of a
   durable decision.
+
+### Conventions
+- **Pointers**, one line each: convention title — one line on the rule it establishes —
+  link to the durable convention doc.
+- The convention doc is the authoritative home. The record may never be the **sole** home
+  of a durable convention.
 
 ### Docs
 - One bullet per document this design produced or changed: relative link + what it covers.
 - **State, not a log.** Renewal updates the list in place — it never accumulates per-session
   entries.
-- Decision docs are listed under [Decisions](#decisions), not here.
+- Convention and ADR docs are listed under [Decisions](#decisions) and
+  [Conventions](#conventions), not here.
 - Relative `.md` links are expected here — [Altitude trigger](#4-altitude-trigger) exempts them.
 - Omit only if the design changed no document.
 
@@ -108,7 +118,7 @@ read and updated, never duplicated into a new location.
 
 ### Snippet-free
 - Every line must pass the [Altitude trigger](#4-altitude-trigger).
-- A durable decision doc keeps a small `application` allowance. The record does not.
+- A durable convention doc keeps a small `application` allowance. The record does not.
 
 ---
 
@@ -136,7 +146,7 @@ Walk the list — do not recall it.
 
 | Discriminator | Test | Routes to |
 |---|---|---|
-| Home | "Would an unrelated future feature need to know this?" | yes → durable decision doc · no → the record |
+| Home | "Would an unrelated future feature need to know this?" | yes → convention (how) or ADR (why) · no → the record |
 | Altitude | "Can two *different* implementations both satisfy this?" | yes → design level · no → this is code |
 
 ### 3. Excluder — not design decisions
@@ -156,8 +166,8 @@ The test is mechanical — a line is below altitude if it contains a **source** 
 name, a code fence, a schema field name, a config key, or SQL.
 
 Documentation references are the exception: a relative `.md` link to a readme, a docs topic
-file, a requirement entry, or a decision doc is **navigation**, and the record requires it in
-[Context](#context) and [Docs](#docs).
+file, a requirement entry, a convention doc, or an ADR doc is **navigation**, and the record
+requires it in [Context](#context) and [Docs](#docs).
 
 ---
 

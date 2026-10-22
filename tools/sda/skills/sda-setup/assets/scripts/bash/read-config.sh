@@ -24,7 +24,7 @@ case "$AGENT" in
     sda-design)        KEYS="designOwnership paths.specs docsSkill paths.workflows scripts.workflow" ;;
     sda-workflow)      KEYS="paths.workflows scripts.workflow" ;;
     sda-scribe)        KEYS="paths.specs paths.issues docsSkill" ;;
-    sda-docs-check)    KEYS="scripts.docsIntegrity docsSkill paths.specs" ;;
+    sda-docs-check)    KEYS="docsSkill docsCheck.enabled paths.specs" ;;
     *)                 KEYS="" ;;
 esac
 
@@ -43,12 +43,12 @@ get_default() {
         scripts.listQaSecrets)  echo ".sda/scripts/qa/list-qa-secrets.sh" ;;
         scripts.qaSessionInit)  echo ".sda/scripts/qa/qa-session-init.sh" ;;
         scripts.invokeHttp)     echo ".sda/scripts/qa/invoke-http.sh" ;;
-        scripts.docsIntegrity)  echo ".sda/scripts/docs/docs-integrity.sh" ;;
         scripts.workflow)       echo ".sda/scripts/workflow/workflow.sh" ;;
         devTaskUnitSizeLimit)   echo "1000" ;;
         designOwnership)        echo "user" ;;
         standardsSkill)         echo "standards-compliance" ;;
-        docsSkill)              echo "repo-ai-friendly" ;;
+        docsSkill)              echo "make-repo-ai-friendly" ;;
+        docsCheck.enabled)      echo "true" ;;
         paths.specs)            echo ".sda/specs" ;;
         paths.tasks)            echo ".sda/tasks" ;;
         paths.issues)           echo ".sda/issues" ;;

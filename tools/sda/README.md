@@ -19,8 +19,9 @@ Installs the **sda-setup** skill, the **sda-workflow-guide** skill, the **sda-sp
 skill, SDA agents, and the
 supporting skills — [**Standards Compliance**](../../skills/standards-compliance/),
 [**Troubleshooting**](../../skills/troubleshooting/),
-[**Software Design Best Practices**](../../skills/software-design-best-practices/), and
-[**Repo AI-Friendly**](../../skills/repo-ai-friendly/) — into your `.copilot` user folder.
+[**Software Design Best Practices**](../../skills/software-design-best-practices/),
+[**Is Repo AI-Friendly**](../../skills/is-repo-ai-friendly/), and
+[**Make Repo AI-Friendly**](../../skills/make-repo-ai-friendly/) — into your `.copilot` user folder.
 
 | OS | Default install location |
 |---|---|
@@ -170,21 +171,22 @@ own session.
 
 > Requires `full` install mode.
 
-One agent, two altitudes — detect from the request:
+One agent, any altitude — judged from what is being discussed:
 
-- **System mode** — new app/platform, service boundaries, conventions, vocabulary:
+- **Whole-system work** — new app/platform, service boundaries, conventions, vocabulary:
   ```
-  Design the architecture for the notification subsystem.
+  Design the architecture for the notification subproject.
   ```
-  Discovers the repo's layers via `sda-code-explore`, then delegates the global
-  `docs/` (architecture, vocabulary, index, decisions, diagrams) + one `docs/` per layer, the
+  Discovers the repo's subprojects via `sda-code-explore`, then delegates the
+  global `docs/` (architecture, vocabulary, index, conventions, adrs,
+  diagrams) + one `docs/` per subproject, the
   readme outlines (AI readme + human README each), and a spec file for every
   boundary it documents — to `sda-scribe`.
-- **Feature mode** — a specific feature or bounded context:
+- **Feature work** — a specific feature or bounded context:
   ```
   Design a feature for paginated order listing filtered by status.
   ```
-  Records design decisions, updates the features section of all readmes, writes a spec
+  Records conventions and ADRs, updates the features section of all readmes, writes a spec
   file for every boundary the feature crosses, and writes the design record
   (`design.md`).
 
@@ -245,7 +247,7 @@ finds — it reports, and leaves routing (sda-dev-task vs ad-hoc sda-dev) to you
 |---|---|---|---|
 | `sda-toolscan` | Scans toolchain, writes `project-tools.md` — full scan or per-area update | project config | read, search, edit, execute |
 | `sda-ba` | Business Analyst — elicits a raw requirement into one ready User Story (Actor + Gherkin + measurable NFRs) and owns the durable requirements tree, gated by the Definition of Ready | Claude Sonnet 5 | read, search, agent, edit, execute |
-| `sda-design` | System architecture + feature design — components, contracts, diagrams, decision docs | Claude Sonnet 5 | read, search, agent, execute |
+| `sda-design` | System architecture + feature design — components, contracts, diagrams, convention + ADR docs | Claude Sonnet 5 | read, search, agent, execute |
 | `sda-dev-task` | Designs atomic task specs (`task.md`) with test scenarios and implementation plans | project config | read, search, agent, execute |
 | `sda-qa-task` | Authors the black-box acceptance spec (`qa-task.md`) — coupled (from a finalized task) or standalone | Claude Sonnet 5 | read, search, execute, agent |
 | `sda-dev` | TDD implementation orchestrator — delegates RED/GREEN to subagents to keep context small; routes `docs` units to sda-scribe + sda-docs-check; owns the workflow's `dev` stage | project config | read, execute, agent |
@@ -256,7 +258,7 @@ finds — it reports, and leaves routing (sda-dev-task vs ad-hoc sda-dev) to you
 
 | Agent | Role | Model | Tools |
 |---|---|---|---|
-| `sda-scribe` | Universal scribe: writes task.md, qa-task.md, dev-report.md, design-decision docs, design docs, requirements docs, design records, contract specs, manifest.md, and the files of a task's `docs` unit | Claude Haiku 4.5 | read, edit, search |
+| `sda-scribe` | Universal scribe: writes task.md, qa-task.md, dev-report.md, convention + ADR docs, design docs, requirements docs, design records, contract specs, manifest.md, and the files of a task's `docs` unit | Claude Haiku 4.5 | read, edit, search |
 | `sda-dev-task-verifier` | Consistency checks + regression analysis on task.md. Delegates file-gathering to sda-code-explore for tasks with >3 files. Runs `unit-file-size` for unit size verification. | Claude Sonnet 5 | read, search, agent, execute |
 | `sda-code-explore` | Fast read-only codebase exploration (invoked by sda-dev-task, sda-dev-task-verifier, sda-qa-task, sda-dev, sda-design) | Claude Haiku 4.5 | read, search |
 | `sda-web-explore` | Web research — fetches live API docs and library specs (invoked by sda-dev-task, sda-design) | Claude Haiku 4.5 | web |
@@ -264,7 +266,7 @@ finds — it reports, and leaves routing (sda-dev-task vs ad-hoc sda-dev) to you
 | `sda-coder` | Implements production code (GREEN) and integration slices. Mechanical worker: makes domain decisions within the assigned unit; stops and reports anything outside scope. | project config | read, edit, search, execute |
 | `sda-refactor` | Runs the REFACTOR pass without changing behaviour: per-unit (refactors the code each unit added or modified) plus a final cross-unit duplication pass; reverts any change that breaks a test. | project config | read, edit, search, execute |
 | `sda-dev-quality` | Runs quality gates (types, lint, tests, coverage, build, pre-merge) in **local** (target files) or **global** (whole area) mode. Check-and-report only — never fixes. Invoked by sda-dev (Phase 5, global) or standalone. | Claude Haiku 4.5 | execute |
-| `sda-docs-check` | Verifies the docs tree (global + per-layer) + decision-doc integrity + drift and AI-readme routing (AGENTS.md/CLAUDE.md links, feature list) against reality. Full scope, or targeted on a `docs` unit's files. Check-and-report only — never fixes. Invoked by sda-design and sda-dev. | Claude Sonnet 5 | read, search, execute, agent |
+| `sda-docs-check` | Verifies the docs tree (global + per-subproject) + convention/ADR-doc integrity + drift and AI-readme routing (AGENTS.md/CLAUDE.md links, feature list) against reality. Full scope, or targeted on a `docs` unit's files. Check-and-report only — never fixes. Invoked by sda-design and sda-dev. | Claude Sonnet 5 | read, search, execute, agent |
 | `sda-tool-installer` | Installs required development tools — reads tool-catalog.md, runs install commands, handles git-hooks init, reports pass/fail per tool. Invoked by sda-setup skill (Step 7). | Claude Haiku 4.5 | read, execute |
 | `sda-diagram-writer` | Renders Mermaid diagrams from structured `DIAGRAM` blocks into `.md` files, returning the written path. Invoked by sda-design. | Claude Sonnet 5 | edit |
 
@@ -272,7 +274,7 @@ finds — it reports, and leaves routing (sda-dev-task vs ad-hoc sda-dev) to you
 
 `sda-dev` orchestrates the TDD loop and owns quality checks, delegating test writing, coding, refactoring, and gate execution to subagents to keep each context small. A task's `docs` unit routes to `sda-scribe` (write) and then `sda-docs-check` (targeted verification).
 
-`sda-scribe` is the universal scribe for SDA planning and implementation agents — it writes task.md, qa-task.md, dev-report.md, design-decision docs, design docs, requirements docs, design records, contract spec files, and manifest.md. It uses Haiku for cost efficiency since it performs no reasoning — only schema formatting and file I/O. `sda-code-explore` is invoked by `sda-dev-task`, `sda-dev-task-verifier`, `sda-qa-task`, and `sda-dev` for codebase research — also Haiku, since it only reads and reports. `sda-web-explore` is invoked by `sda-dev-task` and `sda-design` for live web/API research when documentation may have changed. `sda-dev-task-verifier` handles Phase 7 (consistency + regression checks) — it can be invoked directly by the user or delegated to by `sda-dev-task`.
+`sda-scribe` is the universal scribe for SDA planning and implementation agents — it writes task.md, qa-task.md, dev-report.md, convention + ADR docs, design docs, requirements docs, design records, contract spec files, and manifest.md. It uses Haiku for cost efficiency since it performs no reasoning — only schema formatting and file I/O. `sda-code-explore` is invoked by `sda-dev-task`, `sda-dev-task-verifier`, `sda-qa-task`, and `sda-dev` for codebase research — also Haiku, since it only reads and reports. `sda-web-explore` is invoked by `sda-dev-task` and `sda-design` for live web/API research when documentation may have changed. `sda-dev-task-verifier` handles Phase 7 (consistency + regression checks) — it can be invoked directly by the user or delegated to by `sda-dev-task`.
 
 All pipeline agents are user-invokable and used as needed.
 
@@ -294,7 +296,7 @@ All pipeline agents are user-invokable and used as needed.
 | `sda.qa.task-create` | Triggers sda-qa-task agent — creates a QA task for a completed task |
 | `sda.setup` | Sets up SDA tool — scaffolds `.sda/` and scans the project toolchain |
 | `sda.setup.no-scan` | Sets up SDA tool — scaffolds `.sda/` without a toolchain scan |
-| `sda.design.reconcile` | Reconciles design docs with code — finds and fixes inconsistencies across the AI readme, global + per-layer docs, and decision docs |
+| `sda.design.reconcile` | Reconciles design docs with code — finds and fixes inconsistencies across the AI readme, global + per-subproject docs, and convention + ADR docs |
 | `sda.workflow.init` | Creates a workflow container for one requirement, then names the start stage's session to run |
 | `sda.workflow.status` | Reports where the workflow containers sit, ending with the single next action and the agent that owns it |
 | `sda.workflow.advance` | Moves a workflow forward one stage, after showing the state and confirming |
@@ -402,7 +404,8 @@ All resources are read from a `.sda/` folder in the project root (may be git-ign
 | Config injection script | `.sda/scripts/read-config.ps1` or `.sda/scripts/read-config.sh` |
 | Project-tools command lookup | `.sda/scripts/read-project-tools.ps1` or `.sda/scripts/read-project-tools.sh` |
 | Toolchain scan scripts | `.sda/scripts/toolscan/` (cleanup, timestamp, probe-validators) |
-| Design + decision + requirements schemas | `{docsSkill}` skill (`repo-ai-friendly`) — load it by name; its `SKILL.md` routes to the readme-outline, docs-index, architecture, vocabulary, requirements, decision, and coding-standards schemas |
+| Design + convention + ADR + requirements schemas | `{docsSkill}` skill (`make-repo-ai-friendly`) — load it by name; its `SKILL.md` routes to the readme-outline, docs-index, architecture, vocabulary, requirements, convention, ADR, coding-standards, and docs-map schemas |
+| AI-friendliness artifact list + link checker | `is-repo-ai-friendly` skill — load it by name; `SKILL.md` holds the artifact list, and `assets/scripts/check-links.*` resolves links |
 | Design record schema | `.sda/resources/design/design-record-schema.md` |
 | Design record (workflow) | `.sda/workflows/<NNN>. <slug>/design.md` |
 | Design record (standalone) | `.sda/design/reports/<yyyy-MM-dd_HH-mm_<short-name>>/design.md` |
@@ -414,11 +417,13 @@ All resources are read from a `.sda/` folder in the project root (may be git-ign
 | Workflow schema | `.sda/resources/workflow/workflow-schema.md` |
 | Escalation brief schema | `.sda/resources/workflow/escalation-brief-schema.md` |
 | Workflow state script | `.sda/scripts/workflow/workflow.ps1` or `.sda/scripts/workflow/workflow.sh` |
-| Docs integrity script | `.sda/scripts/docs/docs-integrity.ps1` or `.sda/scripts/docs/docs-integrity.sh` |
-| Design docs (global) | `docs/` — `architecture.md`, `vocabulary.md`, `index.md`, `decisions/`, `diagrams/` |
-| Design docs (per-layer) | `<layer>/docs/` — `architecture.md`, `index.md`, `vocabulary.md`, `decisions/`, `diagrams/` |
-| Decision docs (per-layer) | `<layer>/docs/decisions/<feature>/` — `index.md` + descriptive kebab-case `.md` files (`shared/` for cross-cutting) |
-| Requirements docs (per-layer) | `<layer>/docs/requirements/` — `index.md` at every level + `<feature>/[<concern>/]<item>.md` + `nfr.md` |
+| Link checker | `check-links` in the `is-repo-ai-friendly` skill — links resolve; `-NoFence`, `-NoPathToken`, `-Forbid` |
+| Tree checker | `check-tree` in the `{docsSkill}` skill — `index.md` routing, orphan, duplicate row |
+| Design docs (global) | `docs/` — `architecture.md`, `vocabulary.md`, `index.md`, `conventions/`, `adrs/`, `diagrams/` |
+| Design docs (per-subproject) | `<subproject>/docs/` — `architecture.md`, `index.md`, `vocabulary.md`, `conventions/`, `adrs/`, `diagrams/` |
+| Convention docs (per-subproject) | `<subproject>/docs/conventions/<feature>/` — `index.md` + descriptive kebab-case `.md` files (`shared/` for cross-cutting) |
+| ADR docs (per-subproject) | `<subproject>/docs/adrs/<feature>/` — `index.md` + descriptive kebab-case `.md` files (`shared/` for cross-cutting) |
+| Requirements docs (per-subproject) | `<subproject>/docs/requirements/` — `index.md` at every level + `<feature>/[<concern>/]<item>.md` + `nfr.md` |
 
 On macOS/Linux, `setup.sh` marks every `*.sh` it copies into `.sda/scripts/` executable, so the
 workflow CLI (`{workflow}`) and every script run by path is invoked by its raw relative path — never
@@ -464,7 +469,7 @@ The `models` section in `project-config.json` controls which AI model each agent
 | `sda-design` | System + feature design; owns the doc tree and readmes | `Claude Sonnet` |
 | `sda-dev-task` | Designs task specifications | `Claude Sonnet` |
 | `sda-qa-task` | Authors the black-box QA acceptance spec | `Claude Sonnet` |
-| `sda-scribe` | Universal scribe: task.md, decision docs, design docs, contract specs, manifest.md | `Claude Haiku` |
+| `sda-scribe` | Universal scribe: task.md, convention + ADR docs, design docs, contract specs, manifest.md | `Claude Haiku` |
 | `sda-dev-task-verifier` | Consistency + regression checks | `Claude Sonnet` |
 | `sda-code-explore` | Fast codebase exploration | `Claude Haiku` |
 | `sda-web-explore` | Web research — live API and library docs | `Claude Haiku` |
@@ -475,7 +480,7 @@ The `models` section in `project-config.json` controls which AI model each agent
 | `sda-coder` | Implements production code (GREEN phase) | `Claude Sonnet` |
 | `sda-refactor` | Runs the REFACTOR pass (behaviour-preserving) | `Claude Sonnet` |
 | `sda-dev-quality` | Runs per-area quality gates | `Claude Haiku` |
-| `sda-docs-check` | Verifies docs tree + decision docs + AI-readme routing | `Claude Sonnet` |
+| `sda-docs-check` | Verifies docs tree + convention/ADR docs + AI-readme routing | `Claude Sonnet` |
 
 **Resolution:** `sda-setup` resolves family names to the latest available versioned model (e.g., `"Claude Sonnet"` → `"Claude Sonnet 5 (copilot)"`) and writes the result into each agent's `model:` frontmatter. Re-run sda-setup (or say "update sda") to pick up new model versions.
 
@@ -499,6 +504,7 @@ Written by the `sda-setup` skill. Stores project-level settings injected into ea
 |---|---|---|---|
 | `designOwnership` | `string` | `user` | Who owns the design decision in `sda-design` and `sda-dev-task`. When `user` (default), the agent never volunteers an approach — it pressure-tests the approach **you** propose and hands the decision back to you; it only proposes options when your message explicitly asks for them. When `ai`, the agent may propose the design itself (legacy behaviour). |
 | `standardsSkill` | `string` | `standards-compliance` | Name of the skill carrying coding standards. `sda-dev`, `sda-coder`, `sda-refactor`, `sda-test-writer`, and `sda-dev-task` load it before generating code. |
+| `docsSkill` | `string` | `make-repo-ai-friendly` | Name of the skill carrying the docs-map schema, the default tree profile, and the doc schemas. Loaded by `sda-design`, `sda-scribe`, `sda-ba`, and `sda-docs-check`. |
 | `paths.specs` | `string` | `.sda/specs` | Root folder for specification files (OpenAPI, JSON Schema, etc.). Written by sda-scribe — `sda-design` creates specs, a task's `docs` unit amends an existing one. Read by sda-design, sda-dev-task, sda-dev-task-verifier, sda-qa-task, and sda-docs-check. |
 | `paths.issues` | `string` | `.sda/issues` | Root folder for standalone QA work (no task): each `<NNN>-<slug>/` holds a `qa-task.md` authored by sda-qa-task and the `qa-report.md` written by sda-qa. |
 | `paths.secrets` | `string` | `.sda/secrets` | Git-ignored folder holding `qa.secrets.env` credentials used by sda-qa. |
@@ -509,7 +515,7 @@ Written by the `sda-setup` skill. Stores project-level settings injected into ea
 | `scripts.loadQaSecrets` | `string` | `.sda/scripts/qa/load-qa-secrets.ps1` | Path to the QA secrets loader script (legacy — superseded by `qaSessionInit`). Still used as a fallback when `qaSessionInit` is absent. Use the `.sh` variant on Bash/Unix. |
 | `scripts.listQaSecrets` | `string` | `.sda/scripts/qa/list-qa-secrets.ps1` | Path to the QA secrets lister script. Called by sda-qa-task to discover existing credential key names. Use the `.sh` variant on Bash/Unix. |
 | `scripts.qaSessionInit` | `string` | `.sda/scripts/qa/qa-session-init.ps1` | Path to the QA session init script. Dot-sourced by sda-qa at Phase 2; sets UTF-8 encoding and loads credentials. Outputs a combined summary and `var_name \| is_empty` table. Use the `.sh` variant on Bash/Unix. |
-| `scripts.docsIntegrity` | `string` | `.sda/scripts/docs/docs-integrity.ps1` | Path to the docs-integrity script. Called by sda-docs-check with a decisions/requirements root (links, orphans, duplicates, one-way `.sda/` rule) or a single document path (links, code fence, non-`.md` path). Use the `.sh` variant on Bash/Unix. |
+| `docsCheck.enabled` | `boolean` | `true` | Turns `sda-docs-check` off for a repo whose docs must not be maintained or verified. When false the agent reports `docs-check disabled` and runs nothing. |
 | `scripts.invokeHttp` | `string` | `.sda/scripts/qa/invoke-http.ps1` | Path to the HTTP helper script. Called by sda-qa for every CLI/HTTP request; outputs `STATUS: N` and `BODY: ...`; supports `-StatusOnly` / `--status-only`. Use the `.sh` variant on Bash/Unix. |
 | `scripts.unitFileSize` | `string` | `.sda/scripts/dev/unit-file-size.ps1` | Path to the file line-count script. Called by `sda-dev-task` (Phase 6) and `sda-dev-task-verifier` (Check 1) to measure source file volume. Use the `.sh` variant on Bash/Unix. |
 | `scripts.workflow` | `string` | `.sda/scripts/workflow/workflow.ps1` | Path to the workflow state script — the only writer of `workflow.json`. Run by the `sda-workflow` advisor (`/sda.workflow.init` · `.status` · `.advance` · `.escalate`), and by the `sda-workflow-guide` skill that stage agents follow in workflow sessions. `escalate` also takes the path of the escalation brief, which must already exist. Use the `.sh` variant on Bash/Unix. |
@@ -581,7 +587,7 @@ container-consistency verification, and CLI misuse.
 
 - **The `sda-setup` skill and `sda-toolscan` agent run once per project, not per task.** Re-run only if the toolchain changes.
 - **`sda-design` is read-only.** It researches and decides content, but never edits any file — all writes are delegated to `sda-scribe`.
-- **One docs writer.** `sda-coder` and `sda-refactor` never edit docs. A **mechanical** doc change (new entry in an existing format) goes through a `docs` unit → `sda-scribe` (write) → `sda-docs-check` (targeted verify); a **semantic** one (new concept, decision, vocabulary, tree structure, routing) goes through `sda-design`. At most one `docs` unit per task, always last.
+- **One docs writer.** `sda-coder` and `sda-refactor` never edit docs. A **mechanical** doc change (new entry in an existing format) goes through a `docs` unit → `sda-scribe` (write) → `sda-docs-check` (targeted verify); a **semantic** one (new concept, convention, ADR, vocabulary, tree structure, routing) goes through `sda-design`. At most one `docs` unit per task, always last.
 - **One owner per planning artifact.** Story → `sda-ba`, design → `sda-design`, tasks → `sda-dev-task`; every other agent is read-only on them. `workflow.json` and `state.json` are written by their scripts only — never hand-edited.
 - **One spec creator.** `sda-design` creates a spec for every boundary a feature crosses, before task design begins; a task may only amend an existing spec through its `docs` unit, never create one. A missing spec hard-stops the task stage.
 - **`sda-dev` hard-stops if `project-tools.md` is missing.** There is no fallback — run `sda-setup` + `sda-toolscan` first.

@@ -236,7 +236,7 @@ File: `{file-path}`
 #### Step 5.1 — {file being written}
 
 File: `{docs-path}`
-Kind: {file type — e.g. `readme`, `index`, `cli`, `architecture`}
+Kind: {file type — e.g. `readme`, `index`, `cli`, `architecture`, `docs-map`}
 \`\`\`markdown
 {complete file content — or, for an existing file, the anchor line plus the new content}
 \`\`\`

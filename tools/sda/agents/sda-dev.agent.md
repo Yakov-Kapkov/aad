@@ -574,7 +574,7 @@ search the codebase, or delegate exploration in this sub-flow.
      follow-up selection: combine all *simple* refactoring follow-ups into one
      `refactoring` unit (one unit total). Simple = mechanical and
      localized (rename, extract, dedup, import rewrite). Split out
-     only a concern that is complex or spans unrelated subsystems.
+     only a concern that is complex or spans unrelated subprojects.
 3. **Determine route** — see [Route table](#route-table).
 
 4. **Capture test baseline** — see [Test baseline](#test-baseline).
@@ -987,7 +987,7 @@ Group every collected follow-up under exactly one type:
 | Type | Collected from | Example |
 |---|---|---|
 | **Refactoring** | Phase 4·U/4·X pre-existing issues; Phase 5 skipped coverage gates | `{file}` `{symbol}`: {violation}; coverage gap accepted |
-| **Docs** | Deferred docs-tree / readme work | missing `index.md`; stale decision doc |
+| **Docs** | Deferred docs-tree / readme work | missing `index.md`; stale convention or ADR doc |
 | **Behavior change** | Open deviations from `task.md`, assumptions, or deferred functional work | "assumed X — verify later" |
 
 Omit any empty group when presenting.

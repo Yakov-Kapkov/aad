@@ -7,7 +7,8 @@
 #       -TemplateFile  ".sda/resources/project-config.example.json" `
 #       -ConfigFile    ".sda/project-config.json"
 #
-# Adds fields missing from the config. Existing field values are preserved.
+# Adds fields missing from the config, and drops fields no longer shipped.
+# Existing field values are preserved.
 
 param(
     [Parameter(Mandatory)][string]$TemplateFile,
@@ -48,7 +49,6 @@ $platformPaths = [ordered]@{
     listQaSecrets = '.sda/scripts/qa/list-qa-secrets.ps1'
     qaSessionInit = '.sda/scripts/qa/qa-session-init.ps1'
     invokeHttp    = '.sda/scripts/qa/invoke-http.ps1'
-    docsIntegrity = '.sda/scripts/docs/docs-integrity.ps1'
     workflow      = '.sda/scripts/workflow/workflow.ps1'
 }
 $shippedPaths = @{
@@ -59,10 +59,6 @@ $shippedPaths = @{
     listQaSecrets = @('.sda/scripts/qa/list-qa-secrets.ps1', '.sda/scripts/qa/list-qa-secrets.sh')
     qaSessionInit = @('.sda/scripts/qa/qa-session-init.ps1', '.sda/scripts/qa/qa-session-init.sh')
     invokeHttp    = @('.sda/scripts/qa/invoke-http.ps1', '.sda/scripts/qa/invoke-http.sh')
-    # docsIntegrity: the first pair is the pre-rename location — kept so existing
-    # installs migrate to the new folder instead of keeping a stale path.
-    docsIntegrity = @('.sda/scripts/decisions/docs-integrity.ps1', '.sda/scripts/decisions/docs-integrity.sh',
-                      '.sda/scripts/docs/docs-integrity.ps1',      '.sda/scripts/docs/docs-integrity.sh')
     workflow      = @('.sda/scripts/workflow/workflow.ps1', '.sda/scripts/workflow/workflow.sh')
 }
 foreach ($key in $platformPaths.Keys) {
@@ -70,6 +66,14 @@ foreach ($key in $platformPaths.Keys) {
         $config.scripts | Add-Member -NotePropertyName $key -NotePropertyValue $platformPaths[$key]
     } elseif ($config.scripts.$key -in $shippedPaths[$key]) {
         $config.scripts.$key = $platformPaths[$key]
+    }
+}
+
+# --- Step 3: Drop retired fields ---
+# A field no longer shipped is removed, so an old install cannot keep a stale path.
+foreach ($key in @('docsIntegrity')) {
+    if ($null -ne $config.scripts.PSObject.Properties[$key]) {
+        $config.scripts.PSObject.Properties.Remove($key)
     }
 }
 

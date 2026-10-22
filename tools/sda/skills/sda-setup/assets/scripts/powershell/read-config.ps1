@@ -17,7 +17,7 @@ $agentKeys = @{
     'sda-design'        = @('designOwnership','paths.specs','docsSkill','paths.workflows','scripts.workflow')
     'sda-workflow'      = @('paths.workflows','scripts.workflow')
     'sda-scribe'        = @('paths.specs','paths.issues','docsSkill')
-    'sda-docs-check'    = @('scripts.docsIntegrity','docsSkill','paths.specs')
+    'sda-docs-check'    = @('docsSkill','docsCheck.enabled','paths.specs')
 }
 
 $keys = $agentKeys[$Agent]
@@ -34,12 +34,12 @@ $defaults = @{
     'scripts.listQaSecrets'  = '.sda/scripts/qa/list-qa-secrets.ps1'
     'scripts.qaSessionInit'  = '.sda/scripts/qa/qa-session-init.ps1'
     'scripts.invokeHttp'     = '.sda/scripts/qa/invoke-http.ps1'
-    'scripts.docsIntegrity'  = '.sda/scripts/docs/docs-integrity.ps1'
     'scripts.workflow'       = '.sda/scripts/workflow/workflow.ps1'
     'devTaskUnitSizeLimit'   = '1000'
     'designOwnership'        = 'user'
     'standardsSkill'         = 'standards-compliance'
-    'docsSkill'              = 'repo-ai-friendly'
+    'docsSkill'              = 'make-repo-ai-friendly'
+    'docsCheck.enabled'      = 'true'
     'paths.specs'            = '.sda/specs'
     'paths.tasks'            = '.sda/tasks'
     'paths.issues'           = '.sda/issues'
