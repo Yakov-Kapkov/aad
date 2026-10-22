@@ -1,8 +1,8 @@
 # Requirements Schema
 
 Requirements are one file per capability, nested under a feature, with an
-`index.md` at every level. The tree lives at `docs/requirements/` (global,
-cross-layer only) and `<layer>/docs/requirements/` (one layer).
+`index.md` at every level. The tree lives at `docs/requirements/` (root, cross-subproject only), plus
+`<subproject>/docs/requirements/` in each subproject.
 
 ---
 
@@ -110,7 +110,7 @@ The first column names the level the index routes to.
 - Feature- and concern-scoped NFRs: `<FEATURE-SLUG>-NFR-<NNN>`.
 - Tree-scoped NFRs (a tree's root `nfr.md`): `<SCOPE>-NFR-<NNN>` —
   `GLOBAL-NFR-001`, `BACKEND-NFR-003`. The scope prefix is what keeps ids
-  unique across the global tree and every layer tree.
+  unique across the root tree and every subproject tree.
 - The `NFR-` infix is what shape checking keys on.
 
 ### Entries
@@ -153,15 +153,15 @@ The first column names the level the index routes to.
 - Split a file when it passes ~15 entries; split an `nfr.md` the same way.
 - Add a concern level when a feature has two or more distinct slices.
 
-### Placement — global is global only
-- Global `docs/requirements/` holds **only** cross-layer requirements.
-- A requirement touching one subsystem lives in that subsystem's
-  `<layer>/docs/requirements/`.
+### Placement — the root is root only
+- Root `docs/requirements/` holds **only** cross-subproject requirements.
+- A requirement touching one subproject lives in that subproject's
+  `<subproject>/docs/requirements/`.
 - ✅ auth spans frontend + backend → `docs/requirements/auth/`
 - ❌ backend-only ordering rules in `docs/requirements/` → belongs in
   `backend/docs/requirements/`
 - A requirement with no user-visible surface does not belong in a feature tree
-  — it goes to the owning layer's tree.
+  — it goes to the owning subproject's tree.
 
 ### No status, no delivery link
 - **No status field.** The tree records what is specified; what is implemented

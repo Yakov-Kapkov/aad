@@ -1,6 +1,6 @@
 # Architecture Schema
 
-`architecture.md` lives at `docs/` (global) and `<layer>/docs/` (layer).
+`architecture.md` lives at `docs/` (root), plus `<subproject>/docs/` in each subproject.
 One concern per file, short and observable.
 
 ---
@@ -13,9 +13,9 @@ Global `docs/architecture.md`:
 # Architecture
 
 ## Repo structure
-| Layer | Folder | Owns |
+| Subproject | Folder | Owns |
 |---|---|---|
-| {Layer} | {folder} | {one-line ownership} |
+| {Subproject} | {folder} | {one-line ownership} |
 
 ## Services / modules
 - {Service} — {one-line ownership}
@@ -36,16 +36,16 @@ Global `docs/architecture.md`:
 {features + sequencing}
 ```
 
-Layer `<layer>/docs/architecture.md`:
+Subproject `<subproject>/docs/architecture.md`:
 
 ```markdown
-# Architecture — {Layer}
+# Architecture — {Subproject}
 
 ## Modules
 - {Module} — {one-line ownership}
 
 ## Communication
-{how it talks to other layers / services}
+{how it talks to the other subprojects / services}
 
 ## Storage
 {which store for which concern}
@@ -58,11 +58,12 @@ Layer `<layer>/docs/architecture.md`:
 
 ## Schema Rules
 
-- Global `architecture.md` holds repo-wide structure only — no subsystem detail.
-- Layer `architecture.md` holds only that layer's modules, communication,
+- Root `architecture.md` holds repo-wide structure and the subproject map only — no
+  single subproject's detail.
+- A subproject's `architecture.md` holds only that subproject's modules, communication,
   storage, and cross-cutting concerns.
 - Short and observable — no implementation detail (that lives in
-  `coding-standards/` or decision files).
+  `coding-standards/`, convention, or ADR files).
 - Only create the files the design actually needs — never pre-seed empty files.
-- Derive every layer name, folder, and storage claim from the actual code —
+- Derive every subproject name, folder, and storage claim from the actual code —
   never invent.
