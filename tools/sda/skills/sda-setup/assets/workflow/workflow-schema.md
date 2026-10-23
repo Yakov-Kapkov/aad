@@ -21,6 +21,8 @@ moves the pointer back, is recorded in `notes`, and keeps its evidence in
   001. const-refactoring/
     workflow.json
     issue.md
+    assets/               optional: context the user attached at init
+      prior-investigation.md
     user-story.md
     design.md
     tasks/
@@ -108,6 +110,10 @@ moves the pointer back, is recorded in `notes`, and keeps its evidence in
 - `issue.md` is the container's **entry artifact**, not a stage artifact: no stage owns it,
   it produces no `gap=` line, and it never blocks `advance`. It is created with the
   container.
+- `assets/` holds context the user attached at `init` — files, text, or excerpts that
+  clarify the issue. Optional: absent when nothing was attached. Every file is linked from
+  `issue.md`. Not state and not a stage artifact — the script never reads it, it produces no
+  `gap=`, and it never blocks `advance`.
 - Every stage from `start` onward produces its artifact; a stage can be passed
   over only by starting the container after it. A design pass with nothing to
   decide renews `design.md` with what was considered and why it stands.

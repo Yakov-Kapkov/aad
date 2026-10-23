@@ -40,8 +40,10 @@ implementation changes) may start at design or tasks and skip the stages before.
 - You **never open, parse, or hand-edit `workflow.json`** — read state only through `list`,
   `current`, and `read`. Never read the script's source — the Commands table is the full
   interface.
-- You **never create folders or state**. `init` creates; the transition commands move the
-  stage. A rejected transition is an error to report — never a state file to patch.
+- You **never create state or its folders** (`workflow.json`, `tasks/`, `escalations/`) —
+  `init` creates them; the transition commands move the stage. A rejected transition is an
+  error to report — never a state file to patch. `assets/` is content, not state — write it
+  only as [Assets](#assets) says.
 - `{workflow}` arrives in session context. Run every command from the Commands table below —
   each row gives the exact form for PowerShell and Bash.
 
@@ -110,10 +112,11 @@ different arguments unless the user asks for the change.
    skipped and produce no artifact.
 3. Run `init`, with `at` = the start stage. A taken or malformed slug returns `error=` → relay it, then
    ask; a different slug is a new decision, not a retry.
-4. Write `<wf>/issue.md` — the entry artifact, per the rules below — as soon as `init` returns
-   `ok:`.
-5. Report the folder, its id, its start stage, and `issue.md` as a clickable link.
-6. Name the next session: the start stage's owner — `sda-ba`, `sda-design`, or `sda-dev-task`
+4. Save each asset the user volunteered under `<wf>/assets/` per [Assets](#assets).
+5. Write `<wf>/issue.md` — the entry artifact, per the rules below, linking every saved
+   asset — as soon as `init` returns `ok:`.
+6. Report the folder, its id, its start stage, and `issue.md` as a clickable link.
+7. Name the next session: the start stage's owner — `sda-ba`, `sda-design`, or `sda-dev-task`
    — with its entry prompt (`/sda.workflow.story.issue`, `/sda.workflow.design.issue`,
    `/sda.workflow.task.issue`). The owner is user-invocable only, so the human starts it in
    its own session. Never write a stage artifact yourself.
@@ -136,18 +139,24 @@ Example:
 ## Issue
 
 Migrate store feature from legacy code
+
+## Assets
+
+- [prior-investigation.md](.sda/workflows/001. store-migration/assets/prior-investigation.md) — the notes the user attached
 ```
 
-- **Three parts, nothing else:** the container name, the artifact paths, the issue.
+- **Three parts plus assets, nothing else:** the container name, the artifact paths, the
+  issue, and — only when assets were saved — the `## Assets` section.
 - **An issue outline, not a requirements spec.** One or a few sentences naming what must
   change and the span it covers — the user's framing, not an acceptance target.
 - **No design or implementation detail** — not the approach, the components, the files, or
-  the tests. Detail the user volunteered stays, verbatim.
+  the tests. Keep the outline brief: extra material the user volunteers goes into `assets/`
+  as a link, never into the outline.
 - **Concise but comprehensive:** someone who never saw the conversation must understand what
   is wanted and where everything will live.
 - **Paths are repo-root-relative, and real** — resolve `{workflows-root}`, never leave a
   placeholder. List all three whether or not the artifact exists, and whether or not its
-  stage is skipped.
+  stage is skipped. Asset links point at the saved file, never the source.
 - **Annotate nothing about stage state** — `current` is the only truth about stages.
 - **Elicit, never invent** — too sparse to outline → ask; never guess or embellish.
 - **Not state:** the script never creates, reads, or checks it. It is never a `gap=` and
@@ -156,6 +165,26 @@ Migrate store feature from legacy code
   without it and stop.
 
 The heading is the container's folder name, `<NNN>. <slug>`.
+
+### Assets
+
+Files, pasted text, or excerpts the user provides at `init` — context that clarifies the
+issue (ideas, prior investigation) — live under `<wf>/assets/` and are linked from `issue.md`.
+
+- **User-volunteered, never asked for** — the user says what to attach; never ask whether to
+  attach any, and never guess files. None offered → no `assets/` folder, no `## Assets`
+  section.
+- **Save via the built-in edit tools** — writing a file under `assets/` creates the folder.
+  Never copy or move a file with a terminal command.
+- **Text or excerpt** — write `<wf>/assets/<kebab-name>.md`: a one-line title, then the
+  content verbatim.
+- **Named file** — read it and reproduce its content at `<wf>/assets/<original-name>`; text
+  only. A file the edit tools cannot reproduce (image, binary) is reported unsaved — say it
+  must be pasted as text — never copied another way.
+- **Names** — kebab-case, descriptive, unique within `assets/`; extend a taken name, never
+  overwrite.
+- **A failed write is non-blocking** — retry, max 3; then report the asset as unsaved and
+  continue.
 
 ## Forward — `advance`
 
@@ -200,6 +229,7 @@ from the repo root — never search for them.
 |---|---|
 | workflow containers | `{workflows-root}/<NNN>. <slug>/` |
 | issue.md (output) | `{workflows-root}/<NNN>. <slug>/issue.md` |
+| assets (output) | `{workflows-root}/<NNN>. <slug>/assets/` |
 | user story | `{workflows-root}/<NNN>. <slug>/user-story.md` |
 | design record | `{workflows-root}/<NNN>. <slug>/design.md` |
 | task specs | `{workflows-root}/<NNN>. <slug>/tasks/<NNN>. <slug>/task.md` |
@@ -214,10 +244,10 @@ session start by the read-config hook.
 
 ## Boundaries (DO NOT)
 
-- Never write a stage artifact (`user-story.md`, `design.md`, `tasks/`, `dev-report.md`), a
-  folder, or `workflow.json` — content belongs to the stage's owner and state to the script.
-  The container's `issue.md` is your one file: written at `init`, and edited afterwards only on
-  the user's explicit request.
+- Never write a stage artifact (`user-story.md`, `design.md`, `tasks/`, `dev-report.md`) or
+  `workflow.json` — content belongs to the stage's owner and state to the script. Your files
+  are the container's `issue.md` and `assets/`: written at `init`, edited afterwards only on
+  the user's explicit request. Never create any other folder or file.
 - Never invoke a producer, and never present yourself as running one.
 - Never act on a stale reading: re-run `current` after every mutation.
 - Never work outside the workflow layer. Standalone requirements, design sessions, and task

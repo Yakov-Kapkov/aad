@@ -82,6 +82,7 @@ Planning artifacts live in a **workflow**: a numbered container for one requirem
   001. const-refactoring/
     workflow.json          script-written state (stage + start + escalation log)
     issue.md               entry artifact: container name, artifact paths, issue outline
+    assets/                optional: context the user attached (files, text, excerpts)
     user-story.md          owner: sda-ba
     design.md              owner: sda-design
     tasks/                 owner: sda-dev-task
@@ -92,9 +93,11 @@ Planning artifacts live in a **workflow**: a numbered container for one requirem
 ```
 
 `init` also writes the container's **`issue.md`** — the entry artifact, holding the container
-name, the three artifact paths, and the issue in the user's own words: an outline, not a
-requirements spec, with no design or implementation detail. Every stage starts from it, so the
-work is never re-stated: `/sda.workflow.story.issue` (`sda-ba`),
+name, the three artifact paths, the issue in the user's own words, and a link to each asset the
+user attached: an outline, not a requirements spec, with no design or implementation detail.
+Files, text, or excerpts the user attaches are saved under the container's `assets/` folder and
+linked from `issue.md`. Every stage starts from it, so the work is never re-stated:
+`/sda.workflow.story.issue` (`sda-ba`),
 `/sda.workflow.design.issue` (`sda-design`), `/sda.workflow.task.issue` (`sda-dev-task`), or
 `/sda.workflow.dev.issue` (`sda-dev`).
 
@@ -297,7 +300,7 @@ All pipeline agents are user-invokable and used as needed.
 | `sda.setup` | Sets up SDA tool — scaffolds `.sda/` and scans the project toolchain |
 | `sda.setup.no-scan` | Sets up SDA tool — scaffolds `.sda/` without a toolchain scan |
 | `sda.design.reconcile` | Reconciles design docs with code — finds and fixes inconsistencies across the AI readme, global + per-subproject docs, and convention + ADR docs |
-| `sda.workflow.init` | Creates a workflow container for one requirement, then names the start stage's session to run |
+| `sda.workflow.init` | Creates a workflow container for one requirement, saves any attached assets, then names the start stage's session to run |
 | `sda.workflow.status` | Reports where the workflow containers sit, ending with the single next action and the agent that owns it |
 | `sda.workflow.advance` | Moves a workflow forward one stage, after showing the state and confirming |
 | `sda.workflow.escalate` | Sends a workflow back a stage — elicits what is wrong, writes the evidence brief, then raises |
@@ -412,6 +415,7 @@ All resources are read from a `.sda/` folder in the project root (may be git-ign
 | Workflow container | `.sda/workflows/<NNN>. <slug>/` |
 | Workflow state | `.sda/workflows/<NNN>. <slug>/workflow.json` |
 | Workflow entry artifact | `.sda/workflows/<NNN>. <slug>/issue.md` |
+| Workflow assets | `.sda/workflows/<NNN>. <slug>/assets/` — context the user attached at init |
 | Dev report (workflow) | `.sda/workflows/<NNN>. <slug>/tasks/<NNN>. <slug>/dev-report.md` — the `dev` stage's artifact |
 | Escalation brief | `.sda/workflows/<NNN>. <slug>/escalations/<NNN>. <yyyy-MM-dd_HH-mm>-<from>-to-<to>.md` |
 | Workflow schema | `.sda/resources/workflow/workflow-schema.md` |
@@ -462,7 +466,7 @@ The `models` section in `project-config.json` controls which AI model each agent
 
 | Key | Role | Default |
 |---|---|---|
-| `sda-workflow` | Workflow advisor: container position, next action, `init` (writes the container's `issue.md`) / `escalate` (`advance` on request) | `Claude Sonnet` |
+| `sda-workflow` | Workflow advisor: container position, next action, `init` (writes `issue.md` + attached `assets/`) / `escalate` (`advance` on request) | `Claude Sonnet` |
 | `sda-toolscan` | Scans project toolchain — full scan or per-area update | `Claude Haiku` |
 | `sda-tool-installer` | Installs required development tools (delegated by sda-setup) | `Claude Haiku` |
 | `sda-ba` | Authors User Stories from raw requirements | `Claude Sonnet` |
