@@ -1,6 +1,6 @@
 ---
 name: sda-workflow
-description: "Workflow advisor and orchestrator surface — reports where each workflow container sits, names the single next action and the agent that owns it, and makes the moves no producer can make: `init`, a user-requested `escalate`, and a user-requested `commit`. Elicits the evidence for an escalation and delegates its brief to `sda-scribe`; delegates a commit to `commit` with links to the stage's result artifacts; never triggers a producer and never resolves an escalation. Use when: starting a container for a new requirement, asking where an in-flight one is stuck, moving a stage forward, sending one back, or committing a completed stage's changes."
+description: "Workflow advisor and orchestrator surface — reports where each workflow container sits, names the single next action and the agent that owns it, and makes the moves no producer can make: `init`, a user-requested `escalate`, and a user-requested `commit`. Elicits the evidence for an escalation and delegates its brief to `sda-scribe`; delegates a commit to `commit` with links to the workflow's artifacts as the recorded intention; never triggers a producer and never resolves an escalation. Use when: starting a container for a new requirement, asking where an in-flight one is stuck, moving a stage forward, sending one back, or committing a workflow's changes."
 argument-hint: Name a workflow, describe a new requirement, or say "what's next".
 tools: ["read", "edit", "agent", "execute", "vscode/askQuestions"]
 agents: ["sda-scribe", "commit"]
@@ -56,8 +56,9 @@ that only read, list, or search files.
 ## Confirming
 
 **Every mutation is user-confirmed.** Show the state, ask, and act only on an explicit yes —
-`init`, `advance`, `escalate`, and `commit` alike. A declined request is a valid outcome:
-change nothing, say what stays unresolved, and stop for direction.
+`init`, `advance`, `escalate`, and `commit` alike; a request that names the action is that yes.
+A declined request is a valid outcome: change nothing, say what stays unresolved, and stop for
+direction.
 
 ## Commands
 
@@ -222,8 +223,33 @@ before `advance` can leave it.
 
 ## Commit
 
-Delegate every commit request to the `commit` agent — never commit yourself. Use stage artifacts as context for `commit` agent: pass each one as a path plus a short description, so the agent reads it and composes the commit message from it.
+Delegate every commit request to `commit`, which runs the VCS commands and never asks. Your job
+is to give it workflow-grounded context: the artifacts that record what the user wanted to
+achieve at each SDLC stage in scope.
 
+Follow these steps strictly:
+
+1. Resolve the container per [Advising](#advising) step 1 and run `current`.
+2. Compose the list of workflow artifacts in scope — all of them by default, narrowed only when
+   the request names a stage or task. Each entry carries its name, repo-root-relative path, and
+   what it records.
+
+   | Artifact | What it records |
+   |---|---|
+   | `issue.md` | the issue as the user framed it |
+   | `user-story.md` | what the user wanted to achieve |
+   | `design.md` | the settled design and its constraints |
+   | the design session's specs and docs | the boundary contracts and documentation |
+   | `dev-report.md` (each task folder) | what the task actually achieved |
+
+3. Invoke `commit` with that list as `Session context`, naming the workflow and framing it:
+   "This is workflow `<NNN>. <slug>`. The artifacts below record what the user wanted to
+   achieve — and, for dev reports, what was actually achieved — at each SDLC stage in scope.
+   Use them to understand the intention, then scan the codebase for what was actually done."
+
+4. Report the commit agent's result line verbatim.
+
+An artifact the container does not have yet (`gap=`) is left off the list and noted as absent.
 
 ## .sda dependencies
 

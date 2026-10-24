@@ -104,7 +104,7 @@ linked from `issue.md`. Every stage starts from it, so the work is never re-stat
 Create one with `/sda.workflow.init`, then start the owning agent on it in its own session. The
 `sda-workflow` agent is the advisor surface: it reports where a container sits, names the next
 action and its owning agent, and runs `init`, a user-requested `escalate`, and a user-requested
-`commit` — delegating the commit to `commit` with links to the stage's result artifacts, which it reads to ground the message — one commit per stage.
+`commit` — delegating the commit to `commit` with links to the workflow's artifacts as the recorded intention, which it reads to ground the message.
 The stage machine is `story → design → tasks → dev → ready`: `init` starts at `story` by default,
 or at `design` / `tasks` for pure technical work that has no user-visible change — the stages
 before the start are skipped and produce no artifact. `dev` is the implementation stage, and it
@@ -256,7 +256,7 @@ finds — it reports, and leaves routing (sda-dev-task vs ad-hoc sda-dev) to you
 | `sda-qa-task` | Authors the black-box acceptance spec (`qa-task.md`) — coupled (from a finalized task) or standalone | Claude Sonnet 5 | read, search, execute, agent |
 | `sda-dev` | TDD implementation orchestrator — delegates RED/GREEN to subagents to keep context small; routes `docs` units to sda-scribe + sda-docs-check; owns the workflow's `dev` stage | project config | read, execute, agent |
 | `sda-qa` | Runtime acceptance QA — starts the app, drives a real browser/CLI through the functional requirements, writes `qa-report.md` (read-only on source) | Claude Sonnet 5 | read, edit, search, execute, browser |
-| `sda-workflow` | Workflow advisor surface — reports where a container sits, names the single next action and its owner, owns `init`, a user-requested escalation, and a user-requested commit (delegated to `commit` with links to the stage's result artifacts), and delegates the escalation brief to sda-scribe. Never triggers a producer, never resolves an escalation | Claude Sonnet 5 | read, edit, agent, execute |
+| `sda-workflow` | Workflow advisor surface — reports where a container sits, names the single next action and its owner, owns `init`, a user-requested escalation, and a user-requested commit (delegated to `commit` with links to the workflow's artifacts), and delegates the escalation brief to sda-scribe. Never triggers a producer, never resolves an escalation | Claude Sonnet 5 | read, edit, agent, execute |
 
 ### Subagents (invoked by pipeline agents)
 
