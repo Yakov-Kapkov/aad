@@ -196,7 +196,7 @@ Read the schema for each file type before writing it:
 | `architecture.md` | [`assets/architecture-schema.md`](assets/architecture-schema.md) |
 | `vocabulary.md` | [`assets/vocabulary-schema.md`](assets/vocabulary-schema.md) |
 | Conventions (per-level `index.md` + convention files) | [`assets/convention-schema.md`](assets/convention-schema.md) |
-| ADRs (per-level `index.md` + ADR files) | [`assets/adr-schema.md`](assets/adr-schema.md) |
+| ADRs (per-level `index.md` + ADR files — immutable once accepted) | [`assets/adr-schema.md`](assets/adr-schema.md) |
 | Requirements (`index.md` + one file per feature + `nfr.md`) | [`assets/requirements-schema.md`](assets/requirements-schema.md) |
 | Coding-standards routing | [`assets/coding-standards-schema.md`](assets/coding-standards-schema.md) |
 | Commands and run instructions (`cli.md`) | [`assets/cli-schema.md`](assets/cli-schema.md) |

@@ -3,8 +3,10 @@
 An ADR records one architecture decision and why it was made — the direction,
 the alternatives rejected, and the consequences accepted. ADR folders live at
 `docs/adrs/` (root), plus `<subproject>/docs/adrs/` in each subproject — grouped
-by feature with descriptive kebab-case file names. Read an ADR when a decision is questioned
-or a redesign looms — never during routine feature work.
+by feature with descriptive kebab-case file names.
+
+Read an ADR when a decision is questioned or a redesign looms — never during
+routine feature work.
 
 ---
 
@@ -20,10 +22,13 @@ or a redesign looms — never during routine feature work.
 
 ## ADR index
 
-`adrs/index.md` — routes to features:
+`adrs/index.md` — routes to features and states the rules:
 
 ```markdown
 # ADRs
+
+ADRs are immutable once accepted — read one when its decision is questioned;
+change a direction only by superseding, never by editing.
 
 | Feature | When to read | Document |
 |---|---|---|
@@ -57,6 +62,8 @@ or a redesign looms — never during routine feature work.
 
 **Alternatives:** {one line per rejected option, and why}
 
+**Confidence:** {high · medium · low — which parts are certain, which are not}
+
 **Consequences:** {one line per accepted trade-off}
 ```
 
@@ -85,12 +92,19 @@ or a redesign looms — never during routine feature work.
   a bare grouping.
 - Descriptive kebab-case names — no `ADR-{N}` numbering. Reference another
   ADR by folder + title, never by number.
-- **Two pages max, ~300 words.** Diagrams allowed; code snippets are not.
-- **History stays.** A superseded ADR keeps its `**Status:** superseded by`
-  link to the successor — it answers "why did we move away". This is the one
-  doc kind where past wording survives.
-- Amend an ADR only when the direction changes: set `**Status:**` to
-  superseded and link the successor — never edit the past wording silently.
+- **Two pages max, ~300 words.** Diagrams allowed.
+- **Immutable once accepted.** An accepted ADR is never edited — its wording
+  is frozen at acceptance. A direction change is a new ADR: the old one keeps
+  its wording and gets `**Status:** superseded by [successor](successor.md)`
+  — it answers "why did we move away"; the successor holds the new direction.
+- **No implementation details.** No code snippets, variable names, syntax,
+  database schemas, or step-by-step configuration. Implementation churn must
+  never invalidate an ADR — the "how" lives in specifications, conventions,
+  and code; an ADR answers why and what, never how.
+- **No wishful thinking.** No marketing hype — "fast, modern, will eliminate
+  all bugs". Record the accepted trade-off, not the pitch.
+- **No debate transcripts.** No meeting notes, votes, or back-and-forth. The
+  ADR holds the final consensus and its engineering logic, not the friction.
 - Write the ADR when the direction is chosen: no `proposed` ADR left open at
   session end.
 - A convention may reference the ADR that chose its direction — see

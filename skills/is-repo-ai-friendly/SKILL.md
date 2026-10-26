@@ -160,6 +160,10 @@ In order, every run.
    one artifact at a time, in list order: which of the seven statuses does each
    earn? A doc that contradicts the code it describes is not `present` — mark it
    `partial`, report the contradiction, never hunt for drift.
+   Judge ADRs by their own rules: an accepted ADR is never rewritten in place and
+   carries no implementation detail — a direction changes only by superseding. An
+   ADR violating either, or a repo whose readmes never state those rules, is
+   `partial` on Designer context.
 6. **Search for what the walk missed.** An artifact no readme reaches does not
    reach the agent; search only to tell `orphaned` from `absent` — a document
    found makes it `orphaned`, nothing found makes it `absent`. A search result

@@ -58,7 +58,9 @@ Subproject readme: routing line to this subproject's docs/conventions/ index.}
 ## {ADRs}
 {Root readme: routing line to docs/adrs/ (cross-subproject) + one line per
 subproject → its docs/adrs/ index.
-Subproject readme: routing line to this subproject's docs/adrs/ index.}
+Subproject readme: routing line to this subproject's docs/adrs/ index.
+Both: one line — "ADRs are immutable once accepted — the ADR folder readme
+states the rules."}
 
 ## {Coding standards}
 {Root readme: link docs/coding-standards/. Subproject readme: link

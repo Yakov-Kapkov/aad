@@ -26,7 +26,7 @@ The root holds cross-subproject info only; a subproject's info lives in the subp
 │   │   ├── index.md           ← routes to each feature
 │   │   └── <feature>/         ← index.md + <convention>.md
 │   ├── adrs/                  ← cross-subproject decisions and why (optional)
-│   │   ├── index.md           ← routes to each feature
+│   │   ├── index.md           ← routes to each feature; states the immutability rule
 │   │   └── <feature>/         ← index.md + <adr>.md
 │   └── diagrams/              ← optional
 └── <subproject>/              ← one per package, service, app, library
@@ -46,8 +46,10 @@ The root holds cross-subproject info only; a subproject's info lives in the subp
         ├── cli.md             ← this subproject's commands (optional)
         ├── coding-standards/  ← this subproject's rules (optional)
         ├── conventions/       ← this subproject's conventions (optional)
+        │   ├── index.md       ← routes to each feature
         │   └── <feature>/     ← index.md + <convention>.md
         └── adrs/              ← this subproject's decisions and why (optional)
+            ├── index.md       ← routes to each feature; states the immutability rule
             └── <feature>/     ← index.md + <adr>.md
 ```
 

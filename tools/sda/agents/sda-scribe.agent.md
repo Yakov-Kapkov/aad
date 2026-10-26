@@ -146,7 +146,7 @@ You receive:
      sentence), `appliesTo` (optional paths), `adr` (optional link),
      `application` (✅ DO / ❌ DON'T list).
    - `adr` — for `adr` files only: `title`, `status`, `context`, `decision`,
-     `alternatives`, `consequences`.
+     `alternatives`, `confidence`, `consequences`.
 3. **Feature indexes** — for every new feature folder in the list: its own
    `index.md` **and** the row to add to its parent's index.
 

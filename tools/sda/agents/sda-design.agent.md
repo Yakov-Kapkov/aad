@@ -331,7 +331,8 @@ then **apply** (the convention it establishes).
 - Delegate to `sda-scribe` — for each convention provide `title`,
   `convention` (one sentence), `appliesTo` (optional paths), `adr`
   (optional link), and `application` (✅ DO / ❌ DON'T). For each ADR provide
-  `title`, `status`, `context`, `decision`, `alternatives`, and `consequences`.
+  `title`, `status`, `context`, `decision`, `alternatives`, `confidence`,
+  and `consequences`.
   Provide content only — naming and placement comes from the caller.
 - Placement: each convention lives in the **scope** it governs — the subproject
   it belongs to, or the docs root for cross-subproject concerns. Use the

@@ -61,7 +61,7 @@ a repo that declares its own layout.
 | `assets/architecture-schema.md` | `architecture.md` format (root + subproject) |
 | `assets/vocabulary-schema.md` | `vocabulary.md` format (root + subproject) — terms a newcomer would guess wrong |
 | `assets/convention-schema.md` | Convention tree — per-level `index.md` + one-convention-per-file format |
-| `assets/adr-schema.md` | ADR tree — per-level `index.md` + one-decision-per-ADR format |
+| `assets/adr-schema.md` | ADR tree — per-level `index.md` + one-decision-per-ADR format; accepted ADRs are immutable, superseded not edited |
 | `assets/requirements-schema.md` | Requirements tree — per-level `index.md`, `<feature>/[<concern>/]<item>.md`, `nfr.md` |
 | `assets/coding-standards-schema.md` | Coding-standards routing (repo-local or standards skill) |
 | `assets/cli-schema.md` | Per-level command reference — bootstrap, commands, the pre-merge gate |
