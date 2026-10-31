@@ -288,8 +288,8 @@ not a separate one — unless it is its own deployable.
 ### Readmes — required sections
 
 The readme outline (AI readmes + human `README.md`) comes from the `{docsSkill}`
-skill — load it and follow its readme section structure and routing rules.
-You dictate the content; `sda-scribe` formats and writes.
+skill — load it and follow its readme section structure, routing rules, and
+feature-entry rules. You dictate the content; `sda-scribe` formats and writes.
 Update all AI readmes + the human README together.
 
 ### Convention & ADR tree (structure is yours)

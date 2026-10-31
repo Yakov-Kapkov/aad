@@ -192,6 +192,10 @@ exists, report `no AI readme` and skip this stage.
 Verify the readme against the expected outline — caller-provided, or the
 default outline when none. Report every deviation as a finding.
 
+Features-section entries: judge each against the `{docsSkill}` feature-entry
+rule — flag any entry carrying feature mechanics, or more than one sentence.
+Recommendation: move the detail into the feature's docs; shorten the entry.
+
 For broad reads (repo-wide search for unlisted features/standards/subprojects),
 delegate fact-gathering to `sda-code-explore`; do the comparison yourself.
 Flag each mismatch with `file:line` (or `link → path`) evidence.
