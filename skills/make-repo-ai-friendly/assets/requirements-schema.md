@@ -159,8 +159,7 @@ The first column names the level the index routes to.
   `<subproject>/docs/requirements/`.
 - ✅ auth spans frontend + backend → `docs/requirements/auth/`
 - ❌ backend-only ordering rules in `docs/requirements/` → belongs in
-  `backend/docs/requirements/`
-- A requirement with no user-visible surface does not belong in a feature tree
+  `backend/docs/requirements/`- A requirement with no user-visible surface does not belong in a feature tree
   — it goes to the owning subproject's tree.
 
 ### No status, no delivery link
