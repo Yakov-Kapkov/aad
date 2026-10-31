@@ -63,7 +63,15 @@ the `.Tests.` segment mark them as not-for-shipping.
 
 Every instruction an agent, skill, or prompt carries is a prohibition. Something is allowed unless a rule forbids it — never write a rule that grants a permission, and never enumerate what an agent may do. State what it must not do.
 
-### 7. Boundaries
+### 7. Label Every Example
+
+An example must never be mistaken for a rule or for template content.
+
+- Name what a sample is: `Example:`, or `❌` / `✅` on each of a pair.
+- Applies to every standalone sample: a code block, a command line, a quoted entry.
+- Never leave an unlabelled sample inside a rule list or a schema body.
+
+### 8. Boundaries
 
 - ✅ **Always do**: Update docs when changing components, follow existing patterns, keep files concise.
 - ⚠️ **Ask first**: Adding a new top-level folder, removing an existing component, changing the repo structure.
