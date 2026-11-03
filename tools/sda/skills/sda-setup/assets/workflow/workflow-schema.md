@@ -8,7 +8,7 @@ It lives at `{workflows-root}/<NNN>. <slug>/`. `{workflows-root}` defaults to
 `.sda/workflows`.
 
 `workflow.json` is written only by the workflow script; every field below is
-script-owned. Progress runs `story → design → tasks → dev → ready`; an escalation
+script-owned. Progress runs `story → design → dev → ready`; an escalation
 moves the pointer back, is recorded in `notes`, and keeps its evidence in
 `escalations/`.
 
@@ -30,7 +30,7 @@ moves the pointer back, is recorded in `notes`, and keeps its evidence in
         task.md
         dev-report.md
     escalations/
-      001. 2026-09-15_14-20-tasks-to-design.md
+      001. 2026-09-15_14-20-dev-to-design.md
 ```
 
 ```json
@@ -64,18 +64,19 @@ moves the pointer back, is recorded in `notes`, and keeps its evidence in
 - `yyyy-MM-dd`.
 
 ### `stage`
-- One of `story`, `design`, `tasks`, `dev`, `ready` — in that order.
+- One of `story`, `design`, `dev`, `ready` — in that order.
 - `advance` moves exactly one stage forward, and only after the current stage's
   artifact exists.
 - `escalate` moves back one or more stages; `resolve` moves forward exactly one.
 - While any escalation is open, `advance` is refused.
 - `story` is the first stage by default — a container may start later (see
-  `start`). `dev` is the implementation stage: every task folder must hold its
+  `start`). `dev` is the single implementation stage, run in two sessions (task
+  specs, then implementation): every task folder must hold its `task.md` and its
   `dev-report.md` before the pointer can leave it. `ready` is terminal.
 
 ### `start`
 - The stage the container was created at: `story` (default), `design`, or
-  `tasks`. `dev` and `ready` are never a valid start.
+  `dev`. `ready` is never a valid start.
 - Stages before `start` are **skipped** — they produce no artifact, and
   `current` reports no `gap=` for them. If an escalation later moves the
   pointer back into a skipped stage, that stage becomes real and requires its
@@ -101,12 +102,12 @@ moves the pointer back, is recorded in `notes`, and keeps its evidence in
   deepest one is the only one `resolve` may close.
 
 ### Artifacts
-- `user-story.md` (story), `design.md` (design), and `tasks/` (tasks). `ready`
-  has no artifact of its own — it is terminal.
-- `dev`'s artifact is one `dev-report.md` per task folder under `tasks/`, written
-  beside that task's `task.md`. The stage counts as produced only when **every**
-  task folder holds one, so a container with an unimplemented task cannot leave
-  `dev`.
+- `user-story.md` (story) and `design.md` (design). `ready` has no artifact of
+  its own — it is terminal.
+- `dev`'s artifact is the whole `tasks/` tree: at least one task folder, a
+  `task.md` in every folder, and a `dev-report.md` beside each. The stage counts
+  as produced only when the tree is complete, so a container with an unproduced
+  task spec or an unimplemented task cannot leave `dev`.
 - `issue.md` is the container's **entry artifact**, not a stage artifact: no stage owns it,
   it produces no `gap=` line, and it never blocks `advance`. It is created with the
   container.
@@ -118,11 +119,13 @@ moves the pointer back, is recorded in `notes`, and keeps its evidence in
   over only by starting the container after it. A design pass with nothing to
   decide renews `design.md` with what was considered and why it stands.
 - An absent artifact for the current stage blocks `advance`, and `current`
-  reports it as a `gap=` line. A partial `dev` gap is followed by a
-  `missing=<folder>, <folder>` line naming the task folders still without a
-  report, so the implementation stage can act without searching `.sda/`.
-- `tasks/` is created with the container and may stay empty; `tasks` counts as
-  produced only when it holds at least one entry.
+  reports it as a `gap=` line. A partial `dev` gap is followed by
+  `specs=<folder>, <folder>` — the task folders with no `task.md` — and
+  `missing=<folder>, <folder>` — those with no `dev-report.md`. Each line prints
+  only when it has entries, so both dev-stage producers can act without
+  searching `.sda/`.
+- `tasks/` is created with the container and may stay empty; `dev` counts as
+  produced only when it holds at least one task folder with a `task.md`.
 
 ### Escalation briefs
 - `escalations/` holds one brief per escalation, created with the container. The
@@ -135,7 +138,7 @@ moves the pointer back, is recorded in `notes`, and keeps its evidence in
 - A container is consistent only when `workflow.json` exists, parses, carries
   `id`, `slug`, `created`, and `stage`, and holds a known `stage`.
 - A present `start` must be a known start stage (`story`, `design`, or
-  `tasks`); when absent it is treated as `story`.
+  `dev`); when absent it is treated as `story`.
 - The script verifies this before it reads state and stops on the first
   inconsistent container with an `error=` line — never a partial answer.
 - `list` verifies every container before printing anything, so a corrupted one

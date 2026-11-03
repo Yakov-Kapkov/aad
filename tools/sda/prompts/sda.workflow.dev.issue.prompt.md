@@ -1,5 +1,5 @@
 ---
-description: Run the workflow's dev stage from its issue.md via the sda-dev agent
+description: Run the workflow's dev stage — implementation — from its issue.md via the sda-dev agent
 agent: sda-dev
 ---
 

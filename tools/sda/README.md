@@ -6,7 +6,7 @@ A suite of coordinated AI agents that implement a Specification-Driven Developme
 
 ```
 sda-setup skill  →  sda-toolscan  →  sda-ba  →  sda-design →  sda-dev-task  →  sda-dev
-(once, skill)       (once)           (story)     (design)     (tasks)          (implement)
+(once, skill)       (once)           (story)     (design)     (dev · specs)    (dev · implement)
 ```
 
 ---
@@ -105,11 +105,12 @@ Create one with `/sda.workflow.init`, then start the owning agent on it in its o
 `sda-workflow` agent is the advisor surface: it reports where a container sits, names the next
 action and its owning agent, and runs `init`, a user-requested `escalate`, and a user-requested
 `commit` — delegating the commit to `commit` with links to the workflow's artifacts as the recorded intention, which it reads to ground the message.
-The stage machine is `story → design → tasks → dev → ready`: `init` starts at `story` by default,
-or at `design` / `tasks` for pure technical work that has no user-visible change — the stages
-before the start are skipped and produce no artifact. `dev` is the implementation stage, and it
-counts as complete only when **every** task folder holds its `dev-report.md`, so a container with
-an unimplemented task cannot reach `ready`. `advance` moves
+The stage machine is `story → design → dev → ready`: `init` starts at `story` by default, or at
+`design` / `dev` for pure technical work that has no user-visible change — the stages before the
+start are skipped and produce no artifact. `dev` carries the whole implementation pipeline in two
+sessions — task specs (`sda-dev-task`), then implementation (`sda-dev`) — and it counts as
+complete only when **every** task folder holds its `task.md` and its `dev-report.md`, so a
+container with an unproduced task spec or an unimplemented task cannot reach `ready`. `advance` moves
 forward exactly one stage, and `escalate` moves back — recording why, plus a **brief** holding the
 evidence — when the current stage cannot finish on the artifacts it was given. The script refuses
 a raise without a brief, so the blocked stage writes it first (`sda-scribe` numbers and names it);
@@ -119,9 +120,9 @@ the escalation with `resolve`. While an escalation is open, `advance` is refused
 A stage agent works a workflow session by following the **`sda-workflow-guide`** skill: the
 stage-entry prompt declares the session and points at it. The skill carries the workflow CLI
 (`current`, `read`, `advance`, `escalate`, `resolve`), the stage gate, and the
-finish/escalate/resolve steps, plus one stage card per producer naming its artifact, input, and
-escalation targets — so the producers' own files carry none of that, just a dispatch line and the
-escalation-evidence rule. The `sda-workflow` advisor owns `init`, and may raise a user-requested
+finish/escalate/resolve steps, plus one stage card per stage naming its artifact, input, and
+escalation targets — the `dev` card covers both of its producers — so the producers' own files
+carry none of that, just a dispatch line and the escalation-evidence rule. The `sda-workflow` advisor owns `init`, and may raise a user-requested
 escalation from any stage with an upstream. Standalone use is unchanged: a producer invoked
 without a workflow declaration works its own default paths.
 
@@ -168,8 +169,8 @@ Fix the bug where createOrder throws when quantity is 0.
 With a workflow container, start it from the container's `issue.md` with `/sda.workflow.dev.issue`
 — that session follows the `sda-workflow-guide` skill and implements **one task folder per
 session**: the first that still owes a `dev-report.md`, written beside its `task.md`. The
-container advances to `ready` only once every task folder has one; each remaining folder gets its
-own session.
+container advances to `ready` only once every task folder has its `task.md` and its
+`dev-report.md`; each remaining folder gets its own session.
 
 ### 3. Design — `sda-design`
 
@@ -287,7 +288,7 @@ All pipeline agents are user-invokable and used as needed.
 | Skill | Role |
 |---|---|
 | `sda-setup` | Scaffolds `.sda/` folder with resource files — schemas, scripts, tool-discovery + tool-catalog specs, and config example |
-| `sda-workflow-guide` | Workflow-mode operating instructions for stage agents — the workflow CLI, the stage gate, finish/escalate/resolve steps, and one stage card per producer |
+| `sda-workflow-guide` | Workflow-mode operating instructions for stage agents — the workflow CLI, the stage gate, finish/escalate/resolve steps, and one stage card per stage (the `dev` card covers both of its producers) |
 | `sda-spec-guide` | Contract spec conventions — the spec model, storage layout, metadata, and content rules |
 
 ### Prompts
@@ -308,8 +309,8 @@ All pipeline agents are user-invokable and used as needed.
 | `sda.workflow.handle-escalation` | Handles the open escalation in the current session — the escalated-to stage agent runs its resolve steps |
 | `sda.workflow.story.issue` | Starts the story stage from the container's `issue.md` — switches to the sda-ba agent |
 | `sda.workflow.design.issue` | Starts the design stage from the container's `issue.md` — switches to the sda-design agent |
-| `sda.workflow.task.issue` | Starts the tasks stage from the container's `issue.md` — switches to the sda-dev-task agent |
-| `sda.workflow.dev.issue` | Starts the dev stage from the container's `issue.md` — switches to the sda-dev agent |
+| `sda.workflow.task.issue` | Starts the dev stage's task-spec session from the container's `issue.md` — switches to the sda-dev-task agent |
+| `sda.workflow.dev.issue` | Starts the dev stage's implementation session from the container's `issue.md` — switches to the sda-dev agent |
 
 ---
 
@@ -417,7 +418,8 @@ All resources are read from a `.sda/` folder in the project root (may be git-ign
 | Workflow state | `.sda/workflows/<NNN>. <slug>/workflow.json` |
 | Workflow entry artifact | `.sda/workflows/<NNN>. <slug>/issue.md` |
 | Workflow assets | `.sda/workflows/<NNN>. <slug>/assets/` — context the user attached at init |
-| Dev report (workflow) | `.sda/workflows/<NNN>. <slug>/tasks/<NNN>. <slug>/dev-report.md` — the `dev` stage's artifact |
+| Task spec (workflow) | `.sda/workflows/<NNN>. <slug>/tasks/<NNN>. <slug>/task.md` — half the `dev` stage's artifact |
+| Dev report (workflow) | `.sda/workflows/<NNN>. <slug>/tasks/<NNN>. <slug>/dev-report.md` — half the `dev` stage's artifact; every task folder needs one beside its `task.md` |
 | Escalation brief | `.sda/workflows/<NNN>. <slug>/escalations/<NNN>. <yyyy-MM-dd_HH-mm>-<from>-to-<to>.md` |
 | Workflow schema | `.sda/resources/workflow/workflow-schema.md` |
 | Escalation brief schema | `.sda/resources/workflow/escalation-brief-schema.md` |

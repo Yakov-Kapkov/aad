@@ -202,8 +202,9 @@ You format `design.md` per `design-record-schema.md`.
 ### Mode 8 — Escalation brief (workflow evidence)
 
 Written when a blocked stage raises an escalation (callers: `sda-design`,
-`sda-dev-task`). The brief is the escalation's evidence and the raise is refused
-without it, so it is written **before** the escalation is recorded. You receive:
+`sda-dev-task`, `sda-dev`, and the `sda-workflow` advisor). The brief is the
+escalation's evidence and the raise is refused without it, so it is written
+**before** the escalation is recorded. You receive:
 1. **Workflow folder** — the workflow container the escalation belongs to. The
    brief goes in its `escalations/` folder.
 2. **From stage** and **to stage** — the workflow stage names.

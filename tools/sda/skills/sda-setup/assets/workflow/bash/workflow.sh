@@ -21,16 +21,19 @@
 #   raw       pretty-printed JSON, or the bare field value (read)
 #   failure   error=<X cannot do Y because Z>, exit code 1
 #
-# The stage order is story -> design -> tasks -> dev -> ready. A container starts
-# at story by default; --at design or --at tasks skips the stages before it,
-# which then produce no artifact. Every stage from the start onward produces one
+# The stage order is story -> design -> dev -> ready. A container starts at
+# story by default; --at design or --at dev skips the stages before it, which
+# then produce no artifact. Every stage from the start onward produces one
 # artifact, and advance refuses to leave a stage whose artifact is absent. The
-# dev stage's artifact is one dev-report.md per task folder, so a container with
-# an unimplemented task cannot reach ready. While any escalation is open, advance
-# is refused and only resolve clears it.
+# dev stage carries the whole implementation pipeline in two sessions -- task
+# specs, then implementation -- so its artifact is the tasks/ tree complete: at
+# least one task folder, a task.md in every folder, and a dev-report.md beside
+# each. A container with an unproduced task spec or an unimplemented task cannot
+# reach ready. While any escalation is open, advance is refused and only resolve
+# clears it.
 #
 # Usage:
-#   workflow.sh init     --slug <slug> [--at <story|design|tasks>]
+#   workflow.sh init     --slug <slug> [--at <story|design|dev>]
 #   workflow.sh list
 #   workflow.sh current  --slug <folder>
 #   workflow.sh read     --slug <folder> [--field <id|slug|created|stage|start|notes>]
@@ -89,9 +92,8 @@ stage_index() {
   case "$1" in
     story)  printf '0' ;;
     design) printf '1' ;;
-    tasks)  printf '2' ;;
-    dev)    printf '3' ;;
-    ready)  printf '4' ;;
+    dev)    printf '2' ;;
+    ready)  printf '3' ;;
     *)      printf '%s' '-1' ;;
   esac
 }
@@ -100,14 +102,13 @@ stage_name() {
   case "$1" in
     0) printf 'story' ;;
     1) printf 'design' ;;
-    2) printf 'tasks' ;;
-    3) printf 'dev' ;;
-    4) printf 'ready' ;;
+    2) printf 'dev' ;;
+    3) printf 'ready' ;;
   esac
 }
 
 # Index of the last stage. 'ready' has no artifact of its own.
-STAGE_LAST=4
+STAGE_LAST=3
 
 # A container is consistent only when its workflow.json exists, parses, carries
 # the four required fields, and holds a known stage. Verified before any command
@@ -134,7 +135,7 @@ verify_state() {
   start="$(jq -r '.start // empty' "$file")"
   if [ -n "$start" ]; then
     case "$start" in
-      story|design|tasks) ;;
+      story|design|dev) ;;
       *) fail "workflow cannot be read because $file has an unknown start stage '$start'" ;;
     esac
   fi
@@ -189,17 +190,26 @@ dev_missing() {
   done < <(task_folders "$1")
 }
 
+# One task folder name per line for the folders that hold no task.md.
+task_spec_missing() {
+  local dir="$1/tasks" name
+  while IFS= read -r name; do
+    [ -f "$dir/$name/task.md" ] || printf '%s\n' "$name"
+  done < <(task_folders "$1")
+}
+
 # 0 when the stage's artifact exists. 'ready' has no artifact of its own;
-# 'tasks' counts only when the folder holds at least one entry; 'dev' counts
-# only when every task folder holds its dev-report.md, so the stage is complete
-# on the whole container rather than on the last task implemented.
+# 'dev' counts only when the tasks/ tree is complete -- at least one task folder,
+# a task.md in every folder, and a dev-report.md beside each -- so the stage is
+# complete on the whole container rather than on the last task implemented.
 artifact_present() {
   local folder="$1"
   case "$2" in
     story)  [ -e "$folder/user-story.md" ] && return 0 ;;
     design) [ -e "$folder/design.md" ] && return 0 ;;
-    tasks)  [ -d "$folder/tasks" ] && [ -n "$(ls -A "$folder/tasks" 2>/dev/null)" ] && return 0 ;;
-    dev)    [ -n "$(task_folders "$folder")" ] && [ -z "$(dev_missing "$folder")" ] && return 0 ;;
+    dev)    [ -n "$(task_folders "$folder")" ] \
+              && [ -z "$(task_spec_missing "$folder")" ] \
+              && [ -z "$(dev_missing "$folder")" ] && return 0 ;;
   esac
   return 1
 }
@@ -209,11 +219,19 @@ artifact_label() {
   case "$2" in
     story)  printf 'user-story.md does not exist; produce it first' ;;
     design) printf 'design.md does not exist; produce it first' ;;
-    tasks)  printf 'the tasks/ folder has no task folder; produce it first' ;;
     dev)
       while IFS= read -r name; do total=$((total + 1)); done < <(task_folders "$folder")
       if [ "$total" -eq 0 ]; then
         printf 'the tasks/ folder has no task folder; produce it first'
+        return 0
+      fi
+      while IFS= read -r name; do
+        count=$((count + 1))
+        if [ -z "$names" ]; then names="$name"; else names="$names, $name"; fi
+      done < <(task_spec_missing "$folder")
+      if [ "$count" -gt 0 ]; then
+        printf '%s of %s task folders have no task.md: %s; every task folder needs one first' \
+          "$count" "$total" "$names"
         return 0
       fi
       while IFS= read -r name; do
@@ -272,8 +290,8 @@ case "$COMMAND" in
     start="$AT"
     [ -n "$start" ] || start="story"
     case "$start" in
-      story|design|tasks) ;;
-      *) fail "init cannot create '$SLUG' because '$start' is not a valid start stage (story, design, or tasks)" ;;
+      story|design|dev) ;;
+      *) fail "init cannot create '$SLUG' because '$start' is not a valid start stage (story, design, or dev)" ;;
     esac
 
     while IFS= read -r name; do
@@ -394,8 +412,9 @@ case "$COMMAND" in
     done
 
     # Artifact gaps from the start to the current stage. 'ready' has none. A
-    # 'dev' gap names the task folders still missing their dev-report.md,
-    # because .sda/ is unsearchable and the producer cannot list them.
+    # 'dev' gap names the task folders still missing their task.md, then those
+    # still missing their dev-report.md, because .sda/ is unsearchable and
+    # neither producer can list them.
     lo="$start_index"
     [ "$index" -lt "$lo" ] && lo="$index"
     i="$lo"
@@ -404,6 +423,11 @@ case "$COMMAND" in
       if [ "$name" != "ready" ] && ! artifact_present "$folder" "$name"; then
         printf 'gap=%s\n' "$name"
         if [ "$name" = "dev" ]; then
+          names=""
+          while IFS= read -r n; do
+            if [ -z "$names" ]; then names="$n"; else names="$names, $n"; fi
+          done < <(task_spec_missing "$folder")
+          [ -n "$names" ] && printf 'specs=%s\n' "$names"
           names=""
           while IFS= read -r n; do
             if [ -z "$names" ]; then names="$n"; else names="$names, $n"; fi

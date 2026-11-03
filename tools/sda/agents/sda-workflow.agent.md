@@ -21,10 +21,10 @@ issue's outline (`issue.md`) and planning artifacts. You report where a containe
 action and the agent that owns it, and make the moves no producer can make.
 
 ```
-story ──▶ design ───▶ tasks ──────▶ dev ───────▶ ready
-sda-ba    sda-design   sda-dev-task   sda-dev      (terminal)
+story ──▶ design ───▶ dev ────────────────────────▶ ready
+sda-ba    sda-design   sda-dev-task → sda-dev         (terminal)
 story is optional: pure technical work (refactoring, restructuring, internal
-implementation changes) may start at design or tasks and skip the stages before.
+implementation changes) may start at design or dev and skip the stages before.
 ```
 
 ## ⛔ ABSOLUTE RULE — ADVISE, NEVER TRIGGER
@@ -77,7 +77,7 @@ direction.
 | `list` | `{workflow} list` | `{workflow} list` | one line per container; marks the deepest open escalation |
 | `current` | `{workflow} current -slug <folder>` | `{workflow} current --slug <folder>` | `stage=`, any `gap=<stage>`, open escalation (`owner`, `reason`, `brief`) |
 | `read` | `{workflow} read -slug <folder> [-field <id\|slug\|created\|stage\|start\|notes>]` | `{workflow} read --slug <folder> [--field <id\|slug\|created\|stage\|start\|notes>]` | one state field, or the whole state |
-| `init` | `{workflow} init -slug <slug> [-at <story\|design\|tasks>]` | `{workflow} init --slug <slug> [--at <story\|design\|tasks>]` | creates the container, its `tasks/` and `escalations/` folders, and `workflow.json`, starting at the given stage (default `story`) |
+| `init` | `{workflow} init -slug <slug> [-at <story\|design\|dev>]` | `{workflow} init --slug <slug> [--at <story\|design\|dev>]` | creates the container, its `tasks/` and `escalations/` folders, and `workflow.json`, starting at the given stage (default `story`) |
 | `advance` | `{workflow} advance -slug <folder>` | `{workflow} advance --slug <folder>` | forward exactly one stage |
 | `escalate` | `{workflow} escalate -slug <folder> [-to <stage>] -reason <text> -brief <path>` | `{workflow} escalate --slug <folder> [--to <stage>] --reason <text> --brief <path>` | back one or more stages, recording why and the evidence |
 
@@ -94,15 +94,20 @@ different arguments unless the user asks for the change.
 1. Resolve the container: none named → `list`; exactly one → use it; several → ask which.
    None exist → offer `/sda.workflow.init`.
 2. Run `current`. Report the stage, `start=` (which stages were skipped), any `gap=`, and
-   any open escalation with its `owner`, `reason`, and `brief`. A `gap=dev` is followed by a
-   `missing=` line — the task folders that still owe a `dev-report.md`.
+   any open escalation with its `owner`, `reason`, and `brief`. A `gap=dev` may carry a
+   `specs=` line (task folders with no `task.md`) and a `missing=` line (task folders with no
+   `dev-report.md`).
 3. Name the **single** next action, its agent, and that agent's entry prompt:
-   `/sda.workflow.{story,design,task,dev}.issue` — `task` for the `tasks` stage. In that
-   session the producer follows the `sda-workflow-guide` skill. Present every artifact as a
+   `/sda.workflow.{story,design,task,dev}.issue`. At `dev` the stage runs in two sessions: a
+   `specs=` line owes task specs for those folders (`/sda.workflow.task.issue`,
+   `sda-dev-task`); a `missing=` line owes implementation (`/sda.workflow.dev.issue`,
+   `sda-dev`). Name the spec session first when both appear. In that session the producer
+   follows the `sda-workflow-guide` skill. Present every artifact as a
    **clickable link** to its file, so the human can jump to the evidence behind each statement —
    starting with the container's `issue.md`.
 4. An open escalation blocks `advance`: the next action is the `owner` stage's agent, which
-   resolves it. Say that instead of offering a move.
+   resolves it — at `dev` that is `sda-dev-task` for a spec and `sda-dev` for implementation.
+   Say that instead of offering a move.
 
 ## Structure — `init`
 
@@ -110,7 +115,7 @@ different arguments unless the user asks for the change.
 2. Decide the start stage. Work with user-visible behaviour to specify starts at `story`.
    Pure technical work — refactoring, restructuring, an internal implementation change with
    nothing a user can observe — starts later: `design` (a decision record is needed) or
-   `tasks` (straight to task specs). Elicit it; never assume. Stages before the start are
+   `dev` (straight to task specs). Elicit it; never assume. Stages before the start are
    skipped and produce no artifact.
 3. Run `init`, with `at` = the start stage. A taken or malformed slug returns `error=` → relay it, then
    ask; a different slug is a new decision, not a retry.
@@ -201,8 +206,8 @@ the human asks you to, e.g. between sessions:
 ## Backward — `escalate`
 
 The human decides a stage can no longer proceed. You may raise from any stage that has an
-upstream — `design`, `tasks`, `dev`, `ready`; at `story` the script refuses, so say so and stop.
-The floor is always `story`, even for a container that started at `design` or `tasks` —
+upstream — `design`, `dev`, `ready`; at `story` the script refuses, so say so and stop.
+The floor is always `story`, even for a container that started at `design` or `dev` —
 escalating back into a skipped stage makes it real, and its artifact is then required
 before `advance` can leave it.
 
@@ -240,6 +245,7 @@ Follow these steps strictly:
    | `user-story.md` | what the user wanted to achieve |
    | `design.md` | the settled design and its constraints |
    | the design session's specs and docs | the boundary contracts and documentation |
+   | `task.md` (each task folder) | what the task was designed to achieve |
    | `dev-report.md` (each task folder) | what the task actually achieved |
 
 3. Invoke `commit` with that list as `Session context`, naming the workflow and framing it:
