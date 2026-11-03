@@ -1,9 +1,9 @@
 ---
-description: Run the workflow's tasks stage from its issue.md via the sda-dev-task agent
+description: Run the workflow's dev stage — task specs — from its issue.md via the sda-dev-task agent
 agent: sda-dev-task
 ---
 
-This is a workflow session — follow the `sda-workflow-guide` skill (stage card `tasks`).
+This is a workflow session — follow the `sda-workflow-guide` skill (stage card `dev`).
 
-Generate the task (or tasks) for the workflow container named by the issue.md file.
+Design the task (or tasks) for the workflow container named by the issue.md file.
 If issue.md is not provided, ask for it.

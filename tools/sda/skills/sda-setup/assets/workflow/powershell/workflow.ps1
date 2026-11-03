@@ -24,13 +24,16 @@
       raw       pretty-printed JSON, or the bare field value (read)
       failure   error=<X cannot do Y because Z>, exit code 1
 
-    The stage order is story -> design -> tasks -> dev -> ready. A container
-    starts at story by default; -At design or -At tasks skips the stages before
-    it, which then produce no artifact. Every stage from the start onward
-    produces one artifact, and advance refuses to leave a stage whose artifact
-    is absent. The dev stage's artifact is one dev-report.md per task folder, so
-    a container with an unimplemented task cannot reach ready. While any
-    escalation is open, advance is refused and only resolve clears it.
+    The stage order is story -> design -> dev -> ready. A container starts at
+    story by default; -At design or -At dev skips the stages before it, which
+    then produce no artifact. Every stage from the start onward produces one
+    artifact, and advance refuses to leave a stage whose artifact is absent. The
+    dev stage carries the whole implementation pipeline in two sessions -- task
+    specs, then implementation -- so its artifact is the tasks/ tree complete: at
+    least one task folder, a task.md in every folder, and a dev-report.md beside
+    each. A container with an unproduced task spec or an unimplemented task
+    cannot reach ready. While any escalation is open, advance is refused and only
+    resolve clears it.
 
 .PARAMETER Command
     One of: init, list, current, read, advance, escalate, resolve.
@@ -39,7 +42,7 @@
     Workflow folder name, numeric id, or slug.
 
 .PARAMETER At
-    (init only) The stage to create the container at: story, design, or tasks.
+    (init only) The stage to create the container at: story, design, or dev.
     Defaults to story. Stages before it are skipped.
 
 .PARAMETER Field
@@ -75,7 +78,7 @@
 
 .EXAMPLE
     workflow.ps1 escalate -Slug 001 -Reason "outbox replaced by direct write" `
-        -Brief ".sda/workflows/001. const-refactoring/escalations/001. 2026-09-15_14-20-tasks-to-design.md"
+        -Brief ".sda/workflows/001. const-refactoring/escalations/001. 2026-09-15_14-20-dev-to-design.md"
 
 .EXAMPLE
     workflow.ps1 resolve -Slug 001 -Id E1 -Report "direct write chosen; design renewed"
@@ -109,14 +112,14 @@ param(
 Set-StrictMode -Version Latest
 $ErrorActionPreference = 'Stop'
 
-$StageNames = @('story', 'design', 'tasks', 'dev', 'ready')
-$StartableStages = @('story', 'design', 'tasks')
-# One container-root artifact per stage. 'ready' has none, and 'dev' has one per
-# task folder instead, so both are handled by name in the artifact functions.
+$StageNames = @('story', 'design', 'dev', 'ready')
+$StartableStages = @('story', 'design', 'dev')
+# One container-root artifact per stage. 'ready' has none, and 'dev' is a tree --
+# task folders each holding a task.md and a dev-report.md -- so both are handled
+# by name in the artifact functions.
 $StageArtifacts = @{
     'story'  = 'user-story.md'
     'design' = 'design.md'
-    'tasks'  = 'tasks'
 }
 
 $WorkflowsRoot = if ($Root) { $Root } else { '.sda/workflows' }
@@ -304,29 +307,37 @@ function Get-DevMissing([string]$folder) {
     })
 }
 
+# The task folders that hold no task.md.
+function Get-TaskSpecMissing([string]$folder) {
+    return @(Get-TaskFolders $folder | Where-Object {
+        -not (Test-Path (Join-Path $_.FullName 'task.md'))
+    })
+}
+
 # 'ready' has no artifact of its own. A stage counts as produced only when its
-# artifact exists; 'tasks' counts only when the folder holds at least one entry;
-# 'dev' counts only when every task folder holds its dev-report.md, so the stage
-# is complete on the whole container rather than on the last task implemented.
+# artifact exists; 'dev' counts only when the tasks/ tree is complete -- at least
+# one task folder, a task.md in every folder, and a dev-report.md beside each --
+# so the stage is complete on the whole container rather than on the last task
+# implemented.
 function Test-StageArtifact($folder, [string]$stage) {
     if ($stage -eq 'dev') {
         if (@(Get-TaskFolders $folder).Count -eq 0) { return $false }
+        if (@(Get-TaskSpecMissing $folder).Count -gt 0) { return $false }
         return (@(Get-DevMissing $folder).Count -eq 0)
     }
     $name = $StageArtifacts[$stage]
     if (-not $name) { return $true }
-    $path = Join-Path $folder $name
-    if ($stage -eq 'tasks') {
-        return (Test-Path $path) -and (@(Get-ChildItem $path -ErrorAction SilentlyContinue).Count -gt 0)
-    }
-    return (Test-Path $path)
+    return (Test-Path (Join-Path $folder $name))
 }
 
 function Get-ArtifactLabel([string]$folder, [string]$stage) {
-    if ($stage -eq 'tasks') { return 'the tasks/ folder has no task folder; produce it first' }
     if ($stage -eq 'dev') {
         $tasks = @(Get-TaskFolders $folder)
         if ($tasks.Count -eq 0) { return 'the tasks/ folder has no task folder; produce it first' }
+        $noSpec = @(Get-TaskSpecMissing $folder | ForEach-Object { $_.Name })
+        if ($noSpec.Count -gt 0) {
+            return "$($noSpec.Count) of $($tasks.Count) task folders have no task.md: $($noSpec -join ', '); every task folder needs one first"
+        }
         $missing = @(Get-DevMissing $folder | ForEach-Object { $_.Name })
         return "$($missing.Count) of $($tasks.Count) task folders have no dev-report.md: $($missing -join ', '); every task folder needs one first"
     }
@@ -348,7 +359,7 @@ switch ($Command) {
 
         $StartStage = if ($At) { $At } else { 'story' }
         if ([array]::IndexOf($StartableStages, $StartStage) -lt 0) {
-            Fail "init cannot create '$Slug' because '$StartStage' is not a valid start stage (story, design, or tasks)"
+            Fail "init cannot create '$Slug' because '$StartStage' is not a valid start stage (story, design, or dev)"
         }
 
         $folders = @(Get-WorkflowFolders)
@@ -468,8 +479,9 @@ switch ($Command) {
         }
 
         # Artifact gaps from the start to the current stage. 'ready' has none.
-        # A 'dev' gap names the task folders still missing their dev-report.md,
-        # because .sda/ is unsearchable and the producer cannot list them.
+        # A 'dev' gap names the task folders still missing their task.md, then
+        # those still missing their dev-report.md, because .sda/ is unsearchable
+        # and neither producer can list them.
         $from = $startIndex
         if ($index -lt $from) { $from = $index }
         for ($i = $from; $i -le $index; $i++) {
@@ -478,6 +490,8 @@ switch ($Command) {
             if (-not (Test-StageArtifact $folder $name)) {
                 Write-Output "gap=$name"
                 if ($name -eq 'dev') {
+                    $noSpec = @(Get-TaskSpecMissing $folder | ForEach-Object { $_.Name })
+                    if ($noSpec.Count -gt 0) { Write-Output "specs=$($noSpec -join ', ')" }
                     $missing = @(Get-DevMissing $folder | ForEach-Object { $_.Name })
                     if ($missing.Count -gt 0) { Write-Output "missing=$($missing -join ', ')" }
                 }

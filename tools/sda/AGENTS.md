@@ -8,7 +8,7 @@ Rules for AI agents working on the SDA (Software Development Assistant) tool sui
 
 SDA is a coordinated suite of AI agents that implement a Specification-Driven Development workflow. Agents are **tightly coupled by design** — they share file formats, workflow contracts, and behavioral rules. Changes to one agent frequently require synchronized changes to connected agents and shared resources.
 
-A **workflow** is a numbered container (`.sda/workflows/<NNN>. <slug>/`) holding one requirement's entry artifact (`issue.md`), optional `assets/` context files, its artifacts — `user-story.md`, `design.md`, `tasks/`, one `dev-report.md` per task folder — plus script-written state that tracks their stage. Producers work workflow sessions by following the `sda-workflow-guide` skill, so their own files carry no workflow CLI or state logic. It is opt-in: standalone single-agent use is unchanged.
+A **workflow** is a numbered container (`.sda/workflows/<NNN>. <slug>/`) holding one requirement's entry artifact (`issue.md`), optional `assets/` context files, its artifacts — `user-story.md`, `design.md`, and the `tasks/` tree (a `task.md` plus a `dev-report.md` per task folder) — plus script-written state that tracks their stage. Progress runs `story → design → dev → ready`; `dev` is one stage in two sessions — task specs, then implementation — and its gate covers the whole `tasks/` tree. Producers work workflow sessions by following the `sda-workflow-guide` skill, so their own files carry no workflow CLI or state logic. It is opt-in: standalone single-agent use is unchanged.
 
 ## Folder Structure
 
@@ -48,7 +48,7 @@ tools/sda/
 │   ├── sda.workflow.handle-escalation.prompt.md ← handle the open escalation in the current session
 │   ├── sda.workflow.story.issue.prompt.md ← story stage, from the container's issue.md (sda-ba)
 │   ├── sda.workflow.design.issue.prompt.md ← design stage, from the container's issue.md (sda-design)
-│   ├── sda.workflow.task.issue.prompt.md   ← tasks stage, from the container's issue.md (sda-dev-task)
+│   ├── sda.workflow.task.issue.prompt.md   ← dev stage (task specs), from the container's issue.md (sda-dev-task)
 │   └── sda.workflow.dev.issue.prompt.md    ← dev stage, from the container's issue.md (sda-dev)
 └── skills/
     ├── sda-workflow-guide/            ← workflow-mode operating instructions for producers
@@ -56,7 +56,6 @@ tools/sda/
     │   └── assets/
     │       ├── stage-story.md
     │       ├── stage-design.md
-    │       ├── stage-tasks.md
     │       └── stage-dev.md
     ├── sda-spec-guide/                 ← contract spec conventions for all planning agents
     │   └── SKILL.md
@@ -133,13 +132,13 @@ sda-design ─delegates─▸ sda-diagram-writer            diagram generation
 sda-design ─delegates─▸ sda-scribe                    specs, convention + ADR + design docs, design record (Mode 7)
 sda-design ─delegates─▸ sda-code-explore              subproject discovery + structure
 sda-design ─delegates─▸ sda-docs-check                docs structure + convention/ADR integrity + drift + readme routing
-sda-design ────handoff──▸ sda-dev-task               design pipeline (feature → tasks); passes design.md path
+sda-design ────handoff──▸ sda-dev-task               design pipeline (feature → task specs); passes design.md path
 sda-dev-task ─delegates─▸ sda-code-explore              task design pipeline (research)
 sda-dev-task ─delegates─▸ sda-web-explore               task design pipeline (web/API research)
 sda-dev-task ─delegates─▸ sda-scribe                     task design pipeline (Phase 6: task.md)
 sda-dev-task ─delegates─▸ sda-dev-task-verifier              task design pipeline (Phase 7 + contract compliance)
 sda-dev-task-verifier ─delegates─▸ sda-code-explore     file-gathering for structural + regression checks
-sda-dev-task ────handoff──▸ sda-dev                  tasks → dev (the workflow's dev stage)
+sda-dev-task ────handoff──▸ sda-dev                  task specs → implementation (the workflow's dev stage)
 
 user ──▸ sda-qa-task                                      qa-task.md authoring (standalone / coupled)
 sda-qa-task ─delegates─▸ sda-code-explore            standalone entry-point discovery
@@ -173,7 +172,7 @@ sda-dev ─delegates─▸ sda-dev-quality             per-scope quality gates (
 | `refactoring` unit type routing | `sda-dev` (routes to Phase 4·U directly, passes Changes blocks), `sda-refactor` (accepts Changes field, applies as sweep 0) | New unit type skips GREEN; sda-refactor handles both prescribed transformations and improvement sweeps |
 | `standardsSkill` (`project-config.json`) | `sda-dev` (from session context, passes `Standards skill:` in every delegation), `sda-coder`, `sda-refactor`, `sda-test-writer` (load the named skill), `sda-dev-task` (loads it for task.md code examples), **sda-setup skill** (scaffolds default) | Configurable coding-standards skill; default `standards-compliance` (the literal name lives only in `project-config.json` + docs, never in `.agent.md` files) |
 | `qa-task.md` schema (`qa-task-schema.md`) | `sda-qa-task` (designs FRs — coupled or standalone), `sda-scribe` (writes — Mode 4), `sda-qa` (reads — sole input) | sda-qa-task designs the QA spec; scribe writes it; sda-qa verifies against it black-box. Standalone specs live under `paths.issues` |
-| `dev-report.md` schema (`dev-report-schema.md`) | `sda-dev` (provides facts), `sda-scribe` (writes), `workflow.ps1` / `workflow.sh` (the file's presence in **every** task folder is the `dev` stage's artifact) | Orchestrator reports what was built; scribe formats it. The workflow layer never reads its content — only whether each task folder has one |
+| `dev-report.md` schema (`dev-report-schema.md`) | `sda-dev` (provides facts), `sda-scribe` (writes), `workflow.ps1` / `workflow.sh` (present beside every `task.md`, it is half the `dev` stage's artifact) | Orchestrator reports what was built; scribe formats it. The workflow layer never reads its content — only whether each task folder holds one |
 | `sda-scribe` update-mode input (anchored deltas) | `sda-dev-task` (Mode 2 delegation for task.md add/change/remove) | Scribe matches caller-supplied anchors with the host's built-in file tools and refuses a change described without one — `sda-dev-task` must pass `anchor` + `content` |
 | File-write mechanism (built-in tools only — no CLI or script) | `sda-scribe` (states the rule), `sda-ba` (writes `user-story.md`), `sda-qa` (writes `qa-report.md` + `evidence/`), `sda-workflow` (writes `issue.md` + `assets/`), `sda-diagram-writer` (file writer — rule not stated) | Every agent that writes files edits through the host's built-in tools so changes stay reviewable; a CLI or script write bypasses change tracking |
 | Required checks (tests, types, lint, format, build, pre-merge, data files) | `sda-dev` (lists them per phase), `sda-dev-quality` (runs them for a scope), `sda-test-writer`, `sda-coder`, `sda-refactor` (run the ones their unit needs) | Agents run the repo's own checks and report pass/fail; none receives a command string |
@@ -198,7 +197,7 @@ sda-dev ─delegates─▸ sda-dev-quality             per-scope quality gates (
 | `workflow-schema.md` (workflow container + `workflow.json` shape) | `{workflow}` script (implements it — and verifies every container against it before reading state), `sda-ba` / `sda-design` / `sda-dev-task` / `sda-dev` (read state via the `sda-workflow-guide` skill), `sda-scribe` (Mode 8 — records the brief in the workflow's `escalations/` folder), **sda-setup skill** (copies the asset to `.sda/resources/workflow/`) | Folder naming, stage order, the `start` stage (skipped prefix), `notes[]` entry types, and the escalation brief's folder + `brief` field are the contract — a shape change breaks every reader of `list` / `read`, the scribe's Step 10, and every brief already on disk |
 | `escalation-brief-schema.md` (the escalation brief's content) | `sda-scribe` (Mode 8 writes it per the schema — **Step 10 owns its file name and numbering**), `sda-design` / `sda-dev-task` / `sda-dev` (draft that content before the raise), `sda-ba` (reads it when resolving), **sda-setup skill** (copies the asset) | A document schema, not state — the script never reads the brief. Its sections change what every future escalation must carry, so it moves independently of the container's rules |
 | `workflow.ps1` + `workflow.sh` (the state-script twins) | `_twins.Tests.ps1` (test: differential harness — one scenario sequence against both, comparing output, exit codes, and the written `workflow.json`), `sda-workflow` (runs the twins; never writes state), `sda-workflow-guide` (documents the producer-facing subset: `current`/`read`/`advance`/`escalate`/`resolve`) | One contract, two implementations: every command, refusal, and exit code must exist in **both**, and the harness must stay green. It is a **test, not an asset** — `_<subject>.Tests.ps1`, pruned by `install-skill.*` and never copied into `.sda/` |
-| Stage list + each stage's artifact (the machine itself) | Both twins (`workflow.ps1` / `workflow.sh`), `_twins.Tests.ps1` (a scenario per stage and gate), `workflow-schema.md` (documents it), `sda-workflow` (pipeline diagram, escalate reach, `gap=` / `missing=` reporting), the `sda-workflow-guide` skill (one stage card per producer, encoding its gate) | One stage machine across the twins, the schema, the advisor, and the skill's stage cards. `dev`'s artifact is per task folder, so its gate covers the whole `tasks/` tree rather than one file |
+| Stage list + each stage's artifact (the machine itself) | Both twins (`workflow.ps1` / `workflow.sh`), `_twins.Tests.ps1` (a scenario per stage and gate), `workflow-schema.md` (documents it), `sda-workflow` (pipeline diagram, escalate reach, `gap=` / `specs=` / `missing=` reporting), the `sda-workflow-guide` skill (one stage card per stage, encoding its gate) | One stage machine across the twins, the schema, the advisor, and the skill's stage cards. `dev`'s artifact is the whole `tasks/` tree — a `task.md` and a `dev-report.md` per folder — so its gate covers the container rather than one file |
 | `paths.workflows` + `scripts.workflow` in `project-config.json` | `sda-ba`, `sda-design`, `sda-dev-task`, `sda-dev` (receive the keys; the `sda-workflow-guide` skill consumes them in workflow sessions), **sda-setup skill** (config example + read-config defaults) | Injected via session context; `paths.workflows` defaults to `.sda/workflows`. Presence does **not** imply a workflow exists — see the `{workflow}` script boundary row for who may run what |
 | `manifest.md` format | `sda-design` (adds specs, reads for affected specs), `sda-dev-task` (reads for spec discovery), `sda-scribe` (writes/updates rows), `sda-dev-task-verifier` (reads for verification) | Entry point for spec discovery; scribe maintains it |
 | `sda-design` diagram delegation format (`DIAGRAM` block) | `sda-diagram-writer` input contract | Subagent parses the exact DIAGRAM block format the orchestrator sends |
