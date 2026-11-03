@@ -15,7 +15,7 @@
 
 ## Scope
 Feature: {feature-name}
-Areas: {area-1}, {area-2}
+Scopes: {scope-1}, {scope-2}
 
 ## Prerequisites
 {Omit if the task has no setup dependencies.}
@@ -90,7 +90,7 @@ Status prefixes:
 
 ### Unit 1 — {unit name}
 **Type:** tests required
-**Area:** {area name}
+**Scope:** {scope name}
 **Language:** {langs — union of the per-file annotations}
 **Source:** 
 - `{path-1}` ({langs})
@@ -178,7 +178,7 @@ Algorithm:
 
 ### Unit 2 — {unit name}
 **Type:** tests only
-**Area:** {area name}
+**Scope:** {scope name}
 **Language:** {langs — union of the per-file annotations}
 **Source:** `{source-file-path}` ({langs})
 **Test:** `{test-file-path}` ({langs})
@@ -200,7 +200,7 @@ File: `{source-file-path}`
 
 ### Unit 3 — {unit name}
 **Type:** integration only
-**Area:** {area name}
+**Scope:** {scope name}
 **Language:** {langs — union of the per-file annotations}
 **Source:** `{file-path}` ({langs})
 **Related tests:** `{existing-test-path-or-folder}` ({langs})   <!-- optional — existing tests that cover the changed code paths, run as a regression check. Omit the line entirely when none exist. -->
@@ -218,7 +218,7 @@ Algorithm:
 
 ### Unit 4 — {unit name}
 **Type:** refactoring
-**Area:** {area name}
+**Scope:** {scope name}
 **Language:** {langs — union of the per-file annotations}
 **Source:** `{file-path}` ({langs})
 **Related tests:** `{existing-test-path-or-folder}` ({langs})   <!-- optional — existing tests that cover the changed code paths, run as a regression check. Omit the line entirely when none exist. -->
@@ -230,7 +230,7 @@ File: `{file-path}`
 
 ### Unit 5 — {unit name}
 **Type:** docs
-**Area:** {layer the doc belongs to, or `Global`}
+**Scope:** {layer the doc belongs to, or `Global`}
 **Language:** markdown — or the spec's format when a step is `contract-spec`
 
 #### Step 5.1 — {file being written}
@@ -270,8 +270,8 @@ Domain: {subdirectory name} · Boundary: {e.g. UI → Backend} · Format: {e.g. 
 - Required. First line: `Feature: {name}` (exact match to a feature listed in
   the repo's `AGENTS.md` features section) or `Global` (cross-cutting /
   maintenance work not tied to a feature).
-- Second line: `Areas: {area-1}, {area-2}` — the unit `Area` values,
-  deduplicated, in unit order. Never a name that is not a unit `Area`
+- Second line: `Scopes: {scope-1}, {scope-2}` — the unit `Scope` values,
+  deduplicated, in unit order. Never a name that is not a unit `Scope`
   (see [Units](#units)); never `Global`.
 
 ### Prerequisites
@@ -324,7 +324,7 @@ Domain: {subdirectory name} · Boundary: {e.g. UI → Backend} · Format: {e.g. 
   adds Domain, Boundary, Format, and Description so the writer can maintain
   `manifest.md`. It carries an anchored delta, never full content, and never a
   new file.
-- **Area:** the project area the unit belongs to (e.g. `Backend`, `Frontend`, `Worker`), derived from the unit's file paths matched against the Area Index in `project-tools.md`. Multi-area units list comma-separated areas (e.g. `Backend, Frontend`). The Area field is mandatory — always present on every unit.
+- **Scope:** the project boundary the unit's file paths fall in, taken from the repo's own context. Multi-boundary units list comma-separated boundaries. Example: `Backend, Frontend`. The Scope field is mandatory — always present on every unit.
   - `docs` units: the layer the doc belongs to (`<layer>/docs/...`, `<layer>/README.md` → that layer); `Global` for repo-root readmes and the root `docs/` tree. A `contract-spec` step takes the layer the boundary serves, or `Global` when it crosses layers.
 - **Per-file language.** Annotate every Source/Test path with the programming language(s) it contains: `` `src/repo.py` (python, postgres) ``.
 - **Language:** header line = deduplicated **union** of the per-file annotations (e.g. `python, postgres`).

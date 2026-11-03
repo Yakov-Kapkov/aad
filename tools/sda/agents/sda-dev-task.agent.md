@@ -54,7 +54,6 @@ read, list, or search files:
 |---|---|
 | `{task-state}` | `get` / `init` — see [Task status guard](#task-status-guard--hard-boundary) |
 | `{unit-file-size}` | unit file-size guard (`-Mode task`) |
-| `{read-project-tools}` | area lookup |
 
 **Use the raw relative path — no `&`, no quotes, no absolute paths, no `bash`/`sh`/`zsh` prefix.**
 
@@ -272,21 +271,16 @@ same unit; a `docs` unit stays in sync with the code units it describes),
 end-to-end deliverability (every task must produce reachable results),
 self-containment (use intra-document references for repeated patterns).
 
-### Per-unit area — mandatory
+### Per-unit scope — mandatory
 
-**Every unit declares the project area it belongs to** via the `**Area:**`
-header field. The area is derived from the unit's Source/Test file paths
-resolved through `{read-project-tools}`, NOT from feature names or folder
-hierarchies.
+**Every unit declares the project scope it belongs to** via the `**Scope:**`
+header field — the project boundary its Source/Test paths fall in, taken from
+the context you hold (the repo's AI readme and the docs it routes to; its own
+files when nothing is documented). Never from feature names.
 
-- Call `{read-project-tools} . ["areas"]` to get all areas
-  and their working directories.
-- For each file path in the unit, call `{read-project-tools} {file-directory}`
-  (the returned `working-dir=` key maps to the area via prefix matching).
-- If all files map to the same area → `**Area:**` = that area.
-- If files span multiple areas → `**Area:**` = comma-separated list
-  (e.g. `Backend, Frontend`).
-- Assign areas during Design (Phase 3); emit in Phase 6.
+- All files in one boundary → `**Scope:**` = that boundary.
+- Files spanning boundaries → comma-separated list. Example: `Backend, Frontend`.
+- Assign scopes during Design (Phase 3); emit in Phase 6.
 
 ### Contract & data-flow integrity
 
@@ -761,7 +755,7 @@ After reads, for each unit with more than one file, run the resolved `{unit-file
 
 **Step 2 — Build Implementation Plan.** Using research findings and
 the approved Design Approach, produce for each unit:
-- Unit header (name, type, area, Source/Test paths each annotated with the
+- Unit header (name, type, scope, Source/Test paths each annotated with the
   language(s) it contains, and the derived **Language** union).
 - Design Approach subsection — `**Implements:**` (behaviour, component, or
   contract delivered) and `**Tests & verifies:**` (observable outcome its
@@ -808,7 +802,7 @@ each mapped to ≥1 scenario: `- [ ] {criterion} _(Unit N, scenarios X–Y)_`.
 - **Repo root** (`{repo-root}`) — absolute path; scribe must anchor all folder creation and numbering here
 - **Task parent folder** — where the numbered task folder goes: `{tasks-root}/`, or the workflow's `tasks/` folder in a workflow session. The scribe numbers and creates the folder
 - **Task name** (kebab-case)
-- **Scope** — `Feature: {name}` or `Global`, plus `Areas: {a}, {b}` (unit `Area` values, deduplicated, in unit order)
+- **Scope** — `Feature: {name}` or `Global`, plus `Scopes: {a}, {b}` (unit `Scope` values, deduplicated, in unit order)
 - **Goal** (1-2 sentences)
 - **Context** — workflow session only: the workflow id + slug and the relative design-record link. Omit for a standalone task — the scribe writes no `## Context` header
 - **Design Approach** (Phase 3 summary + per-unit Implements / Tests & verifies from Step 2)

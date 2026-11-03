@@ -18,8 +18,6 @@ tools/sda/
 ├── AGENTS.md                          ← this file
 ├── agents/
 │   ├── sda-workflow.agent.md           ← advisor: container position, next action + owner, `init` / user-requested `escalate` / user-requested `commit` (`advance` on request)
-│   ├── sda-toolscan.agent.md           ← toolchain scanning (full or area update) + project-tools generation
-│   ├── sda-tool-installer.agent.md    ← subagent: installs required dev tools (delegated by sda-setup skill)
 │   ├── sda-ba.agent.md                ← Business Analyst: raw requirement → ready User Story (one Actor + Gherkin)
 │   ├── sda-design.agent.md            ← system + feature design
 │   ├── sda-dev-task.agent.md              ← task specification design
@@ -32,7 +30,7 @@ tools/sda/
 │   ├── sda-test-writer.agent.md       ← subagent: writes tests (RED phase)
 │   ├── sda-coder.agent.md             ← subagent: writes production code (GREEN phase)
 │   ├── sda-refactor.agent.md          ← subagent: refactoring pass (REFACTOR phase)
-│   ├── sda-dev-quality.agent.md       ← subagent: per-area quality gates (Phase 5); check-and-report only
+│   ├── sda-dev-quality.agent.md       ← subagent: per-scope quality gates (Phase 5); check-and-report only
 │   ├── sda-docs-check.agent.md       ← subagent: verifies docs tree + convention/ADR docs + AI-readme routing against reality (full scope, or targeted on a `docs` unit's files); check-and-report only
 │   ├── sda-qa.agent.md                 ← runtime acceptance QA (read-only on source; writes qa-report.md)
 │   └── sda-diagram-writer.agent.md   ← subagent: renders Mermaid diagrams from DIAGRAM blocks → `.md` files with ```mermaid fenced blocks
@@ -41,8 +39,7 @@ tools/sda/
 │   ├── sda.qa.session-run.prompt.md       ← trigger sda-qa agent (QA verification for a task)
 │   ├── sda.dev.task-implement.prompt.md   ← trigger sda-dev agent (implement a task via TDD)
 │   ├── sda.qa.task-create.prompt.md       ← trigger sda-qa-task agent (create a QA task)
-│   ├── sda.setup.prompt.md               ← setup SDA tool (with toolchain scan)
-│   ├── sda.setup.no-scan.prompt.md       ← setup SDA tool (skip toolchain scan)
+│   ├── sda.setup.prompt.md               ← setup SDA tool (scaffolds .sda/ + config)
 │   ├── sda.design.reconcile.prompt.md    ← trigger sda-design agent (reconcile design docs with code)
 │   ├── sda.workflow.init.prompt.md        ← create one workflow container + its issue.md
 │   ├── sda.workflow.status.prompt.md      ← where the containers sit + the single next action
@@ -92,16 +89,7 @@ tools/sda/
             │       ├── list-qa-secrets.ps1    ← lists credential names + descriptions → .sda/scripts/qa/
             │       ├── qa-session-init.ps1    ← dot-sourced by sda-qa; sets UTF-8 encoding + loads credentials → .sda/scripts/qa/
             │       └── invoke-http.ps1        ← HTTP helper for sda-qa CLI/HTTP requests → .sda/scripts/qa/
-            ├── toolscan/                      ← toolscan schema + scripts
-            │   ├── project-tools-schema.md    ← project-tools.md template + content rules → .sda/resources/toolscan/
-            │   ├── bash/
-            │   │   ├── cleanup-project-tools.sh   ← rename project-tools.md to project-tools_backup.md before scan
-            │   │   ├── get-timestamp.sh           ← output scan timestamp string
-            │   │   └── probe-validators.sh        ← probe all format validators; output pipe-delimited table
-            │   └── powershell/
-            │       ├── cleanup-project-tools.ps1  ← rename project-tools.md to project-tools_backup.md before scan
-            │       ├── get-timestamp.ps1          ← output scan timestamp string
-            │       └── probe-validators.ps1       ← probe all format validators; output pipe-delimited table
+
             ├── design/                       ← SDA-only design schema
             │   └── design-record-schema.md   ← design.md format + decision taxonomy → .sda/resources/design/
             ├── workflow/                     ← workflow schemas, state scripts + twin test
@@ -116,15 +104,11 @@ tools/sda/
         │   ├── bash/
         │   │   ├── setup.sh               ← scaffold .sda/ folder
         │   │   ├── write-config.sh        ← write project-config.json
-        │   │   ├── read-config.sh             ← per-agent config hook script → .sda/scripts/
-        │   │   └── read-project-tools.sh      ← area-aware command lookup by folder → .sda/scripts/
+        │   │   └── read-config.sh             ← per-agent config hook script → .sda/scripts/
         │   └── powershell/
         │       ├── setup.ps1              ← scaffold .sda/ folder
         │       ├── write-config.ps1       ← write project-config.json
-        │       ├── read-config.ps1            ← per-agent config hook script → .sda/scripts/
-        │       └── read-project-tools.ps1     ← area-aware command lookup by folder → .sda/scripts/
-        ├── tool-discovery/                ← language toolchain specs (shipped with the skill)
-        └── tool-catalog/                  ← language tool install catalogs (shipped with the skill)
+        │       └── read-config.ps1            ← per-agent config hook script → .sda/scripts/
 ```
 
 ## Agent Dependency Map
@@ -140,9 +124,6 @@ The TDD implementation phase is **orchestrated**: `sda-dev` reads `task.md`, the
 ### Agent relationships
 
 ```
-sda-setup skill ──▸ sda-toolscan                          project scaffolding + scanning
-sda-setup skill ──▸ sda-tool-installer                    required tool installation (Step 7)
-
 user ──▸ sda-ba                                          raw requirement → User Story (requirements front-end)
 sda-ba ─delegates─▸ sda-code-explore / sda-web-explore  elicitation research only (never design)
 sda-ba ─delegates─▸ sda-scribe                          requirements tree (Mode 6)
@@ -171,7 +152,7 @@ sda-dev ─delegates─▸ sda-refactor                REFACTOR phase
 sda-dev ─delegates─▸ sda-code-explore            ad-hoc mode: codebase exploration
 sda-dev ─delegates─▸ sda-scribe                  dev-report.md (Mode 3) + `docs` unit files (Phase 3·D)
 sda-dev ─delegates─▸ sda-docs-check             `docs` unit verification, targeted scope (Phase 3·D)
-sda-dev ─delegates─▸ sda-dev-quality             per-area quality gates (Phase 5)
+sda-dev ─delegates─▸ sda-dev-quality             per-scope quality gates (Phase 5)
 ```
 
 ### Detailed dependency matrix
@@ -186,30 +167,21 @@ sda-dev ─delegates─▸ sda-dev-quality             per-area quality gates (P
 | `sda-dev` REFACTOR/refactoring rules | `sda-refactor` | `sda-refactor` executes both refactor scopes (per-unit 4·U, cross-unit 4·X) the orchestrator delegates; for `refactoring` units, also receives and applies Changes blocks as sweep 0. The `In-scope symbols` entries are produced by `sda-test-writer` (one locator per test), sourced and persisted by `sda-dev`, and parsed by `sda-refactor` — the entry syntax is one contract across all three |
 | `sda-dev` delegation format | `sda-test-writer`, `sda-coder`, and `sda-refactor` input contracts | Subagents parse the exact format the orchestrator sends |
 | Approval gate structure or output templates | All of: `sda-dev`, `sda-test-writer`, `sda-coder`, `sda-refactor` | Gate outputs must be consistent across the orchestrated flow |
-| `read-project-tools.ps1` / `read-project-tools.sh` (area-matching logic) | `sda-dev`, `sda-dev-quality`, `sda-dev-task`, `sda-qa-task`, `sda-qa` (call it per area with command labels) | Changing area-matching logic, command labels, or output format → update both scripts and agent call sites |
+| `### Verification commands` block in every phase result | `sda-test-writer`, `sda-coder`, `sda-refactor`, `sda-dev-quality` (emit the exact commands they ran), `sda-dev` (relays them verbatim) | Each phase result names the commands that produced its verdict, so a reader can re-run them |
 | `task.md` schema (`task-schema.md`) | `sda-scribe`, `sda-dev`, `sda-test-writer`, `sda-coder`, `sda-refactor` | Scribe produces the schema; implementation agents consume it |
 | Integration-unit `Related tests` field (`task-schema.md`) | `sda-dev-task` (identifies runnable tests), `sda-scribe` (writes), `sda-dev` (passes as the test target or omits), `sda-coder` (runs them or skips) | Regression check for integration-only units; when absent, no tests run |
 | `refactoring` unit type routing | `sda-dev` (routes to Phase 4·U directly, passes Changes blocks), `sda-refactor` (accepts Changes field, applies as sweep 0) | New unit type skips GREEN; sda-refactor handles both prescribed transformations and improvement sweeps |
-| `Detected shell` (`project-tools.md`, Output Filter Command) | `read-config.ps1` / `read-config.sh` (inject it into session context), `sda-dev` (reads it from context; passes `Shell:` in every delegation), `sda-coder`, `sda-refactor`, `sda-test-writer` (run commands in that shell; never translate idioms) | Prevents shell-mismatch errors (e.g. `tail` vs `Select-Object`) |
-| Command-invocation form (runner/script vs bare binary) | `sda-dev`, `sda-dev-quality` (run `{read-project-tools}` output as-is — never a troubleshooting entry), `sda-test-writer`, `sda-coder`, `sda-refactor` (run the passed command as-is) | A returned or passed invocation is never rewritten into a direct binary or entry-point call; a bare binary is valid only when it is the returned command, or when a troubleshooting entry prescribes it for an unfiltered command with a confirmed non-zero exit code |
-| Empty-output verdict (silent success) | `sda-dev`, `sda-dev-quality`, `sda-coder`, `sda-test-writer`, `sda-refactor` (every agent that runs or judges a command), `skills/troubleshooting` (precondition gate) | Exit code `0` with no output is a pass. A filtered **findings** gate (lint, coverage, pre-merge, build) with empty output is also a pass — a clean run has nothing to report; a filtered **test** gate with empty output is ❌ unable to verify, reported without a re-run (the subagents report the same case as their hard-stop `⚠️ UNRESOLVED`, also without a re-run) |
 | `standardsSkill` (`project-config.json`) | `sda-dev` (from session context, passes `Standards skill:` in every delegation), `sda-coder`, `sda-refactor`, `sda-test-writer` (load the named skill), `sda-dev-task` (loads it for task.md code examples), **sda-setup skill** (scaffolds default) | Configurable coding-standards skill; default `standards-compliance` (the literal name lives only in `project-config.json` + docs, never in `.agent.md` files) |
 | `qa-task.md` schema (`qa-task-schema.md`) | `sda-qa-task` (designs FRs — coupled or standalone), `sda-scribe` (writes — Mode 4), `sda-qa` (reads — sole input) | sda-qa-task designs the QA spec; scribe writes it; sda-qa verifies against it black-box. Standalone specs live under `paths.issues` |
 | `dev-report.md` schema (`dev-report-schema.md`) | `sda-dev` (provides facts), `sda-scribe` (writes), `workflow.ps1` / `workflow.sh` (the file's presence in **every** task folder is the `dev` stage's artifact) | Orchestrator reports what was built; scribe formats it. The workflow layer never reads its content — only whether each task folder has one |
 | `sda-scribe` update-mode input (anchored deltas) | `sda-dev-task` (Mode 2 delegation for task.md add/change/remove) | Scribe matches caller-supplied anchors with the host's built-in file tools and refuses a change described without one — `sda-dev-task` must pass `anchor` + `content` |
-| File-write mechanism (built-in tools only — no CLI or script) | `sda-scribe` (states the rule), `sda-toolscan` (full scan: `create_file`; area update: edit tools), `sda-ba` (writes `user-story.md`), `sda-qa` (writes `qa-report.md` + `evidence/`), `sda-workflow` (writes `issue.md` + `assets/`), `sda-diagram-writer` (file writer — rule not stated) | Every agent that writes files edits through the host's built-in tools so changes stay reviewable; a CLI or script write bypasses change tracking |
-| `project-tools.md` schema (`project-tools-schema.md`) | `sda-toolscan` (writes output), `sda-dev` (fetches command labels via read-project-tools script) | Labels are machine-readable keys — renaming breaks script lookups |
-| Filtered commands (`filter-test-output`, `filter-last-n`) | `sda-dev`, `sda-dev-quality`, `sda-coder`, `sda-test-writer`, `sda-refactor` (pass/fail from the returned output — never an empty or unclassifiable result) | A filter pipe replaces the runner's exit status on every shell — `{stderr-redirect}` is emitted for both, so runner stderr reaches the filter; the shell's rendering of that merged stderr is never a failure marker |
-| Two-pass test runs (`filter-last-n` first pass → `filter-test-output` failure detail) | `sda-dev` (baseline + every delegation), `sda-test-writer` (RED starts at the failure-detail command), `sda-coder`, `sda-refactor`, `sda-dev-quality` (its own two-pass gate wording), and the delegated `Test command` / `Test command (failure detail)` field pair | Subagents run complete commands and never compose filters — the verdict pass and the diagnostic pass both arrive in the delegation |
-| Format commands (`format-code-all`, `format-code-path`) | the tool-catalog `Hook command` (supplies the in-place form and its silence flag), `sda-toolscan` (emits both), `sda-dev` (delegates), `sda-coder`, `sda-refactor`, `sda-test-writer` (run them as passed) | A Format command is the formatter's in-place invocation — never a read-only check variant — and emits no verdict line: its exit status is the verdict, so it never carries a filter tail. `sda-dev-quality` runs none — it is check-and-report only |
-| `test-all-coverage` label (in `project-tools.md`) | `project-tools-schema.md` (template + content rule), `sda-toolscan` (generation rules), the four language discovery specs (invocation), `read-project-tools.ps1` / `.sh` (area command list), `sda-dev-quality` (G6) | The whole-area coverage gate — no path argument and inherits project config unchanged, so the scoped override flags never apply to it |
-| Language-specific command knowledge (runner prefix, file-targeting flags, application-run entry points, watch/emit flags) | `tool-discovery/{language}/tool-discovery.md` (owns it), `tool-catalog/{language}/tool-catalog.md` (per-tool `Hook command` / `Check command` / `Category` rows), `sda-toolscan` (reads both; states no language facts of its own), **sda-setup skill** (copies both assets) | Rules 8 and 16: the agent carries procedure only. Adding a language is a new asset pair — never an edit to the agent's rules |
+| File-write mechanism (built-in tools only — no CLI or script) | `sda-scribe` (states the rule), `sda-ba` (writes `user-story.md`), `sda-qa` (writes `qa-report.md` + `evidence/`), `sda-workflow` (writes `issue.md` + `assets/`), `sda-diagram-writer` (file writer — rule not stated) | Every agent that writes files edits through the host's built-in tools so changes stay reviewable; a CLI or script write bypasses change tracking |
+| Required checks (tests, types, lint, format, build, pre-merge, data files) | `sda-dev` (lists them per phase), `sda-dev-quality` (runs them for a scope), `sda-test-writer`, `sda-coder`, `sda-refactor` (run the ones their unit needs) | Agents run the repo's own checks and report pass/fail; none receives a command string |
 | `qa-report.md` format (in `sda-qa`) | `sda-qa` (writes and presents the report directly) | sda-qa posts the report link; no agent parses or acts on its findings |
-| Application-run commands (in `project-tools.md`) | `sda-toolscan` (discovers + writes `### Application Run` inside each area block), `sda-qa` (reads to start the app) | sda-qa starts each layer from these long-running commands |
+| Application-run commands | `sda-qa-task` (authors `## Setup` from the repo's context), `sda-qa` (starts each layer from `qa-task.md ## Setup`) | sda-qa starts each layer from the commands the spec carries; the fallback is the repo's own context |
 | `paths.issues` in `project-config.json` | `sda-qa-task` (designs standalone `qa-task.md`), `sda-scribe` (Mode 4 numbers + writes there), `sda-qa` (reads standalone specs, writes `qa-report.md` beside them) | Shared root for standalone QA work (no task); default `.sda/issues`. Spec + report co-locate in one `<NNN>-<slug>/` folder |
 | `paths.secrets` in `project-config.json` | **sda-setup skill** (scaffolds git-ignored folder + writes `.gitignore`) | No agent resolves this field at runtime — credentials are loaded via `scripts.loadQaSecrets`; default `.sda/secrets` |
 | `scripts.qaSessionInit` / `scripts.invokeHttp` in `project-config.json` | `sda-qa` (from session context), **sda-setup skill** (scaffolds scripts) | sda-qa uses session-init path (fallback: `scripts.loadQaSecrets`) and HTTP helper path; defaults `.sda/scripts/qa/qa-session-init.ps1` and `.sda/scripts/qa/invoke-http.ps1` |
-| Step 7 required-tools table (in **sda-setup skill**) | `sda-tool-installer` | Installer receives the missing-category list and runs the install commands |
 | `sda-scribe` Mode 4 (QA spec) destination/numbering | `sda-qa-task` (delegates it — coupled or standalone), `sda-qa` (discovers standalone specs in `paths.issues`) | Producer and consumer must agree on the coupled (beside `task.md`) and standalone (`{issues-root}/<NNN>-<slug>/`) layouts |
 | `state.json` shape (owned by the `task-state` script — `init` defines it, `update` mutates `checkpoint` + `symbols`) | `sda-dev-task` (creates via script), `sda-dev` (checkpoints via script) | Task agent initializes it; the orchestrator checkpoints it. `symbols` holds the unit's in-scope entries — source symbols + test scopes (`sda-test-writer` locators) — persisted for GREEN resume |
 | `sda-dev-task` Phase 6 delegation format | `sda-scribe` input contract | Scribe parses the exact context sda-dev-task sends |
@@ -230,7 +202,7 @@ sda-dev ─delegates─▸ sda-dev-quality             per-area quality gates (P
 | `paths.workflows` + `scripts.workflow` in `project-config.json` | `sda-ba`, `sda-design`, `sda-dev-task`, `sda-dev` (receive the keys; the `sda-workflow-guide` skill consumes them in workflow sessions), **sda-setup skill** (config example + read-config defaults) | Injected via session context; `paths.workflows` defaults to `.sda/workflows`. Presence does **not** imply a workflow exists — see the `{workflow}` script boundary row for who may run what |
 | `manifest.md` format | `sda-design` (adds specs, reads for affected specs), `sda-dev-task` (reads for spec discovery), `sda-scribe` (writes/updates rows), `sda-dev-task-verifier` (reads for verification) | Entry point for spec discovery; scribe maintains it |
 | `sda-design` diagram delegation format (`DIAGRAM` block) | `sda-diagram-writer` input contract | Subagent parses the exact DIAGRAM block format the orchestrator sends |
-| Shared constraint blocks (`Two-pass test runs`, `Filtered command verdict`, `File reading strategy` in `sda-dev` + the three subagents; `Terminal working directory` in those four **and** `sda-dev-quality`; `Commands are immutable` + `Type check` in the three subagents; `Run tests`, `Validate data`, `Format code` in the coder + refactor pair) | `sda-dev`, `sda-dev-quality`, `sda-test-writer`, `sda-coder`, `sda-refactor` | Each block is duplicated verbatim in every file that carries it — editing one copy means editing every other copy |
+| Shared constraint blocks (`File reading strategy`, `Decide once, act immediately` in `sda-dev` + the three subagents) | `sda-dev`, `sda-test-writer`, `sda-coder`, `sda-refactor` | Each block is duplicated verbatim in every file that carries it — editing one copy means editing every other copy |
 | A new `execute`-carrying agent, or a change to an agent's script allowlist | that agent's own terminal-scope bound (rule 15) — a `Terminal command scope` section or a bullet inside an existing constraint block — and `README.md`'s agent table when the tool list itself changes | An undeclared or unbounded runnable set lets the agent run arbitrary build/test commands; a bound that also forbids reading, listing, or searching blocks the only route into hidden folders |
 | `{workflow}` script boundary (read-only `list`/`current`/`read` + `escalate`/`resolve`/`advance`; `init` orchestrator-only) | `sda-workflow` (advisor — owns `init`, raises a user-requested escalation from any stage with an upstream, never `resolve`), `sda-workflow-guide` (the skill producers follow — encodes the producer-facing subset and stage cards), `sda-ba` / `sda-design` / `sda-dev-task` / `sda-dev` (raise, advance their own stage, or resolve per the skill), `sda-scribe` (Mode 8 writes the brief a raise requires), human (confirms every transition) | Producers never **structure** a workflow — `init` stays orchestrator-only and the script stays the sole writer of `workflow.json`. A producer advances its own stage, raises an escalation, or closes one only on the user's direct confirmation. In workflow mode a producer follows the skill, which first runs `current` and refuses to act when `stage=` is not its own. The advisor **names** producers and never invokes them. While an escalation is open, `advance` is refused; `escalate` is refused without an existing brief in the workflow's `escalations/` folder, so the evidence is written before the raise and the raise aborts if it is not. A standalone session never invokes the script |
 | `sda-workflow-guide` skill (workflow-mode operating instructions for producers) | `sda-ba` / `sda-design` / `sda-dev-task` / `sda-dev` (follow it in workflow sessions), `sda-workflow` (names it when handing to a producer), the stage-entry prompts (point at it), **install-dev-suite** (installs it) | The workflow CLI table, the stage gate, and the advance/escalate/resolve steps live here — not in the producer files. A producer's own file keeps only the one dispatch line plus escalation-evidence authoring |
@@ -238,21 +210,20 @@ sda-dev ─delegates─▸ sda-dev-quality             per-area quality gates (P
 | `issue.md` (container entry artifact) | `sda-workflow` (writes it at `init`, plus `assets/`), `sda-ba` / `sda-design` / `sda-dev-task` / `sda-dev` (handed it by their stage-entry prompt), `workflow-schema.md` (container template lists it) | The stage owners' conversation starter: container name + the three artifact paths + the issue in the user's words + links to any assets the user attached — an outline, not a requirements spec, and no design or implementation detail. **Not state** — the script never creates, reads, or checks it, so it is never a `gap=` and never blocks `advance`; absent on containers that predate it |
 | Stage-entry prompts (`/sda.workflow.story.issue`, `/sda.workflow.design.issue`, `/sda.workflow.task.issue`, `/sda.workflow.dev.issue`) | `sda-ba` / `sda-design` / `sda-dev-task` / `sda-dev` (the `agent:` each one sets), `sda-workflow-guide` (the skill each prompt points the owner to), `sda-workflow` (names the start stage's prompt at `init`), `issue.md` (the artifact they hand the owner) | Each carries intent only and sets `agent:` to the stage's owner — a prompt must **omit `tools:`**. Each also declares workflow mode and points the owner at the `sda-workflow-guide` skill. Unlike the advisor prompts these target producers, not `sda-workflow` |
 | `/sda.workflow.handle-escalation` prompt | `sda-ba` / `sda-design` / `sda-dev-task` / `sda-dev` (the escalated-to stage's session runs it), `sda-workflow-guide` (its Resolve steps carry the procedure) | A resolve trigger, not a stage entry: it sets no `agent:`, so it runs in whichever producer session is open, and the guide's Resolve steps — not the prompt — carry the procedure |
-| Question mechanics (`[ASK]` = short gates; elicitation = chat text with context + pros/cons) | `sda-dev-task`, `sda-dev`, `sda-qa-task`, `sda-toolscan`, `sda-ba`, `sda-design` | Shared interaction convention — changing the split in one agent must not diverge from the others. Escalation handling is a shared case of it: both ends discuss it with the user and act only on direct approval, and an escalation never transfers a decision the target stage's ownership rules reserve |
+| Question mechanics (`[ASK]` = short gates; elicitation = chat text with context + pros/cons) | `sda-dev-task`, `sda-dev`, `sda-qa-task`, `sda-ba`, `sda-design` | Shared interaction convention — changing the split in one agent must not diverge from the others. Escalation handling is a shared case of it: both ends discuss it with the user and act only on direct approval, and an escalation never transfers a decision the target stage's ownership rules reserve |
 | Standards compliance rules | `sda-dev`, `sda-test-writer`, `sda-coder`, `sda-refactor` | All code-producing agents enforce standards |
 | Unexpected-failure / troubleshooting handling | `sda-dev`, `sda-dev-quality` (never loads troubleshooting guidance) | Troubleshooting is a workflow decision — subagents stop and report; the orchestrator diagnoses and recovers |
 | Coding standards skill references | `sda-dev` | References coding standards for output |
 | Quality check gates (Phase 5) | `sda-dev-quality` | Phase 5 is a thin delegation in **global** mode; the quality agent owns gate execution, reporting, and flagging, and serves standalone **local** (target files) or **global** (whole areas) requests |
 | `sda-dev-quality` report format | `sda-dev` (Phase 5 result relay) | Orchestrator relays the quality report verbatim as the Phase 5 result |
 | `sda-dev` Flags processing (Phase 5) | `sda-coder`, `sda-test-writer` | Orchestrator routes quality flags to the correct subagent for fixes |
-| `task.md` `Area` fields (unit + `## Scope` `Areas:` line) + Area Index in `project-tools.md` | `sda-dev-task` (derives area per unit and the Scope `Areas` line), `sda-scribe` (writes), `sda-dev` (reads per-unit areas), `sda-dev-quality` (discovers areas) | Area connects task design → implementation → quality gates |
-| Init output format (`project-tools.md`) | `sda-toolscan`, `sda-dev`, **sda-setup skill** | The orchestrator, the toolscan agent, and the setup skill depend on project-tools output |
-| `models` in `project-config.json` | `sda-setup` skill (asks user, normalizes, resolves, applies to agent frontmatter), `tools/sda/README.md` (the default map) | sda-setup resolves family names to versioned models and writes `model:` into every agent in `agents/` — all 19 carry the line, `sda-workflow` included. The agent list is never enumerated here: it is whatever `agents/` holds |
+| `task.md` `Scope` fields (unit + `## Scope` `Scopes:` line) | `sda-dev-task` (derives scope per unit and the Scope `Scopes` line), `sda-scribe` (writes), `sda-dev` (reads per-unit scopes), `sda-dev-quality` (derives scopes from the files) | Scope connects task design → implementation → quality gates |
+| `models` in `project-config.json` | `sda-setup` skill (asks user, normalizes, resolves, applies to agent frontmatter), `tools/sda/README.md` (the default map) | sda-setup resolves family names to versioned models and writes `model:` into every agent in `agents/` — the agent list is never enumerated here: it is whatever `agents/` holds |
 | `unit-file-size` script (parameters or output format) | `sda-dev-task` (Phase 6 Step 1), `sda-dev-task-verifier` (Check 1) | Both agents invoke the script; interface changes break invocations |
 | Convention + ADR docs (`<subproject>/docs/conventions/`, `<subproject>/docs/adrs/`) | No config field — derived per subproject from the repo layout. `sda-design` (records + structures via sda-scribe Mode 5), `sda-scribe` (Mode 5 writes), `sda-docs-check` (verifies) | Conventions (how) live per subproject under `<subproject>/docs/conventions/`; ADRs (why) under `<subproject>/docs/adrs/` — feature-grouped (`shared/`, `<feature>/`) with descriptively-named files; one rule or one decision per file, routed by the feature's `index.md` |
 | Requirements tree (`requirements/<feature>/[<concern>/]<item>.md`) | No config field — resolved from the repo's AI readmes. `sda-ba` (owns content + FR/NFR ids), `sda-scribe` (Mode 6 writes), `sda-design` (reads for design scope), `sda-docs-check` (structure + NFR shape, via `check-tree`), `{docsSkill}` skill (schema) | Durable inventory of what is *specified* — no status field, no delivery link; an `index.md` at every level, max depth three, ids append-only |
 | `is-repo-ai-friendly` skill (the AI-friendliness artifact list + the model-free `check-links`) | `sda-docs-check` (loads for the list + link checks), `{docsSkill}` (loads for the list), **install-dev-suite** (installs it) | The single home of what makes a repo AI-friendly — the artifact list, name-free. No other file restates it |
-| `make-repo-ai-friendly` skill (docs-map schema, default tree profile, doc schemas, the model-bound `check-tree`) | `sda-design` (loads for the contract + schemas), `sda-scribe` (Mode 5/6 loads for formats), `sda-ba` (loads for the requirements structure + IDs), `sda-docs-check` (loads for verification), **install-dev-suite** (installs it), `read-config` (resolves `docsSkill`) | All consumers load it by name via `docsSkill`; the skill owns the schema formats and the **default profile** — a proposal, never an imposed tree; sda-setup no longer copies them |
+| `make-repo-ai-friendly` skill (docs-map schema, default tree profile, doc schemas, the model-bound `check-tree`) | `sda-design` (loads for the contract + schemas), `sda-scribe` (Mode 5/6 loads for formats), `sda-ba` (loads for the requirements structure + IDs), `sda-docs-check` (loads for verification), **install-dev-suite** (installs it), `read-config` (resolves `docsSkill`) | All consumers load it by name via `docsSkill`; the skill owns the schema formats and the **default profile** — a proposal, never an imposed tree |
 | `sda-docs-check` input (scope + expected structure) | `sda-design` (passes `full` + the repo's declared structure, else the default profile), `sda-dev` (passes `targeted` + the written file list) | Caller decides what to verify against; otherwise the repo's declaration, else the `{docsSkill}` skill's default profile |
 | `sda-docs-check` report findings | `sda-dev` (Phase 3·D: presents them and asks the user) | Findings are a report, not a failure — routing them to troubleshooting guidance misreads the verifier's output |
 | `docs` unit type (`task-schema.md`) | `sda-dev-task` (designs it — one per task, last), `sda-dev-task-verifier` (validates it), `sda-dev` (routes to Phase 3·D; skips refactor + quality for it), `sda-scribe` (Mode 6 writes the files), `sda-docs-check` (targeted verification) | The only sanctioned path for mechanical doc changes made during implementation — including an anchored delta to an existing spec and its `manifest.md` row. It never creates a spec (`sda-design`'s deliverable); semantic doc changes escalate to `sda-design`, semantic requirements changes to `sda-ba` |
@@ -276,7 +247,7 @@ Before considering any workflow change complete, verify the orchestrator and sub
 
 ### 2. Schema Changes Propagate Downstream
 
-File schemas (`task.md`, `qa-task.md`, `dev-report.md`, `state.json`, `project-tools.md`, `project-config.json`) are contracts between agents. When changing a schema:
+File schemas (`task.md`, `qa-task.md`, `dev-report.md`, `state.json`, `project-config.json`) are contracts between agents. When changing a schema:
 
 1. Identify every agent that **reads** or **writes** that schema (use the dependency matrix above).
 2. Update all affected agents to match the new schema.
@@ -298,13 +269,8 @@ File schemas (`task.md`, `qa-task.md`, `dev-report.md`, `state.json`, `project-t
 
 | Block | Files that carry it |
 |---|---|
-| `Two-pass test runs`, `Filtered command verdict`, `File reading strategy` | `sda-dev`, `sda-test-writer`, `sda-coder`, `sda-refactor` |
-| `Terminal working directory` | `sda-dev`, `sda-dev-quality`, `sda-test-writer`, `sda-coder`, `sda-refactor` |
-| `Commands are immutable` | `sda-test-writer`, `sda-coder`, `sda-refactor` |
-| `Type check` | `sda-test-writer`, `sda-coder`, `sda-refactor` |
-| `Run tests` | `sda-coder`, `sda-refactor` |
-| `Validate data`, `Format code` | `sda-coder`, `sda-refactor` |
-| `CLI invocation form` (rule 17) | `sda-dev`, `sda-dev-quality`, `sda-dev-task`, `sda-dev-task-verifier`, `sda-docs-check`, `sda-qa`, `sda-qa-task`, `sda-toolscan`, `sda-workflow`, `sda-workflow-guide` skill |
+| `File reading strategy`, `Decide once, act immediately` | `sda-dev`, `sda-test-writer`, `sda-coder`, `sda-refactor` |
+| `CLI invocation form` (rule 17) | `sda-dev`, `sda-dev-quality`, `sda-dev-task`, `sda-dev-task-verifier`, `sda-docs-check`, `sda-qa`, `sda-qa-task`, `sda-workflow`, `sda-workflow-guide` skill |
 
 ### 5. Keep README.md in Sync
 
@@ -340,16 +306,15 @@ All SDA agent bodies, skills, and supporting assets must remain **language-agnos
 
 | Instead of… | Use… |
 |---|---|
-| `npm test`, `pytest`, `mvn verify` | The command from `project-tools.md` |
-| `*.ts`, `*.py`, `*.java` | File patterns resolved from project config |
-| "Jest", "Vitest", "JUnit" | "the project's test runner" |
+| `npm test`, `pytest`, `mvn verify` | "the repo's test command" |
+| `*.ts`, `*.py`, `*.java` | "the files the change touches" |
+| "Jest", "Vitest", "JUnit" | "the repo's test runner" |
 
-Language-specific behavior is resolved at runtime through:
-- `project-tools.md` — executable commands discovered by `sda-toolscan`.
-- `project-config.json` — project metadata and paths.
-- Tool-discovery specs (`.sda/resources/{language}/tool-discovery.md`) — copied at setup time, read by `sda-toolscan`.
+Language-specific behavior is resolved at runtime from:
+- the repo's own context — its AI readme and the docs it routes to;
+- its own files, when nothing is documented.
 
-Agent instructions describe **what** to do; runtime artifacts supply the **how**.
+Agent instructions describe **what** to do; the repo's context supplies the **how**. Never name the path where that context lives.
 
 ### 9. `.sda` Dependencies Section Required
 
@@ -361,7 +326,7 @@ Every agent or skill that reads or writes files in `.sda/` must include a `.sda 
 
 ### 10. Delegation — Always Pass Full `.sda/` Paths
 
-When delegating to a subagent, pass every `.sda/` file reference with its full path (e.g., `.sda/project-tools.md`, not `project-tools.md`). Subagents must never search for `.sda/` files — if a path is ambiguous, ask the caller.
+When delegating to a subagent, pass every `.sda/` file reference with its full path (e.g., `.sda/tasks/001. feature/task.md`, not `task.md`). Subagents must never search for `.sda/` files — if a path is ambiguous, ask the caller.
 
 ### 11. Communication Style Placement
 
@@ -392,19 +357,17 @@ Doc trees (conventions, ADRs, requirements) and readmes are located from what th
 
 **Never create, edit, move, or delete a file with a terminal command** — no output redirection, no in-place edit, no rename, no delete, no VCS mutation. Every change goes through the host's built-in edit tools: a CLI-written file is invisible in the session until `git diff`. See the `File-write mechanism` matrix row.
 
-**Never run a build, test, or project command that the agent's own file does not name.** Name them in a terminal-scope bound — a `Terminal command scope` section (placed with the constraint sections, before the first workflow or phase section) or a bullet inside an existing constraint block.
-
 **Never write a rule restricting terminal reading, listing, or searching** — it is the only route into hidden or git-ignored folders such as `.sda/`.
 
 ### 16. CLI Instructions Are Shell-Agnostic
 
-Never name a shell-specific command, flag, or syntax in a rule. State the intent, or name the placeholder the session resolves (`{shell}`, `{cli_separator}`, `{task-state}`, …).
+Never name a shell-specific command, flag, or syntax in a rule. State the intent, or name the placeholder the session resolves (`{cli_separator}`, `{task-state}`, …).
 
 | Never | Instead |
 |---|---|
 | `grep -r`, `Get-ChildItem`, `Select-String`, `rm -rf`, `Set-Content` | "search the tree", "delete the file", "write the file" |
 | `&&` or `;` written into a rule | `{cli_separator}` |
-| `npx prettier`, `tsc` | the resolved command from `{read-project-tools}` — see rule 8 |
+| `npx prettier`, `tsc` | "the repo's format command" — see rule 8 |
 
 Shell-specific syntax appears only in a **labelled pair** — one PowerShell form and one bash/zsh form, as the `.ps1` / `.sh` script pairs do — never as the unlabelled default.
 
@@ -422,7 +385,7 @@ rules target the interpreter instead of the script.
 - frontmatter hooks, which run outside the agent terminal;
 - installers, skill-folder scripts, and the `_twins.Tests.ps1` harness — they run from a location whose
   mode a separate installer or the harness sets (the sda-setup skill's invocation rules);
-- third-party commands recorded in `project-tools.md`, whose file mode SDA does not control.
+- third-party executables, whose file mode SDA does not control.
 
 `Permission denied` (exit 126) → restore the bit (`chmod +x <path>`) — never adopt the prefix as the
 standing form.

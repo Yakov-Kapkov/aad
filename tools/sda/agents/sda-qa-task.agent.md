@@ -48,7 +48,7 @@ Access all files below by exact path from the repo root — never search for the
   component props/callbacks, function internals, or schema shape in a vacuum.
 - **Never write files directly.** All output goes through `sda-scribe`. You have
   no `edit` tool.
-- **Terminal scope.** Never run any command other than `{read-project-tools}`, `{list-qa-secrets}` (see [CLI scripts](#cli-scripts)), and commands that only read, list, or search files.
+- **Terminal scope.** Never run any command other than `{list-qa-secrets}` (see [CLI scripts](#cli-scripts)) and commands that only read, list, or search files.
 - **Coupled mode — derive from intent, never from implementation.** FRs come
   from the task's `## Goal`, `## Acceptance Criteria`, `## Contracts`, and the
   *behaviour* in `## Design Approach`. You **MUST NOT** read the task's
@@ -96,29 +96,15 @@ Access all files below by exact path from the repo root — never search for the
 **Use the raw relative path — no `&`, no quotes, no absolute paths, no `bash`/`sh`/`zsh` prefix.** On `error=...` → **🚨 HARD STOP**: print the exact message, end your response.
 
 **Example — PowerShell:**
-- ✅ `.sda/scripts/some-script.ps1 -Folder . -Commands "shell"`
-- ❌ `& '.sda/scripts/some-script.ps1' -Folder . -Commands "shell"`
+- ✅ `.sda/scripts/list-qa-secrets.ps1`
+- ❌ `& '.sda/scripts/list-qa-secrets.ps1'`
 
 | Placeholder | Session context key |
 |---|---|
 | `{list-qa-secrets}` | `scripts.listQaSecrets` |
-| `{read-project-tools}` | `scripts.readProjectTools` |
 
 **`{list-qa-secrets}` — enumerate existing credential names and descriptions:**
 - **PowerShell/Bash:** `{list-qa-secrets}`
-
-**`{read-project-tools}` — one call per unique folder.**
-Call form: `{read-project-tools} {folder} [{labels}]`
-Expand per `{shell}`:
-- **PowerShell:** `{read-project-tools} -Folder {folder} -Commands "{labels}"`
-- **Bash/zsh:**   `{read-project-tools} {folder} {labels}`
-Omit `[{labels}]` when no labels are needed.
-
-An absent key means the tool was not detected. Optional labels
-(`app-run-url`, `app-run-healthcheck`) → skip silently. The core label
-`app-run-start` absent where the layer needs it → surface
-`⚠️ app-run-start not found — toolchain may have changed; re-run sda-toolscan.`
-instead of skipping.
 
 ---
 
@@ -196,11 +182,12 @@ After the user answers, continue with the branch for their choice.
    - `paths.issues` → `{issues-root}`
    - `paths.specs` → `{specs-root}`
    - `scripts.listQaSecrets` → `{list-qa-secrets}`
-   - `scripts.readProjectTools` → `{read-project-tools}`
 2. **Read `.sda/resources/qa/qa-task-schema.md` — mandatory and blocking.** Never
    shape an FR before reading it. Its FR rules are the source of truth; apply
    them, do not paraphrase a weaker version.
-3. **Discover all areas via the CLI script.** Call `{read-project-tools} . ["areas"]`. The output contains one `area.{Name}={workdir}` line per area. For each area, call `{read-project-tools} {workdir} ["app-run-start,app-run-url,app-run-healthcheck"]` and cache the results — used when authoring `## Setup`.
+3. **Identify the layers to document.** Take them from the task's intent and the
+   repo's own context — each layer's start command, URL, and health check come
+   from that context when you author `## Setup`.
 
 All paths are relative to `{repo-root}`. Access them as `{repo-root}/{path}`.
 
@@ -359,7 +346,7 @@ delegate an FR set with an open gap.
   seeded session) is used per Auth Context; if neither is documented, ask the
   user. Every request that requires `{extra-headers}` from Auth Context must
   include them.
-- **Setup coverage** — `## Setup` lists every layer named in any FR's `Layers` field. Each layer entry includes start command, working directory, URL, and health check from `{read-project-tools}` output. No layer may be missing any of these fields.
+- **Setup coverage** — `## Setup` lists every layer named in any FR's `Layers` field. Each layer entry includes start command, working directory, URL, and health check from the repo's own context. No layer may be missing any of these fields.
 - **Field completeness** — every FR has all schema fields: Precondition,
   Reproduce, Settle (write `N/A — synchronous` when not async), Expected data
   (write `N/A — response is self-evident` when the API response is the source
@@ -417,7 +404,7 @@ Invoke `sda-scribe` (Mode 4). Provide:
   (`N/A — synchronous` when not async), Expected data (how to obtain source of
   truth — SQL query, reference endpoint, fixture; `N/A — response is
   self-evident` when the API response is the source), expected outcome, compare
-  assertion, layers; plus **Setup** (layers + per-layer start command, working directory, URL, and health check from `{read-project-tools}` output, and required real infrastructure instance — per [Setup coverage](#fr-self-check--pre-delegation-gate)) and **Credentials** (logical names only; per
+  assertion, layers; plus **Setup** (layers + per-layer start command, working directory, URL, and health check from the repo's own context, and required real infrastructure instance — per [Setup coverage](#fr-self-check--pre-delegation-gate)) and **Credentials** (logical names only; per
   [Credential coverage](#fr-self-check--pre-delegation-gate) rules).
 
 **If the writer reports unclear content:** resolve the ambiguity yourself (ask

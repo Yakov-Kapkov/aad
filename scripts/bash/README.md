@@ -42,8 +42,7 @@ chmod +x *.sh
     -m "sda-dev-task=Claude Opus 4.6" \
     -m "sda-coder=Claude Haiku 4.5" \
     -m "sda-test-writer=Claude Haiku 4.5" \
-    -m "sda-dev=Claude Sonnet 5" \
-    -m "sda-toolscan=Claude Sonnet 5"
+    -m "sda-dev=Claude Sonnet 5"
 
 # Override model for commit agent
 ./install-dev-suite.sh -m "commit=Claude Haiku 4.5"
@@ -76,7 +75,7 @@ chmod +x *.sh
 ./install-tool.sh -n "sda"
 
 # Install a tool with only specific agents
-./install-tool.sh -n "sda" -a "sda-toolscan,sda-dev"
+./install-tool.sh -n "sda" -a "sda-ba,sda-dev"
 
 # Install a tool, excluding specific agents
 ./install-tool.sh -n "sda" -e "sda-qa"

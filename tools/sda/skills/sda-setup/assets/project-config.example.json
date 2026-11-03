@@ -2,7 +2,6 @@
   "scripts": {
     "taskState": ".sda/scripts/dev/task-state.ps1",
     "unitFileSize": ".sda/scripts/dev/unit-file-size.ps1",
-    "readProjectTools": ".sda/scripts/read-project-tools.ps1",
     "loadQaSecrets": ".sda/scripts/qa/load-qa-secrets.ps1",
     "listQaSecrets": ".sda/scripts/qa/list-qa-secrets.ps1",
     "qaSessionInit": ".sda/scripts/qa/qa-session-init.ps1",

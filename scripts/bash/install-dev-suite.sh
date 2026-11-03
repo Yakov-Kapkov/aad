@@ -100,7 +100,7 @@ if [ "$ACTION" = "uninstall" ]; then
     done
 
     # Skills
-    for skill in sda-setup sda-workflow-guide sda-spec-guide standards-compliance troubleshooting software-design-best-practices is-repo-ai-friendly make-repo-ai-friendly; do
+    for skill in sda-setup sda-workflow-guide sda-spec-guide cli-tool-scan sda-tool-check standards-compliance troubleshooting software-design-best-practices is-repo-ai-friendly make-repo-ai-friendly; do
         dir="$TARGET_BASE/skills/$skill"
         if [ -d "$dir" ]; then
             rm -rf "$dir"
@@ -126,6 +126,15 @@ echo
 echo -e "${CYAN}=== Installing SDA tool ===${NC}"
 "$SCRIPT_DIR/install-tool.sh" -t "$TARGET_BASE" -n "sda"
 
+# Retired skills
+for retired in sda-tool-check; do
+    dir="$TARGET_BASE/skills/$retired"
+    if [ -d "$dir" ]; then
+        rm -rf "$dir"
+        echo "  Removed skills/$retired/"
+    fi
+done
+
 echo
 echo -e "${YELLOW}== Installing sda-setup skill ==${NC}"
 "$SCRIPT_DIR/install-skill.sh" -t "$TARGET_BASE" -n "sda-setup" -s "tools/sda/skills/sda-setup"
@@ -137,6 +146,10 @@ echo -e "${YELLOW}== Installing sda-workflow-guide skill ==${NC}"
 echo
 echo -e "${YELLOW}== Installing sda-spec-guide skill ==${NC}"
 "$SCRIPT_DIR/install-skill.sh" -t "$TARGET_BASE" -n "sda-spec-guide" -s "tools/sda/skills/sda-spec-guide"
+
+echo
+echo -e "${YELLOW}== Installing cli-tool-scan skill ==${NC}"
+"$SCRIPT_DIR/install-skill.sh" -t "$TARGET_BASE" -n "cli-tool-scan"
 
 echo
 if should_exclude commit; then

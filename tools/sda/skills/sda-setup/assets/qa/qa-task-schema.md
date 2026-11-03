@@ -23,7 +23,7 @@ stands independent of `task.md` and `dev-report.md`.
 when there is no task}
 
 ## Setup
-{How to bring up the system under test. Each layer entry documents the exact start command, working directory, URL, and health check — fetched from project-tools.md via the read-project-tools script. Each layer starts in its own terminal. State the required backing infrastructure as a specific real instance — never "emulator or live".}
+{How to bring up the system under test. Each layer entry documents the exact start command, working directory, URL, and health check — taken from the repo's own context. Each layer starts in its own terminal. State the required backing infrastructure as a specific real instance — never "emulator or live".}
 - Layers: {e.g. backend, frontend}
 - {Layer}: `{start-command}` (dir: `{working-dir}`, URL: {url}, health: {healthcheck})
 - Infrastructure: {named real instance(s) the layers require — e.g. the project database}
@@ -133,8 +133,7 @@ verbatim — never constructed or inferred by exploring the codebase. State the
 expected status code and response-body shape.
 
 - **Expected data** carries the domain source-of-truth (e.g. the SQL query for
-  a report API). Expected-data queries live **here**, never in
-  `project-tools.md`.
+  a report API). Expected-data queries live **here**, never in a command reference.
 - **Settle** — include only for asynchronous behaviour where `Reproduce`
   returns immediately and a background worker completes the work later. Names
   the completion signal to poll for and a bounded max wait. The run waits for

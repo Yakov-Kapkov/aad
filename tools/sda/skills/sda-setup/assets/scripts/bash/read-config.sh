@@ -15,12 +15,12 @@ REPO_ROOT="$(pwd)"
 # Agent → config keys (space-separated)
 case "$AGENT" in
     sda-ba)            KEYS="paths.userStories paths.workflows scripts.workflow" ;;
-    sda-dev)           KEYS="scripts.taskState scripts.readProjectTools standardsSkill paths.workflows scripts.workflow tests.coverage.enabled" ;;
-    sda-dev-quality)   KEYS="scripts.readProjectTools tests.coverage.enabled" ;;
+    sda-dev)           KEYS="scripts.taskState standardsSkill paths.workflows scripts.workflow tests.coverage.enabled" ;;
+    sda-dev-quality)   KEYS="tests.coverage.enabled" ;;
     sda-dev-task)          KEYS="scripts.taskState scripts.unitFileSize devTaskUnitSizeLimit designOwnership standardsSkill paths.specs paths.tasks paths.workflows scripts.workflow" ;;
     sda-dev-task-verifier) KEYS="scripts.unitFileSize devTaskUnitSizeLimit paths.specs" ;;
-    sda-qa)            KEYS="paths.issues scripts.qaSessionInit scripts.loadQaSecrets scripts.invokeHttp scripts.readProjectTools" ;;
-    sda-qa-task)       KEYS="designOwnership paths.tasks paths.issues paths.specs scripts.listQaSecrets scripts.readProjectTools" ;;
+    sda-qa)            KEYS="paths.issues scripts.qaSessionInit scripts.loadQaSecrets scripts.invokeHttp" ;;
+    sda-qa-task)       KEYS="designOwnership paths.tasks paths.issues paths.specs scripts.listQaSecrets" ;;
     sda-design)        KEYS="designOwnership paths.specs docsSkill paths.workflows scripts.workflow" ;;
     sda-workflow)      KEYS="paths.workflows scripts.workflow" ;;
     sda-scribe)        KEYS="paths.specs paths.issues docsSkill" ;;
@@ -38,7 +38,6 @@ get_default() {
     case "$1" in
         scripts.taskState)      echo ".sda/scripts/dev/task-state.sh" ;;
         scripts.unitFileSize)   echo ".sda/scripts/dev/unit-file-size.sh" ;;
-        scripts.readProjectTools) echo ".sda/scripts/read-project-tools.sh" ;;
         scripts.loadQaSecrets)  echo ".sda/scripts/qa/load-qa-secrets.sh" ;;
         scripts.listQaSecrets)  echo ".sda/scripts/qa/list-qa-secrets.sh" ;;
         scripts.qaSessionInit)  echo ".sda/scripts/qa/qa-session-init.sh" ;;
@@ -170,12 +169,6 @@ json_escape() {
 
 lines="Project configuration:"$'\n'"repoRoot=${REPO_ROOT}"
 system_message=""
-
-# Detected shell — authoritative source is project-tools.md (same value the `shell` label returns)
-if [ -f ".sda/project-tools.md" ]; then
-    shell_val=$(awk '/^\*\*Detected shell:\*\*/ { sub(/^\*\*Detected shell:\*\*[[:space:]]*/, ""); print; exit }' ".sda/project-tools.md")
-    [ -n "$shell_val" ] && lines="${lines}"$'\n'"shell=${shell_val}"
-fi
 
 if [ -f "$CONFIG_FILE" ]; then
     for key in $KEYS; do

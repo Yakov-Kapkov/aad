@@ -37,6 +37,7 @@ Reusable skills that extend agent capabilities.
 
 | Skill | Description |
 |---|---|
+| [`cli-tool-scan`](skills/cli-tool-scan/README.md) | Scans which CLI tools a repository's own commands need, reports the missing ones, and installs them after approval — never writes files or edits manifests |
 | [`is-repo-ai-friendly`](skills/is-repo-ai-friendly/README.md) | Defines what makes a repository AI-friendly and checks every subproject of a repo, artifact by artifact — a name-free list (vocabulary, structure, BA/designer/developer context, dev commands, QA context, deployment, run locally, operations, docs map); read-only |
 | [`make-repo-ai-friendly`](skills/make-repo-ai-friendly/README.md) | Makes a repository AI-friendly — authors routing readmes (AGENTS.md/CLAUDE.md) and a root + per-subproject docs tree (architecture, vocabulary, testing, deployment, operations, requirements, conventions, ADRs, coding standards, commands), adapting it to the repo's declared contract |
 | [`software-design-best-practices`](skills/software-design-best-practices/README.md) | Route-table skill mapping topic areas (web API, database, UI, layers) to language-agnostic design best-practice files — consulted at spec-creation and implementation time |
@@ -57,9 +58,7 @@ Multi-agent tool suites.
 ---
 
 Language standards ship with the [`standards-compliance`](skills/standards-compliance/README.md)
-skill — `standards/common-standards.md` plus `standards/{language}/`. Toolchain specs
-(`tool-discovery.md`, `tool-catalog.md`) ship with the
-[`sda-setup`](tools/sda/skills/sda-setup/) skill.
+skill — `standards/common-standards.md` plus `standards/{language}/`.
 
 ---
 

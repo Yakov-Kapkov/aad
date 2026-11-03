@@ -44,7 +44,6 @@ Merge-Defaults $config $template
 $platformPaths = [ordered]@{
     taskState        = '.sda/scripts/dev/task-state.ps1'
     unitFileSize     = '.sda/scripts/dev/unit-file-size.ps1'
-    readProjectTools = '.sda/scripts/read-project-tools.ps1'
     loadQaSecrets = '.sda/scripts/qa/load-qa-secrets.ps1'
     listQaSecrets = '.sda/scripts/qa/list-qa-secrets.ps1'
     qaSessionInit = '.sda/scripts/qa/qa-session-init.ps1'
@@ -54,7 +53,6 @@ $platformPaths = [ordered]@{
 $shippedPaths = @{
     taskState        = @('.sda/scripts/dev/task-state.ps1', '.sda/scripts/dev/task-state.sh')
     unitFileSize     = @('.sda/scripts/dev/unit-file-size.ps1', '.sda/scripts/dev/unit-file-size.sh')
-    readProjectTools = @('.sda/scripts/read-project-tools.ps1', '.sda/scripts/read-project-tools.sh')
     loadQaSecrets = @('.sda/scripts/qa/load-qa-secrets.ps1', '.sda/scripts/qa/load-qa-secrets.sh')
     listQaSecrets = @('.sda/scripts/qa/list-qa-secrets.ps1', '.sda/scripts/qa/list-qa-secrets.sh')
     qaSessionInit = @('.sda/scripts/qa/qa-session-init.ps1', '.sda/scripts/qa/qa-session-init.sh')
@@ -71,7 +69,7 @@ foreach ($key in $platformPaths.Keys) {
 
 # --- Step 3: Drop retired fields ---
 # A field no longer shipped is removed, so an old install cannot keep a stale path.
-foreach ($key in @('docsIntegrity')) {
+foreach ($key in @('docsIntegrity', 'readProjectTools')) {
     if ($null -ne $config.scripts.PSObject.Properties[$key]) {
         $config.scripts.PSObject.Properties.Remove($key)
     }

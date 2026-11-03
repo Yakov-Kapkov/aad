@@ -77,13 +77,13 @@ You receive:
    standalone tasks root, or `<wf>/tasks/` in workflow mode. The scribe numbers the
    folder — there is no default.
 2. **Task name** — in kebab-case.
-3. **Scope** — `Feature: {name}` or `Global`, plus `Areas: {a}, {b}`.
+3. **Scope** — `Feature: {name}` or `Global`, plus `Scopes: {a}, {b}`.
 4. **Goal** — 1-2 sentences.
 5. **Context** — (workflow mode only) the workflow id + slug, and the relative link to the design record. Omit for a standalone task.
 6. **Design Approach** — per unit: Implements / Tests & verifies / Problem/Context → Solution → Details.
 7. **Acceptance Criteria** — fully written checkbox list.
 8. **Implementation Plan** — fully written content per unit:
-   - Unit header (name, type, area, language, Source, Test paths).
+   - Unit header (name, type, scope, language, Source, Test paths).
    - Test Context (Patterns, Object construction, Mock boundaries) — code units only.
    - Scenarios in Given/When/Then with Expected (RED) predictions — `tests required`/`tests only` only.
    - Changes blocks (where provided).
@@ -127,8 +127,7 @@ receive:
      write to a new numbered folder under `{issues-root}`. The area name drives
      the folder slug and the `# QA Task:` title.
 2. **QA Task** — the spec data:
-   - **Setup** — layers to start + `.sda/project-tools.md` section names, plus each
-     layer's port, health check, and required real infrastructure.
+   - **Setup** — layers to start + each layer's port, health check, and required real infrastructure.
    - **Credentials** — logical names + what each authorizes (no values).
    - **Functional Requirements** — per FR: precondition, reproduce steps,
      Settle rule, expected data, expected outcome, compare assertion, layers.
@@ -321,7 +320,7 @@ Extract data from caller input and format per `task-schema.md`:
 - `# Task: {name}`
 - `## Goal` — from input.
 - `## Context` — from input (omit for a standalone task).
-- `## Scope` — `Feature: {name}` / `Global`, plus `Areas: {a}, {b}`.
+- `## Scope` — `Feature: {name}` / `Global`, plus `Scopes: {a}, {b}`.
 - `## Contracts` — from input (omit if none).
 - `## Prerequisites` — from input (omit if none).
 - `## Design Approach` — from input, formatted per schema.
@@ -347,8 +346,7 @@ there, formatted per `qa-task-schema.md`:
 - `# QA Task: {name}` — task name (coupled) or area name (standalone).
 - `## Task` — the sibling task name (coupled), or `standalone — {area-name}`
   (standalone — no sibling task.md).
-- `## Setup` — layers + `.sda/project-tools.md` section names + per-layer port,
-  health check, and required real infrastructure from input.
+- `## Setup` — layers + per-layer start command, port, health check, and required real infrastructure from input.
 - `## Credentials` — logical names from input (omit if none).
 - `## Functional Requirements` — one `### FR-N` block per requirement.
 

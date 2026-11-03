@@ -41,8 +41,7 @@ cd <repo-root>/scripts/powershell
     'sda-dev-task=Claude Opus 4.6', 
     'sda-coder=Claude Haiku 4.5', 
     'sda-test-writer=Claude Haiku 4.5', 
-    'sda-dev=Claude Sonnet 5', 
-    'sda-toolscan=Claude Sonnet 5'
+    'sda-dev=Claude Sonnet 5'
 )
 
 # Override model for commit agent
@@ -76,7 +75,7 @@ cd <repo-root>/scripts/powershell
 .\install-tool.ps1 -Name "sda"
 
 # Install a tool with only specific agents
-.\install-tool.ps1 -Name "sda" -AgentFilter @('sda-toolscan','sda-dev')
+.\install-tool.ps1 -Name "sda" -AgentFilter @('sda-ba','sda-dev')
 
 # Install a tool, excluding specific agents
 .\install-tool.ps1 -Name "sda" -AgentExclude @('sda-qa')

@@ -78,6 +78,17 @@ foreach ($F in $PromptFiles) {
     if (Test-Path $Target) { Remove-Item $Target -Force; Write-Host "    prompts\$F" }
 }
 
+# ── Remove retired files ─────────────────────────────────────────────────────
+$Retired = @(
+    'agents\sda-toolscan.agent.md'
+    'agents\sda-tool-installer.agent.md'
+    'prompts\sda.setup.no-scan.prompt.md'
+)
+foreach ($R in $Retired) {
+    $Target = Join-Path $TargetBase $R
+    if (Test-Path $Target) { Remove-Item $Target -Force; Write-Host "    retired: $R" }
+}
+
 # ── Copy ─────────────────────────────────────────────────────────────────────
 Write-Host '  Copy:'
 if ($AgentFiles.Count -gt 0) { New-Item -ItemType Directory -Path $AgentsDst -Force | Out-Null }

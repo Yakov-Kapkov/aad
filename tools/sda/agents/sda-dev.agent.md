@@ -89,73 +89,13 @@ Access all files below by exact path from the repo root — never search for the
 
 The task folder is `.sda/tasks/<NNN>. <name>/` by default.
 
-### Terminal command scope
+### Required checks
 
-Never run any command other than those returned by `{read-project-tools}` and
-commands that only read, list, or search files.
+Every code unit ends only when these pass for the affected scope:
+- **Tests** — the tests covering the changed files, then the scope's full suite.
+- **Type check, lint, format, build, pre-merge, data-file validation** — each one the repo provides.
 
-**Run commands verbatim.** Run commands exactly as documented — no wrappers,
-no env var prefixes, no shell workarounds, no fabricated one-liners
-or scripts. Never delegate command execution to a wrapper or
-subagent that fabricates its own scripts to filter or process output.
-Never add flags, arguments, or path-exclusion options that are not
-present in the documented command.
-
-**Never rewrite an invocation into a bare binary.** A package-runner or
-script invocation returned by `{read-project-tools}` is used as-is — never
-rewritten into a direct binary or entry-point call. A bare binary is valid
-only when `{read-project-tools}` returns one, or when a troubleshooting entry
-prescribes it for an **unfiltered** command with a confirmed non-zero exit
-code. Never rewrite a filtered command.
-
-### Filtered command verdict
-
-A filter pipe masks the runner's status — judge by the output, never the exit
-code. Failure marker = a failure line, or a summary reporting a non-zero
-failure/error count → failed; no failure marker → passed. A returned
-template's `2>&1` merges stderr into the output, so text the shell wraps around
-a runner's stderr warning is not tool output: never a failure marker, never a
-re-run trigger. Judge only the tool's own lines. **Empty output:** a findings
-command (lint,
-coverage, build, pre-merge) → passed — a clean run has nothing to report; a
-test command → **not a pass** — its summary line always prints, so report
-`❌ unable to verify` and never re-run to confirm.
-
-### Two-pass test runs
-
-**`{cap}` = the number substituted into a returned template's `{N}`.** Use it
-for every filter tail. (`{N}` elsewhere in this file — `Unit {N}`, `Prior
-failure {N}`, `{N}/{N} passed` — is unrelated.)
-
-**First pass** = `filter-last-n` (`{cap}` = `10`) — verdict from the summary.
-**Failure detail** = `filter-test-output` (`{cap}` = `100`) — failing-test lines + summary.
-
-1. Run the first pass.
-2. No failure marker → passing — stop; never run the failure-detail command.
-3. Failure marker → reuse the first pass output when it already lists every
-   failed test; otherwise run the failure-detail command and use its output.
-4. Base detection, diagnosis, and reporting on the test run output.
-
-**Expected result `FAIL` (RED)** — failures are the goal: start with the failure-detail command.
-
-### Empty-output verdict
-
-Judge a silent **unfiltered** command by its exit code: `0` → **passed**;
-non-zero → failure. Filtered commands → [Filtered command verdict](#filtered-command-verdict).
-
-A silent success is never a troubleshootable failure — never look up
-troubleshooting guidance or rewrite the command into a bare binary.
-
-### Terminal working directory
-
-Always use absolute paths for `cd` — never relative.
-- `Working directory` is always `{repo-root}`-relative — never the terminal's CWD.
-- `Working directory` = `./` → `{absolute-working-dir}` = `{repo-root}`.
-- `Working directory` = `<subfolder>` → `{absolute-working-dir}` = `{repo-root}/<subfolder>` (strip leading `./`).
-- Command form: `cd {absolute-working-dir}; <command>`.
-  No trailing `cd {repo-root}` — unnecessary with absolute paths.
-- Strip the subfolder prefix from all path arguments.
-  Example: `Working directory: ./api`, repo root `/home/user/project` → `cd /home/user/project/api; <command>`, file `api/features/dtos.ts` → `features/dtos.ts`.
+A check the repo does not provide → `❌ unable to verify` in that phase's result.
 
 ### Failure handling & escalation
 
@@ -189,50 +129,15 @@ After 3 delegations still failing → surface the last failure verbatim and end 
 **Use the raw relative path — no `&`, no quotes, no absolute paths, no `bash`/`sh`/`zsh` prefix.** On `error=...` → **🚨 HARD STOP**: print the exact message, end your response.
 
 **Example — PowerShell:**
-- ✅ `.sda/scripts/some-script.ps1 -Folder . -Commands "test-all,filter-last-n"`
-- ❌ `& '.sda/scripts/some-script.ps1' -Folder . -Commands "test-all,filter-last-n"`
+- ✅ `.sda/scripts/some-script.ps1 -Command next -TaskFolder .sda/tasks/001. feature`
+- ❌ `& '.sda/scripts/some-script.ps1' -Command next -TaskFolder .sda/tasks/001. feature`
 
 | Placeholder | Session context key |
 |---|---|
 | `{task-state}` | `scripts.taskState` |
-| `{read-project-tools}` | `scripts.readProjectTools` |
-| `{shell}` | `shell` |
 
 **`{task-state}` (PowerShell):** `{task-state} -Command {cmd} -TaskFolder {folder} [...]`
 **`{task-state}` (Bash/zsh):** `{task-state} {cmd} {folder} [...]`
-
-**`{read-project-tools}` — one call per unique folder.**
-Call form: `{read-project-tools} {folder} [{labels}]`
-Expand per `{shell}`:
-- **PowerShell:** `{read-project-tools} -Folder {folder} -Commands "{labels}"`
-- **Bash/zsh:**   `{read-project-tools} {folder} {labels}`
-Omit `[{labels}]` when no labels are needed.
-
-The `{folder}` argument only selects an area — it never affects the returned `working-dir=`.
-
-An absent key means the tool was not detected. Optional labels
-(`format-code-path`, `type-path`, `validate-*`) → skip silently. A core
-label (`test-all`, `test-path`) absent where the unit needs it → surface
-`⚠️ {label} not found — toolchain may have changed; re-run sda-toolscan.`
-instead of skipping.
-
-**Command labels** — request exactly these labels from `{read-project-tools}`:
-
-| Label | Used for |
-|---|---|
-| `shell` | fallback — re-detect shell when `{shell}` is absent from session context |
-| `test-all` | baseline — run the full test suite |
-| `filter-last-n` | baseline + delegation — first pass (summary) |
-| `filter-test-output` | baseline + delegation — failure detail (failing lines + summary) |
-| `test-path` | delegation — run one unit's tests |
-| `format-code-path` | delegation — format source/test files |
-| `type-path` | delegation — type-check |
-| `validate` | Plan — fetch once; returns every `validate-{ext}-path` template (global label) |
-| `validate-{ext}-path` | delegation — validate data files (one per extension) |
-
-### No file output for command results
-
-Never write command output to files. Present results inline.
 
 ### No execution-path tracing
 
@@ -379,15 +284,12 @@ upstream blocker.
 
 <title>🖥️ **BOOTSTRAPPING**</title>
 
-**Run Phase 0 at session start, or when `{shell}` / `Project configuration:` is
+**Run Phase 0 at session start, or when `Project configuration:` is
 absent from session context.** Resuming with both present → skip to Phase 1;
 continue the current unit from state (session context, else `state.json` via
 `task-state next`). Mode: the already-selected `{mode}`.
 
 1. **Retain session context.**
-   Retain `{shell}` from session context for the whole session.
-   If `{shell}` is absent, infer it from the `{read-project-tools}` path:
-   `.ps1` → `powershell`; `.sh` → `bash`.
    Retain the `Project configuration:` block from session context as `{project-configuration}` — **all `key=value` lines, verbatim, in the original order. No filtering, no reformatting, no summarizing.**
 
 2. **Select mode** — see [Mode registry](#mode-registry):
@@ -413,7 +315,6 @@ continue the current unit from state (session context, else `state.json` via
 
 <result>
 
-**Shell:** {shell}
 **Mode:** {task / workflow / ad-hoc}
 
 ---
@@ -453,22 +354,13 @@ Phases 2–6 check the flags above instead of referencing the mode directly.
 ### Test baseline
 
 Skip if `{baseline-failures}` is already set for this session.
-Collect the unique areas (one `test-all` per area, not per file) — **exclude `docs` units** (no runnable code):
-- **Task mode** — the per-unit `**Area:**` annotations in `task.md`.
-- **Ad-hoc mode** — the areas derived from the unit's files.
+Collect the unique scopes (one full suite per scope, not per file) — **exclude `docs` units** (no runnable code):
+- **Task mode** — the per-unit `**Scope:**` annotations in `task.md`.
+- **Ad-hoc mode** — the scopes derived from the unit's files.
 
-For each unique area, call `{read-project-tools} {area-workdir} ["test-all,filter-last-n,filter-test-output"]`.
-Run `test-all` per [Two-pass test runs](#two-pass-test-runs).
-First pass clean → baseline is clear; no output → not a pass — apply [Filtered command verdict](#filtered-command-verdict).
-Failure marker → the failure-detail pass names the failing tests.
-Merge all failing test names into `{baseline-failures}`; a fully-passing result across all areas → `{baseline-failures}` = `[]`.
-
-### Validate commands
-
-Request `validate` once per session — a global label, area-independent (pass the
-first area's working directory). Hold every returned `validate-{ext}-path`
-template for the session. Each delegation selects the template matching its
-data-file extensions — normalize `.yml` → yaml.
+For each unique scope, run its tests and record the failing test names.
+No failures → baseline is clear.
+Merge all failing test names into `{baseline-failures}`.
 
 ### Task mode
 
@@ -538,8 +430,8 @@ search the codebase, or delegate exploration in this sub-flow.
    - `docs`: step headings, and for each step the `File:`, `Kind:`, and
      content (full file or anchored delta). No scenarios, no Source/Test paths.
    In all cases, extract per-file language annotations (the
-   `**Language:**` line is their union) and the per-unit area
-   (the `**Area:**` line).
+   `**Language:**` line is their union) and the per-unit scope
+   (the `**Scope:**` line).
 5. **Determine route** — see [Route table](#route-table).
 
 ### Ad-hoc mode
@@ -565,9 +457,9 @@ search the codebase, or delegate exploration in this sub-flow.
    - **Source / Test files** — paths for production and test code.
    - **Per-file language** — annotate each Source/Test path with the
      language(s) it contains, inferred from the file type (no task.md in ad-hoc mode).
-   - **Area** — resolve via `{read-project-tools} {file-directory}` for each file;
-     the `working-dir=` key maps to the area. If all files map to the same
-     area → that area. If files span multiple areas → comma-separated list.
+   - **Scope** — the project boundary the files fall in, taken from the context
+     you hold. One boundary → that name; files spanning boundaries →
+     comma-separated list.
    - **Unit type** — `tests required` (default), `tests only`,
      `integration only`, `refactoring`, or `docs`.
    - **Follow-up refactor grouping** — re-entering from Phase 6's
@@ -604,7 +496,7 @@ or:
 ---
 ## 💻 Unit {N}: {name}    ← one unit per block. Task mode: include {N}, current unit only. Ad-hoc: omit {N}, repeat this block for every derived unit.
 **Type:** {type}
-**Area:** {area}
+**Scope:** {scope}
 **Language:** {languages}
 **Route:** {e.g. RED → GREEN → REFACTOR}
 {if type == integration only or type == refactoring or type == docs:}
@@ -641,14 +533,7 @@ or:
    Language: {per-file annotations from the unit header — test-writer writes each test file in the language(s) annotated on its Test path}
    Source: {source file path(s)}
    Test: {test file path(s)}
-   Test command: {test-path with {path}=test file paths; filter-last-n ({cap}=10)}
-   Test command (failure detail): {test-path with {path}=test file paths; filter-test-output ({cap}=100)}
-   Format-code command: {format-code-path with {path}=source + test file paths — omit if absent}
-   Type-check command: {type-path with {path}=source + test file paths — omit if absent}
-   Validate-data commands: {validate-{ext}-path with {path}=data file paths; normalize .yml → yaml — omit if absent}
-   Shell: {shell}
    Standards skill: {standardsSkill}
-   Working directory: {Working directory}
    Repo root: {repo-root}
 
    Scenarios:
@@ -702,14 +587,7 @@ Run `{task-state}` `update` per [State updates](#state-updates) — **Checkpoint
    Source: {source file path(s)}   ← integration only: current unit's target files
    Test: {test file path(s)}       ← GREEN only; omit for integration only
    Related tests: {the unit's `**Related tests:**` paths}   ← integration only; include only when the work unit has Related tests; omit for GREEN
-   Test command: {test-path with {path}=Test file paths for GREEN, Related tests paths for integration; filter-last-n ({cap}=10)}   ← omit both test-command lines when an integration unit lists no Related tests
-   Test command (failure detail): {test-path with {path}=Test file paths for GREEN, Related tests paths for integration; filter-test-output ({cap}=100)}
-   Format-code command: {format-code-path with {path}=source file paths — omit if absent}
-   Type-check command: {type-path with {path}=source files — omit if absent}
-   Validate-data commands: {validate-{ext}-path with {path}=data file paths; normalize .yml → yaml — omit if absent}
-   Shell: {shell}
    Standards skill: {standardsSkill}
-   Working directory: {Working directory}
    Repo root: {repo-root}
 
    Changes:                    ← include only if work unit has Changes
@@ -795,14 +673,7 @@ Scope: per-unit
 Source files: {current unit's source files}
 Test files: {current unit's test files}
 In-scope symbols: {the unit's in-scope entries — source symbols and test scopes}
-Test command: {test-path with {path}=test file paths; filter-last-n ({cap}=10)}
-Test command (failure detail): {test-path with {path}=test file paths; filter-test-output ({cap}=100)}
-Format-code command: {format-code-path with {path}=source + test file paths — omit if absent}
-Type-check command: {type-path with {path}=source + test file paths — omit if absent}
-Validate-data commands: {validate-{ext}-path with {path}=data file paths; normalize .yml → yaml — omit if absent}
-Shell: {shell}
 Standards skill: {standardsSkill}
-Working directory: {Working directory}
 Repo root: {repo-root}
 ```
 
@@ -812,21 +683,14 @@ Scope: per-unit
 Source files: {current unit's source files}
 Test files: {current unit's test files — omit if none}
 In-scope symbols: {symbol names from the unit's Changes blocks}
-Test command: {test-path with {path}=Related tests paths; filter-last-n ({cap}=10) — omit both lines if no Related tests}
-Test command (failure detail): {test-path with {path}=Related tests paths; filter-test-output ({cap}=100)}
-Format-code command: {format-code-path with {path}=source file paths — omit if absent}
-Type-check command: {type-path with {path}=source files — omit if absent}
-Validate-data commands: {validate-{ext}-path with {path}=data file paths; normalize .yml → yaml — omit if absent}
-Shell: {shell}
 Standards skill: {standardsSkill}
-Working directory: {Working directory}
 Repo root: {repo-root}
 
 Changes:
 {changes blocks}
 ```
 
-When `sda-refactor` returns — apply [Delegation discipline](#delegation-discipline). Clean result → output the result block below.
+When `sda-refactor` returns — apply [Delegation discipline](#delegation-discipline). Clean result → output the result block below, copying `Verification commands` verbatim.
 
 ### State update
 
@@ -834,6 +698,9 @@ Run `{task-state}` `update` per [State updates](#state-updates) — **Checkpoint
 
 <result>
 {Refactoring is not needed. | Refactoring is done.}
+
+### Verification commands
+{copy verbatim from subagent result}
 
 ### ⚠️ Pre-existing issues (not fixed)
 - {file} `{symbol}`: {violation} → carried forward to Follow-up Opportunities
@@ -863,22 +730,18 @@ Units:
   Source files: {unit M source files}
   Test files: {unit M test files}
   In-scope symbols: {unit M's in-scope entries — source symbols and test scopes}
-Test command: {test-path with {path}=test file paths; filter-last-n ({cap}=10)}
-Test command (failure detail): {test-path with {path}=test file paths; filter-test-output ({cap}=100)}
-Format-code command: {format-code-path with {path}=source + test file paths — omit if absent}
-Type-check command: {type-path with {path}=source + test file paths — omit if absent}
-Validate-data commands: {validate-{ext}-path with {path}=data file paths; normalize .yml → yaml — omit if absent}
-Shell: {shell}
 Standards skill: {standardsSkill}
-Working directory: {Working directory}
 Repo root: {repo-root}
 ```
 
-When `sda-refactor` returns — apply [Delegation discipline](#delegation-discipline). Clean result → output the result block below.
+When `sda-refactor` returns — apply [Delegation discipline](#delegation-discipline). Clean result → output the result block below, copying `Verification commands` verbatim.
 
 <result>
 ### Cross-unit duplication
 {None found. | Done.}
+
+### Verification commands
+{copy verbatim from subagent result}
 
 ---
 </result>
@@ -890,21 +753,17 @@ When `sda-refactor` returns — apply [Delegation discipline](#delegation-discip
 
 <title>🔍 **QUALITY** — _Delegating quality gates..._</title>
 
-### Allowed commands in this phase
-
-- `execute` — `{read-project-tools}` for area discovery only, before delegation. Never run test, coverage, lint, type-check, or build commands — those are `sda-dev-quality`'s scope.
-
 ### Control flow
 
-1. **Gather inputs.** Collect the **areas** of every code unit processed this session (from the units' Area fields and the subagent results you hold) — **exclude `docs` units** (no code to gate). In ad-hoc mode, resolve each changed file's area via `{read-project-tools} {file-directory}` (the `working-dir=` key maps to the area).
+1. **Gather inputs.** Collect the **scopes** of every code unit processed this session (from the units' Scope fields and the subagent results you hold) — **exclude `docs` units** (no code to gate). In ad-hoc mode, resolve each changed file's scope from the context you hold.
 
 2. **Invoke `sda-dev-quality` by name.** Pass:
 
    ```
    Mode: global
 
-   Areas:
-   - {area}
+   Scopes:
+   - {scope}
 
    Baseline failures:
    {if any:} - {test-name}
@@ -935,7 +794,7 @@ Present the coverage detail from the flag verbatim, then:
 
 ```
 [ASK]
-Question: Coverage below threshold in {Area} — what next?
+Question: Coverage below threshold in {Scope} — what next?
 Options:
 - add-tests — delegate to `sda-test-writer`, then re-delegate to `sda-dev-quality`
 - skip — accept gap, proceed to next flag or Phase 6
@@ -952,9 +811,7 @@ Triggered when `sda-dev-quality` flags a regression (test failure not in baselin
    - `Language`: infer from file extensions
    - `Source`: this task's changed source files
    - `Test`: flagged test files
-   - `Test command`: `test-path` with flagged test files + filter-last-n (`{cap}` = `10`)
-   - `Test command (failure detail)`: `test-path` with flagged test files + filter-test-output (`{cap}` = `100`)
-   - Omit `Validate-data commands` and `Changes`
+   - Omit `Changes`
    - Add: `Regression context: These tests passed before this task started. The source files listed above were modified by this task and likely caused the failures. Fix the source to restore the failing tests without reverting the task's intended changes.`
 3. Apply [Failure handling & escalation](#failure-handling--escalation) if `sda-coder` returns a failure.
 4. Record modified files alongside the task's changed files.

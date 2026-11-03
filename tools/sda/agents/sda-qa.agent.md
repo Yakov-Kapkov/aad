@@ -157,14 +157,13 @@ Access all files below by exact path from the repo root — never search for the
 **Use the raw relative path — no `&`, no quotes, no absolute paths, no `bash`/`sh`/`zsh` prefix.** On `error=...` → **🚨 HARD STOP**: print the exact message, end your response.
 
 **Example — PowerShell:**
-- ✅ `.sda/scripts/some-script.ps1 -Folder . -Commands "shell"`
-- ❌ `& '.sda/scripts/some-script.ps1' -Folder . -Commands "shell"`
+- ✅ `.sda/scripts/qa/load-qa-secrets.ps1`
+- ❌ `& '.sda/scripts/qa/load-qa-secrets.ps1'`
 
 | Placeholder | Session context key |
 |---|---|
 | `{qa-session-init}` | `scripts.qaSessionInit` |
 | `{invoke-http}` | `scripts.invokeHttp` |
-| `{read-project-tools}` | `scripts.readProjectTools` |
 
 **`{qa-session-init}` — dot-source once per terminal before sending authenticated requests:**
 - **PowerShell/Bash:** `. "{qa-session-init}"`
@@ -173,19 +172,6 @@ Access all files below by exact path from the repo root — never search for the
 - **PowerShell:** `{invoke-http} -Method <method> -Uri "<url>" [-Headers @{ Name = "Value" }] [-Body "<body>"] [-StatusOnly]`
 - **Bash/zsh:** `{invoke-http} -X <method> -u "<url>" [-H "Name: Value"] [-d "<body>"] [--status-only]`
 
-**`{read-project-tools}` — one call per unique folder.**
-Call form: `{read-project-tools} {folder} [{labels}]`
-Expand per `{shell}`:
-- **PowerShell:** `{read-project-tools} -Folder {folder} -Commands "{labels}"`
-- **Bash/zsh:**   `{read-project-tools} {folder} {labels}`
-Omit `[{labels}]` when no labels are needed.
-Fallback for app-run commands when qa-task.md lacks them.
-
-An absent key means the tool was not detected. Optional labels
-(`app-run-url`, `app-run-healthcheck`) → skip silently. The core label
-`app-run-start` absent where the layer needs it → surface
-`⚠️ app-run-start not found — toolchain may have changed; re-run sda-toolscan.`
-instead of skipping.
 
 ---
 
@@ -194,7 +180,7 @@ instead of skipping.
 | Input | Source | Use |
 |---|---|---|
 | `qa-task.md` | task folder, or a path the user provides | The functional requirements to verify |
-| App-run commands | `qa-task.md ## Setup` per-layer entries (primary); `{read-project-tools}` fallback | How to start each layer |
+| App-run commands | `qa-task.md ## Setup` per-layer entries; the repo's own context when a layer entry lacks a start command | How to start each layer |
 | Credentials | QA secrets (terminal-loaded via `{qa-session-init}`) | Auth/data needed to exercise FRs |
 
 You never explore the codebase to discover run commands — they come from `qa-task.md ## Setup` (authored by `sda-qa-task`).
@@ -210,7 +196,6 @@ You never explore the codebase to discover run commands — they come from `qa-t
    - `paths.issues` → `{issues-root}`
    - `scripts.qaSessionInit` → `{qa-session-init}` (fallback: `scripts.loadQaSecrets` if absent)
    - `scripts.invokeHttp` → `{invoke-http}`
-   - `scripts.readProjectTools` → `{read-project-tools}` (fallback — used when a layer entry in qa-task.md lacks a start command)
 
 ### Phase 1 — Locate `qa-task.md`
 
@@ -241,7 +226,7 @@ Remember the folder that held the spec → `{spec-folder}` (used for the report)
 
 For each layer in `## Setup`:
 1. Read start command, working directory, URL, and health check from the layer's entry in `qa-task.md ## Setup`.
-   **Fallback** (start command absent — old qa-task.md format): call `{read-project-tools} . ["areas"]` to get all areas and their working directories; match the layer name to its `area.{Name}` entry, then call `{read-project-tools} {workdir} ["app-run-start,app-run-url,app-run-healthcheck"]` to get the layer's run data.
+   **Fallback** (start command absent — old qa-task.md format): take the layer's start command, working directory, URL, and health check from the repo's own context.
 2. Start the start command in its **own async terminal** from `{working-dir}` — always `{repo-root}`-relative.
 3. Confirm the layer is up using the URL, health check, or expected log line from `qa-task.md`. If a layer fails to start, mark every FR that needs it `⚠️ NOT VERIFIED — {layer} failed to start`, capture the startup output as evidence, and continue with FRs that don't need it.
 

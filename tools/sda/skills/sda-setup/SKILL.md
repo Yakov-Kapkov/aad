@@ -6,9 +6,8 @@ description: "Sets up or updates the SDA tool in the current project. Use when t
 # SDA Project Setup
 
 Scaffold the `.sda/` folder in a project so the SDA agents can work.
-After scaffolding, hand off to the `sda-toolscan` agent for toolchain scanning (Step 6; skippable on request).
 
-You do NOT write application code, tests, or scan the toolchain.
+You do NOT write application code or tests.
 
 ## Invocation examples
 - "setup sda tool"
@@ -26,10 +25,8 @@ Access all files below by exact path from the repo root — never search for the
 
 | File | Path |
 |---|---|
-| project-tools.md | `.sda/project-tools.md` |
 | project-config.json | `.sda/project-config.json` |
 | project-config.example.json | `.sda/resources/project-config.example.json` |
-| tool-catalog.md | `.sda/resources/{language}/tool-catalog.md` |
 
 ## Communication rules
 
@@ -49,27 +46,27 @@ Access all files below by exact path from the repo root — never search for the
 
 **PowerShell script invocation:**
 
-Examples below use a **placeholder path** (`c:\Users\user\scripts\setup.ps1`) to show the command *shape* only. At runtime, substitute the real resolved `<this-skill-folder>` path from Step 3 / Step 5.
+Examples below use a **placeholder path** (`c:\Users\user\scripts\setup.ps1`) to show the command *shape* only. At runtime, substitute the real resolved `<this-skill-folder>` path from Step 2 / Step 4.
 
 - Path has **no spaces** → invoke directly, no `&`, no quotes:
-  `c:\Users\user\scripts\setup.ps1 -Language python`
+  `c:\Users\user\scripts\setup.ps1`
 - Path has **spaces** → use call operator + quotes:
-  `& "c:\Users\user\My Scripts\setup.ps1" -Language python`
+  `& "c:\Users\user\My Scripts\setup.ps1"`
 
 Never assign the path to a variable. Never use `&` unless the path has spaces. Run the literal one-liner from the rules above — nothing else.
 
-- ✅ `c:\Users\user\scripts\setup.ps1 -Language python`
-- 🚫 `$skillPath = 'c:\Users\user\scripts\setup.ps1'; & $skillPath -Language python`
+- ✅ `c:\Users\user\scripts\setup.ps1`
+- 🚫 `$skillPath = 'c:\Users\user\scripts\setup.ps1'; & $skillPath`
 
 **Bash script invocation:**
 
 Same placeholder convention — substitute the real resolved `<this-skill-folder>` path at runtime.
 
-- Always `bash` + quoted path + args. Quotes handle spaces; no variable, no other prefix:
-  `bash "/home/user/scripts/setup.sh" python`
+- Always `bash` + quoted path. Quotes handle spaces; no variable, no other prefix:
+  `bash "/home/user/scripts/setup.sh"`
 
-- ✅ `bash "/home/user/scripts/setup.sh" python`
-- 🚫 `p="/home/user/scripts/setup.sh"; bash "$p" python`
+- ✅ `bash "/home/user/scripts/setup.sh"`
+- 🚫 `p="/home/user/scripts/setup.sh"; bash "$p"`
 
 ---
 
@@ -84,24 +81,16 @@ Same placeholder convention — substitute the real resolved `<this-skill-folder
 
 **Post:** `**Step 1 — Detecting setup mode...**`
 
-Use `read_file` with the **exact literal paths** `.sda/project-tools.md` and `.sda/project-config.json`. If read succeeds the file exists; if it fails the file is missing. The folder must be exactly `.sda`. Do NOT search.
+Use `read_file` with the **exact literal path** `.sda/project-config.json`. If read succeeds the file exists; if it fails the file is missing. The folder must be exactly `.sda`. Do NOT search.
 
-- **Both exist** → **Post:** `Mode: Update` → Skip Step 2. **Go directly to Step 3.**
-- **Either missing** → **Post:** `Mode: First-time setup` → **Go to Step 2.**
+- **Exists** → **Post:** `Mode: Update` → **Go directly to Step 2.**
+- **Missing** → **Post:** `Mode: First-time setup` → **Go to Step 2.**
 
-> Steps 3–8 run for **both** modes — first-time setup runs Step 2 first. Step 6's skip rule is the sole exception.
+> Steps 2–5 run for **both** modes.
 
-### Step 2 — Detect language
+### Step 2 — Create folder structure and copy resource files
 
-**Post:** `**Step 2 — Detecting language...**`
-
-Read `package.json` (→ `typescript`), `pyproject.toml` / `requirements.txt` (→ `python`), or equivalent. If none found, ask the user. 
-
-**Post:** `Language: {language}`
-
-### Step 3 — Create folder structure and copy resource files
-
-**Post:** `**Step 3 — Updating .sda/ folder.**` (first-time: scaffolds; update: refreshes resource files)
+**Post:** `**Step 2 — Updating .sda/ folder.**` (first-time: scaffolds; update: refreshes resource files)
 
 **This step is mandatory for both modes.**
 
@@ -109,27 +98,25 @@ Use the setup script — do NOT read asset files into context and write them bac
 
 Resolve `<this-skill-folder>` to the directory containing this `SKILL.md`.
 
-**Windows:** `<this-skill-folder>\assets\scripts\powershell\setup.ps1 -Language {language}`
+**Windows:** `<this-skill-folder>\assets\scripts\powershell\setup.ps1`
 
-If the resolved path contains spaces, use `& "<path>" -Language {language}` instead.
+If the resolved path contains spaces, use `& "<path>"` instead.
 
-**macOS/Linux:** `bash "<this-skill-folder>/assets/scripts/bash/setup.sh" {language}`
-
-If the script warns that the language-specific tool-discovery spec is missing, relay that warning.
+**macOS/Linux:** `bash "<this-skill-folder>/assets/scripts/bash/setup.sh"`
 
 On update, the script also deletes paths retired by earlier versions — it prints one `Removed retired path:` line per deletion. Relay those lines.
 
-### Step 4 — Configure project
+### Step 3 — Configure project
 
-**Post:** `**Step 4 — Configuring project.**`
+**Post:** `**Step 3 — Configuring project.**`
 
-Read `.sda/resources/project-config.example.json` into `{template}` via `read_file` (exact path — do NOT search). If missing, abort: _"`project-config.example.json` not found — Step 3 may have failed. Re-run setup."_
+Read `.sda/resources/project-config.example.json` into `{template}` via `read_file` (exact path — do NOT search). If missing, abort: _"`project-config.example.json` not found — Step 2 may have failed. Re-run setup."_
 
 Test coverage defaults to `enabled: true` on first setup. On update, the existing `tests.coverage.enabled` value is preserved — setup never resets it.
 
-### Step 5 — Normalize project-config.json
+### Step 4 — Normalize project-config.json
 
-**Post:** `**Step 5 — Writing project-config.json.**`
+**Post:** `**Step 4 — Writing project-config.json.**`
 
 Run the write-config script. It adds missing fields and preserves existing values.
 
@@ -151,108 +138,7 @@ bash "<this-skill-folder>/assets/scripts/bash/write-config.sh" \
 
 Adds missing fields, preserves existing values. **Mandatory — do not skip.**
 
-### Step 6 — Toolchain scan
-
-**Post:** `**Step 6 — Toolchain scan.**`
-
-**Skip rule.** If the request says to skip the toolchain scan, **Post:** `> Skipped toolchain scan (Steps 6–7).` Skip to Step 8; if `.sda/project-tools.md` is missing, also **Post:** `> Run **sda-toolscan** before running SDA workflows.`
-
-- **First-time setup** — run automatically.
-- **Update** — ask (title: _"Toolchain scan"_): _"Re-scan to update `project-tools.md`?"_ `Yes` ← default / `No — keep existing`. If `No` → read `.sda/project-tools.md`. If it exists, proceed to Step 7. If missing, skip to Step 8.
-
-Invoke `sda-toolscan`: `"Scan this project's toolchain and generate project-tools.md."`
-
-If agent cannot be invoked: _"Run **sda-toolscan** manually to generate `project-tools.md`."_
-
-### Step 7 — Tool audit
-
-**Post:** `**Step 7 — Auditing required tools.**`
-
-Read `.sda/project-tools.md` using `read_file`. If the file does not exist or cannot be read, skip this step silently.
-
-**Detect missing categories.** Scan each area's `### Detected Tools` sub-section. For each required category, check the corresponding label line. Add the category to `{missing-required}` if the label line is absent **or** contains `❌`.
-
-| Category | Label in `### Detected Tools` |
-|---|---|
-| Package manager | `**Package Manager**` |
-| Test runner | `**Test Framework**` |
-| Type checker | `**Type Checking**` |
-| Linter | `**Code Quality**` |
-| Code formatter | `**Formatters**` |
-| Coverage | `**Coverage**` |
-| Git hooks | `**Pre-Commit Hooks**` |
-| Data format validators | `### Format` section — flag absent or empty |
-
-**Command presence check.** For each category showing `✅` (not flagged above), verify the corresponding section contains the required command label. If the label is absent or its stub body is `# _Not detected._` — the tool is not installed as a standalone tool. Add that category to `{missing-required}`.
-
-| Category | Section to read | Required label |
-|---|---|---|
-| Test runner | `### Test Execution` | `# test-all` |
-| Type checker | `### Type Checking` | `# type-all` |
-| Linter | `### Lint` | `# lint-all` |
-| Code formatter | `### Format` | `# format-code-path` |
-| Coverage | `### Test Execution` | `# test-path-coverage` |
-
-If `{missing-required}` is empty → skip to Step 8.
-
-**Resolve tool choices.** Read `.sda/resources/{language}/tool-catalog.md` using `read_file` (exact path — do NOT search). Remove from `{missing-required}` any category that has **no rows** in the catalog — it is not applicable to this language and should not be flagged. If `{missing-required}` is now empty → skip to Step 8.
-
-For each remaining category, collect all rows where Category matches — in Priority order.
-
-For each missing category that has **more than one row** in the catalog, ask (title: _"{Category}"_):
-
-> _"Which {category} tool?"_
-> - `{tool-1}` — {description-1} ← default
-> - `{tool-2}` — {description-2}
-> - _(one option per catalog row, Priority 1 first)_
-
-For categories with only one catalog row, auto-select silently. If the catalog file itself is missing, skip to Step 8 with a warning: _"`tool-catalog.md` not found — run the install script to populate `.sda/resources/{language}/`._"
-
-Record each selected tool as `{tool-for-category}`.
-
-**Post verbatim**, substituting only the list rows:
-
-```
-## ⚠ Required tools missing
-
-| Category | Tool |
-|---|---|
-{one row per missing category: | {category} | {tool-for-category} |}
-```
-
-Ask (title: _"Required tools"_):
-
-> _"Install missing required tools now?"_
-> - `Yes` ← default
-> - `No`
-
-If `No` → **Post:** `> Install missing tools before running SDA workflows. Re-run sda-setup after installing.` then skip to Step 8.
-
-If `Yes` → **Post:** `**Installing required tools.**`
-
-Delegate to `sda-tool-installer`:
-
-```
-Language: {detected language}
-Install these required tools:
-{one line per missing category: "- {category}: {tool-for-category}"}
-```
-
-If agent cannot be invoked → **Post:** `> Cannot invoke sda-tool-installer. Install the following tools manually, then re-run sda-setup:` followed by the `| Category | Tool |` table above.
-
-After `sda-tool-installer` returns → ask (title: _"Toolchain scan"_): _"Re-scan toolchain to update `project-tools.md`?"_ `Yes` ← default / `No`.
-
-If `Yes` → invoke `sda-toolscan` with this exact message (substitute the tool list):
-```
-Scan this project's toolchain and generate project-tools.md.
-Recently installed tools:
-{one line per tool from the {missing-required} list: "- {tool-for-category}"}
-```
-then proceed to Step 8.
-
-If `No` → **Post:** `> Re-run **sda-toolscan** to update project-tools.md with the newly installed tools.`
-
-### Step 8 — Summary
+### Step 5 — Summary
 
 **Post verbatim:**
 
