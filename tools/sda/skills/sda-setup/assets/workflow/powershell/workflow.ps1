@@ -9,7 +9,7 @@
     only writer of workflow.json; folders and state are never hand-edited.
 
     Commands:
-      init      Create a workflow folder, its tasks/ folder, and workflow.json,
+      init      Create a workflow folder, its escalations/ folder, and workflow.json,
                 at story by default or the -At stage.
       list      One line per workflow; marks the deepest open escalation.
       current   Print the stage, any open escalation, and artifact gaps.
@@ -27,13 +27,9 @@
     The stage order is story -> design -> dev -> ready. A container starts at
     story by default; -At design or -At dev skips the stages before it, which
     then produce no artifact. Every stage from the start onward produces one
-    artifact, and advance refuses to leave a stage whose artifact is absent. The
-    dev stage carries the whole implementation pipeline in two sessions -- task
-    specs, then implementation -- so its artifact is the tasks/ tree complete: at
-    least one task folder, a task.md in every folder, and a dev-report.md beside
-    each. A container with an unproduced task spec or an unimplemented task
-    cannot reach ready. While any escalation is open, advance is refused and only
-    resolve clears it.
+    artifact -- user-story.md, design.md, or the dev stage's dev-report.md -- and
+    advance refuses to leave a stage whose artifact is absent. While any
+    escalation is open, advance is refused and only resolve clears it.
 
 .PARAMETER Command
     One of: init, list, current, read, advance, escalate, resolve.
@@ -114,12 +110,11 @@ $ErrorActionPreference = 'Stop'
 
 $StageNames = @('story', 'design', 'dev', 'ready')
 $StartableStages = @('story', 'design', 'dev')
-# One container-root artifact per stage. 'ready' has none, and 'dev' is a tree --
-# task folders each holding a task.md and a dev-report.md -- so both are handled
-# by name in the artifact functions.
+# One container-root artifact per stage. 'ready' has no artifact of its own.
 $StageArtifacts = @{
     'story'  = 'user-story.md'
     'design' = 'design.md'
+    'dev'    = 'dev-report.md'
 }
 
 $WorkflowsRoot = if ($Root) { $Root } else { '.sda/workflows' }
@@ -288,59 +283,15 @@ function Get-NextEscalationId($state) {
     return "E$($count + 1)"
 }
 
-# The task folders under tasks/, in name order. These two are pipeline-facing, so
-# they return a plain array -- which PowerShell unrolls into the pipeline -- and
-# every call site wraps the result in @(). Do NOT add the leading-comma trick
-# here: a comma-wrapped array reaches Where-Object/ForEach-Object as ONE object,
-# and StrictMode then fails the member lookup, silently emptying the filter.
-function Get-TaskFolders([string]$folder) {
-    $tasks = Join-Path $folder 'tasks'
-    if (-not (Test-Path $tasks)) { return @() }
-    return @(Get-ChildItem -Path $tasks -Directory -ErrorAction SilentlyContinue |
-        Sort-Object Name)
-}
-
-# The task folders that hold no dev-report.md.
-function Get-DevMissing([string]$folder) {
-    return @(Get-TaskFolders $folder | Where-Object {
-        -not (Test-Path (Join-Path $_.FullName 'dev-report.md'))
-    })
-}
-
-# The task folders that hold no task.md.
-function Get-TaskSpecMissing([string]$folder) {
-    return @(Get-TaskFolders $folder | Where-Object {
-        -not (Test-Path (Join-Path $_.FullName 'task.md'))
-    })
-}
-
 # 'ready' has no artifact of its own. A stage counts as produced only when its
-# artifact exists; 'dev' counts only when the tasks/ tree is complete -- at least
-# one task folder, a task.md in every folder, and a dev-report.md beside each --
-# so the stage is complete on the whole container rather than on the last task
-# implemented.
+# container-root artifact exists.
 function Test-StageArtifact($folder, [string]$stage) {
-    if ($stage -eq 'dev') {
-        if (@(Get-TaskFolders $folder).Count -eq 0) { return $false }
-        if (@(Get-TaskSpecMissing $folder).Count -gt 0) { return $false }
-        return (@(Get-DevMissing $folder).Count -eq 0)
-    }
     $name = $StageArtifacts[$stage]
     if (-not $name) { return $true }
     return (Test-Path (Join-Path $folder $name))
 }
 
-function Get-ArtifactLabel([string]$folder, [string]$stage) {
-    if ($stage -eq 'dev') {
-        $tasks = @(Get-TaskFolders $folder)
-        if ($tasks.Count -eq 0) { return 'the tasks/ folder has no task folder; produce it first' }
-        $noSpec = @(Get-TaskSpecMissing $folder | ForEach-Object { $_.Name })
-        if ($noSpec.Count -gt 0) {
-            return "$($noSpec.Count) of $($tasks.Count) task folders have no task.md: $($noSpec -join ', '); every task folder needs one first"
-        }
-        $missing = @(Get-DevMissing $folder | ForEach-Object { $_.Name })
-        return "$($missing.Count) of $($tasks.Count) task folders have no dev-report.md: $($missing -join ', '); every task folder needs one first"
-    }
+function Get-ArtifactLabel([string]$stage) {
     return "$($StageArtifacts[$stage]) does not exist; produce it first"
 }
 
@@ -383,7 +334,6 @@ switch ($Command) {
         $folder = Join-Path $WorkflowsRoot $folderName
 
         New-Item -ItemType Directory -Force -Path $folder | Out-Null
-        New-Item -ItemType Directory -Force -Path (Join-Path $folder 'tasks') | Out-Null
         New-Item -ItemType Directory -Force -Path (Join-Path $folder 'escalations') | Out-Null
 
         $state = [ordered]@{
@@ -479,9 +429,6 @@ switch ($Command) {
         }
 
         # Artifact gaps from the start to the current stage. 'ready' has none.
-        # A 'dev' gap names the task folders still missing their task.md, then
-        # those still missing their dev-report.md, because .sda/ is unsearchable
-        # and neither producer can list them.
         $from = $startIndex
         if ($index -lt $from) { $from = $index }
         for ($i = $from; $i -le $index; $i++) {
@@ -489,12 +436,6 @@ switch ($Command) {
             if ($name -eq 'ready') { continue }
             if (-not (Test-StageArtifact $folder $name)) {
                 Write-Output "gap=$name"
-                if ($name -eq 'dev') {
-                    $noSpec = @(Get-TaskSpecMissing $folder | ForEach-Object { $_.Name })
-                    if ($noSpec.Count -gt 0) { Write-Output "specs=$($noSpec -join ', ')" }
-                    $missing = @(Get-DevMissing $folder | ForEach-Object { $_.Name })
-                    if ($missing.Count -gt 0) { Write-Output "missing=$($missing -join ', ')" }
-                }
             }
         }
 
@@ -531,7 +472,7 @@ switch ($Command) {
             Fail "advance cannot move because the workflow is already at '$current'"
         }
         if (-not (Test-StageArtifact $folder $current)) {
-            Fail "advance cannot leave '$current' because $(Get-ArtifactLabel $folder $current)"
+            Fail "advance cannot leave '$current' because $(Get-ArtifactLabel $current)"
         }
 
         $next = $StageNames[$index + 1]

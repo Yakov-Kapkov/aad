@@ -1,6 +1,6 @@
 ---
 name: sda-workflow-guide
-description: "Workflow-mode operating instructions for SDA stage agents — the workflow CLI, the stage gate, and the finish/escalate/resolve steps. Use when: a stage agent (sda-ba, sda-design, sda-dev-task, sda-dev) is running a session declared as workflow mode by its entry prompt or a request naming a container."
+description: "Workflow-mode operating instructions for SDA stage agents — the workflow CLI, the stage gate, and the finish/escalate/resolve steps. Use when: a stage agent (sda-ba, sda-design) is running a session declared as workflow mode by its entry prompt, or a request names a workflow container. Otherwise never load it."
 ---
 
 # Workflow Mode
@@ -14,7 +14,7 @@ finish/escalate/resolve steps. Your stage's specifics live in your stage card:
 |---|---|---|
 | `story` | `sda-ba` | [`assets/stage-story.md`](assets/stage-story.md) |
 | `design` | `sda-design` | [`assets/stage-design.md`](assets/stage-design.md) |
-| `dev` | `sda-dev-task`, `sda-dev` | [`assets/stage-dev.md`](assets/stage-dev.md) |
+| `dev` | implementation session | [`assets/stage-dev.md`](assets/stage-dev.md) |
 
 Read your card first. It names your stage, your artifact, your input, who you escalate to,
 and when you may `advance`.
@@ -31,9 +31,7 @@ and when you may `advance`.
 ## Stage gate
 
 Before any work, run `current`. `stage=` is not your stage → **refuse**: report the stage and
-stop — its owner runs first. A `gap=<stage>` line means that stage's artifact is absent;
-`gap=dev` may be followed by `specs=<folder>, <folder>` (task folders with no `task.md`) and
-`missing=<folder>, <folder>` (task folders with no `dev-report.md`).
+stop — its owner runs first. A `gap=<stage>` line means that stage's artifact is absent.
 
 ## CLI
 

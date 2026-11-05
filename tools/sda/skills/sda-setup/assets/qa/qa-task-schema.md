@@ -1,15 +1,12 @@
 # QA Task Document Schema
 
-`qa-task.md` is a **self-contained acceptance spec**. It comes in two shapes:
-- **Task-coupled** — lives beside `task.md` in the task folder; verifies that
-  task's behaviour. Written during task design.
-- **Standalone** — lives alone in `{issues-root}/<NNN>-<area>/` (default
-  `.sda/issues`); verifies existing application behaviour when there is no
-  task (e.g. checking whether a feature already works).
+`qa-task.md` is a **self-contained acceptance spec**. It lives alone in
+`{issues-root}/<NNN>-<area>/` (default `.sda/issues`) and verifies existing
+application behaviour (e.g. checking whether a feature already works).
 
-Either shape, it is executed end to end from this file alone (plus resolved
-credentials) — black-box verification against intent, not implementation, so it
-stands independent of `task.md` and `dev-report.md`.
+It is executed end to end from this file alone (plus resolved credentials) —
+black-box verification against intent, not implementation, so it stands
+independent of `design.md` and `dev-report.md`.
 
 ---
 
@@ -19,8 +16,7 @@ stands independent of `task.md` and `dev-report.md`.
 # QA Task: {name}
 
 ## Task
-{task-name — the sibling task.md this verifies; or `standalone — {area}`
-when there is no task}
+{`standalone — {area}` — no task layer exists}
 
 ## Setup
 {How to bring up the system under test. Each layer entry documents the exact start command, working directory, URL, and health check — taken from the repo's own context. Each layer starts in its own terminal. State the required backing infrastructure as a specific real instance — never "emulator or live".}
@@ -66,9 +62,7 @@ each credential value as a separate entry. Omit section if none required.}
 
 ### Task
 - Single line. Always present.
-- **Task-coupled:** the sibling `task.md` filename stem this QA spec verifies.
-- **Standalone:** `standalone — {area}` when there is no task — the spec
-  verifies existing application behaviour.
+- `standalone — {area}` — the spec verifies existing application behaviour.
 
 ### Setup
 - Describes how to bring up the system under test.

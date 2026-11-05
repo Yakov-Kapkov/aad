@@ -25,10 +25,7 @@ moves the pointer back, is recorded in `notes`, and keeps its evidence in
       prior-investigation.md
     user-story.md
     design.md
-    tasks/
-      001. ui-refactoring/
-        task.md
-        dev-report.md
+    dev-report.md
     escalations/
       001. 2026-09-15_14-20-dev-to-design.md
 ```
@@ -70,9 +67,8 @@ moves the pointer back, is recorded in `notes`, and keeps its evidence in
 - `escalate` moves back one or more stages; `resolve` moves forward exactly one.
 - While any escalation is open, `advance` is refused.
 - `story` is the first stage by default — a container may start later (see
-  `start`). `dev` is the single implementation stage, run in two sessions (task
-  specs, then implementation): every task folder must hold its `task.md` and its
-  `dev-report.md` before the pointer can leave it. `ready` is terminal.
+  `start`). `dev` is the single implementation stage: it is complete once
+  `dev-report.md` exists. `ready` is terminal.
 
 ### `start`
 - The stage the container was created at: `story` (default), `design`, or
@@ -102,12 +98,9 @@ moves the pointer back, is recorded in `notes`, and keeps its evidence in
   deepest one is the only one `resolve` may close.
 
 ### Artifacts
-- `user-story.md` (story) and `design.md` (design). `ready` has no artifact of
-  its own — it is terminal.
-- `dev`'s artifact is the whole `tasks/` tree: at least one task folder, a
-  `task.md` in every folder, and a `dev-report.md` beside each. The stage counts
-  as produced only when the tree is complete, so a container with an unproduced
-  task spec or an unimplemented task cannot leave `dev`.
+- `user-story.md` (story), `design.md` (design), and `dev-report.md` (dev) — one
+  file at the container root per stage. `ready` has no artifact of its own — it
+  is terminal.
 - `issue.md` is the container's **entry artifact**, not a stage artifact: no stage owns it,
   it produces no `gap=` line, and it never blocks `advance`. It is created with the
   container.
@@ -119,13 +112,7 @@ moves the pointer back, is recorded in `notes`, and keeps its evidence in
   over only by starting the container after it. A design pass with nothing to
   decide renews `design.md` with what was considered and why it stands.
 - An absent artifact for the current stage blocks `advance`, and `current`
-  reports it as a `gap=` line. A partial `dev` gap is followed by
-  `specs=<folder>, <folder>` — the task folders with no `task.md` — and
-  `missing=<folder>, <folder>` — those with no `dev-report.md`. Each line prints
-  only when it has entries, so both dev-stage producers can act without
-  searching `.sda/`.
-- `tasks/` is created with the container and may stay empty; `dev` counts as
-  produced only when it holds at least one task folder with a `task.md`.
+  reports it as a `gap=` line.
 
 ### Escalation briefs
 - `escalations/` holds one brief per escalation, created with the container. The

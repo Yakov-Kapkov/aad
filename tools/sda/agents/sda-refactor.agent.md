@@ -84,7 +84,7 @@ The caller passes you:
 - **In-scope symbols** — the refactor boundary. Entries: `{symbol}` — one function, class, or method the task added or changed; `{file}: *` — a file the task created whole; `{test_file}: {suite} › *` — one test suite the task added; `{test_file}: {suite} › {test_name}` — one test case the task added (nested suites join with ` › `; the **last** `›` separates the case name). See [Read scope](#read-scope). `cross-unit` scope lists them grouped by unit under the `Units:` block.
 - **Standards skill** — the coding-standards skill to load.
 - **Repo root** — absolute path to the repository root.
-- **Changes** (optional) — task.md Changes blocks specifying exact transformations to apply (renames, extractions, moves). When present, apply these as sweep 0 before the normal sweeps for the given Scope.
+- **Changes** (optional) — caller-supplied Changes blocks specifying exact transformations to apply (renames, extractions, moves). When present, apply these as sweep 0 before the normal sweeps for the given Scope.
 - **Prior failure N** (optional, repeatable) — trimmed output of attempt N.
 - **Fix direction N** (optional, repeatable) — caller's diagnosis for attempt N. Use as primary guidance; override only if the source files clearly point to a different cause.
 

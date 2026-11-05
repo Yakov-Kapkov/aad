@@ -3,11 +3,6 @@
 # Edit project-config.json directly — this file is for reference only.
 
 scripts:
-  # Full path to the task-state script. Set automatically by setup.
-  # PowerShell: .sda/scripts/dev/task-state.ps1
-  # Bash:       .sda/scripts/dev/task-state.sh
-  taskState: .sda/scripts/dev/task-state.ps1
-
   # Full path to the QA secrets loader script (legacy — superseded by qaSessionInit).
   # Still used as a fallback when qaSessionInit is absent. Set automatically by setup.
   # PowerShell: .sda/scripts/qa/load-qa-secrets.ps1
@@ -41,8 +36,8 @@ scripts:
   # Bash:       .sda/scripts/workflow/workflow.sh
   workflow: .sda/scripts/workflow/workflow.ps1
 
-# user — sda-design and sda-dev-task pressure-test YOUR proposed approach and never design for you
-# ai   — they may propose the design approach themselves (legacy behaviour)
+# user — sda-design pressure-tests YOUR proposed approach and never designs for you
+# ai   — it may propose the design approach itself (legacy behaviour)
 designOwnership: user
 
 # Name of the skill that carries coding standards. sda-dev, sda-coder,
@@ -63,15 +58,13 @@ docsCheck:
 paths:
   # Root folder for specification files (OpenAPI, JSON Schema, etc.).
   # Defaults to .sda/specs if omitted.
-  # sda-scribe writes specs here: sda-design creates them, a task's `docs` unit
-  # amends one that exists. Read by sda-design, sda-dev-task,
-  # sda-dev-task-verifier, and sda-qa-task.
+  # sda-scribe writes specs here: sda-design creates them, a `docs` unit
+  # amends one that exists. Read by sda-design and sda-qa-task.
   specs: .sda/specs
 
   # Root folder for standalone QA specs (qa-task.md, authored by sda-qa-task)
-  # and their reports (qa-report.md, written by sda-qa) when run without a
-  # task context. Defaults to .sda/issues if omitted.
-  # Task-scoped QA artifacts live inside the task folder, not here.
+  # and their reports (qa-report.md, written by sda-qa). Defaults to
+  # .sda/issues if omitted.
   issues: .sda/issues
 
   # Folder holding gitignored QA credentials (qa.secrets.env). Defaults to
@@ -83,8 +76,7 @@ paths:
   userStories: .sda/stories
 
   # Root folder for workflow containers (.sda/workflows/<NNN>. <slug>/), each
-  # holding a user story, a design record, and its task folders — one task.md
-  # plus one dev-report.md per folder (together the dev stage's artifact).
+  # holding an issue outline, a user story, a design record, and its dev report.
   # Defaults to .sda/workflows if omitted.
   workflows: .sda/workflows
 

@@ -53,8 +53,8 @@ CLI applies in a workflow session only.
 - **Shape *what* and *why*, never *how*.** Capture desired behaviour or outcomes
   as requirements in the story — never as build instructions. _"it should reject
   expired tokens"_ = a scenario to write, not a code change to make.
-- **The only file you write is `user-story.md`.** Never source code, task specs,
-  or qa specs. The requirements tree is written by `sda-scribe`, never by you.
+- **The only file you write is `user-story.md`.** Never source code,
+  implementation plans, or qa specs. The requirements tree is written by `sda-scribe`, never by you.
 - **NFRs are measurable and live with the requirements docs.** An NFR sits at the
   level it constrains — the item's `## NFRs` section, `<concern>/nfr.md`,
   `<feature>/nfr.md`, or the tree's root `nfr.md`. Resolve the location from the

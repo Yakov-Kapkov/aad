@@ -29,8 +29,7 @@ and complexity control. Your expertise never changes; the
 
 ```
 1. Design           ◀ you are here  (sda-design)
-2. Task Planning
-3. Implementation
+2. Implementation
 ```
 
 ## Altitude & artifacts
@@ -553,7 +552,7 @@ The conversational loop, any altitude. The brainstorming posture lives in
 
 During brainstorming, ideas emerge that don't belong here:
 
-- **Same feature, separate task** → note it in the design record's `## Handoff`.
+- **Same feature, separate change** → note it in the design record's `## Handoff`.
 - **Different feature** → tell the user: _"This sounds like a separate
   feature. Want me to add it to the readme outline?"_ If yes, add it to the
   readme's features section (via sda-scribe).
@@ -596,8 +595,8 @@ After the outline is updated, ask: _"Ready to wrap up?"_
    `# EXTRACTED — verify against implementation`.
 4. Record the finished list in the design record's `## Handoff` **Specs** line.
 
-**Spec gate:** every boundary this change crosses has a spec file. The task
-stage conforms to specs — it never writes one.
+**Spec gate:** every boundary this change crosses has a spec file. Implementations
+conform to specs — they never write one.
 
 **Write the design record** (see [Design Record](#design-record))
 — delegate to `sda-scribe` (Mode 7), passing the affected-spec list.
@@ -641,7 +640,7 @@ sections — delegate the check and report its findings verbatim.
 
 ### Source code — read-only
 
-Never write source code, tests, or `task.md` files. You
+Never write source code, tests, or implementation artifacts. You
 write no files directly — all docs go through `sda-scribe`. Code changes
 start only after the design stage advances.
 

@@ -21,7 +21,6 @@ printf '*\n!.gitignore\n!qa.example.secrets.env\n' > "$TARGET_DIR/secrets/.gitig
 mkdir -p "$TARGET_DIR/resources/dev"
 cp "$ASSETS_DIR/project-config.example.json"       "$TARGET_DIR/resources/project-config.example.json"
 cp "$ASSETS_DIR/project-config.reference.yml"      "$TARGET_DIR/project-config.reference.yml"
-cp "$ASSETS_DIR/dev/task-schema.md"                  "$TARGET_DIR/resources/dev/task-schema.md"
 cp "$ASSETS_DIR/dev/dev-report-schema.md"            "$TARGET_DIR/resources/dev/dev-report-schema.md"
 mkdir -p "$TARGET_DIR/resources/qa"
 cp "$ASSETS_DIR/qa/qa-task-schema.md"                "$TARGET_DIR/resources/qa/qa-task-schema.md"
@@ -38,11 +37,6 @@ cp "$ASSETS_DIR/qa/qa.example.secrets.env"           "$TARGET_DIR/secrets/qa.exa
 # Copy read-config hook script
 mkdir -p "$TARGET_DIR/scripts"
 cp "$SCRIPT_DIR/read-config.sh"                      "$TARGET_DIR/scripts/read-config.sh"
-
-# Copy task-state script (bash)
-mkdir -p "$TARGET_DIR/scripts/dev"
-cp "$ASSETS_DIR/dev/bash/task-state.sh"              "$TARGET_DIR/scripts/dev/task-state.sh"
-cp "$ASSETS_DIR/dev/bash/unit-file-size.sh"          "$TARGET_DIR/scripts/dev/unit-file-size.sh"
 
 # Copy QA credential scripts
 QA_SRC="$ASSETS_DIR/qa/bash"
@@ -67,6 +61,8 @@ find "$TARGET_DIR/scripts" -type f -name '*.sh' -exec chmod +x {} +
 LEGACY_PATHS=(
   "$TARGET_DIR/scripts/decisions"                        # docs-integrity's first location
   "$TARGET_DIR/scripts/docs"                             # docs-integrity's second location — the checkers now ship in the docs skills
+  "$TARGET_DIR/scripts/dev"                              # task-state + unit-file-size retired with the task layer
+  "$TARGET_DIR/resources/dev/task-schema.md"             # task layer retired
   "$TARGET_DIR/resources/design/design-report-schema.md"  # replaced by design-record-schema.md
   "$TARGET_DIR/project-tools.md"                         # toolchain scan output
   "$TARGET_DIR/project-tools_backup.md"                  # toolchain scan backup

@@ -48,8 +48,6 @@ merge_defaults(config, template)
 # Step 2: Set platform script paths (never override user values)
 # Set each path only when missing or still at a shipped default.
 SHIPPED = {
-    "taskState":     (".sda/scripts/dev/task-state.ps1",     ".sda/scripts/dev/task-state.sh"),
-    "unitFileSize":  (".sda/scripts/dev/unit-file-size.ps1",  ".sda/scripts/dev/unit-file-size.sh"),
     "loadQaSecrets": (".sda/scripts/qa/load-qa-secrets.ps1", ".sda/scripts/qa/load-qa-secrets.sh"),
     "listQaSecrets": (".sda/scripts/qa/list-qa-secrets.ps1", ".sda/scripts/qa/list-qa-secrets.sh"),
     "qaSessionInit": (".sda/scripts/qa/qa-session-init.ps1", ".sda/scripts/qa/qa-session-init.sh"),
@@ -57,8 +55,6 @@ SHIPPED = {
     "workflow":      (".sda/scripts/workflow/workflow.ps1",  ".sda/scripts/workflow/workflow.sh"),
 }
 PLATFORM = {
-    "taskState":     ".sda/scripts/dev/task-state.sh",
-    "unitFileSize":  ".sda/scripts/dev/unit-file-size.sh",
     "loadQaSecrets": ".sda/scripts/qa/load-qa-secrets.sh",
     "listQaSecrets": ".sda/scripts/qa/list-qa-secrets.sh",
     "qaSessionInit": ".sda/scripts/qa/qa-session-init.sh",
@@ -72,7 +68,7 @@ for key, platform_value in PLATFORM.items():
         scripts[key] = platform_value
 
 # Step 3: Drop retired fields — a field no longer shipped must not linger.
-for key in ("docsIntegrity", "readProjectTools"):
+for key in ("docsIntegrity", "readProjectTools", "taskState", "unitFileSize"):
     scripts.pop(key, None)
 
 with open("$CONFIG_FILE", "w") as f:

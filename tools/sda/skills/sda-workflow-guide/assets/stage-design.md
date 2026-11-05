@@ -7,4 +7,3 @@
 - **Escalate:** to `story` (the only upstream) — pass no `to`.
 - **Resolve:** escalations addressed to `design`.
 - **Advance:** `design.md` renewed **and the spec set complete** → ask, then `advance`.
-- The `## Handoff` section is handoff context for `sda-dev-task`.

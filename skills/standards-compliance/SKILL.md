@@ -1,6 +1,6 @@
 ---
 name: standards-compliance
-description: "Enforce project coding standards on all produced code changes. Also use as a pre-write reference — load standards before writing code so all decisions follow the rules from the start. MUST be loaded before any task that writes, modifies, refactors, or reviews code — including implementation, refactoring, adding comments, renaming, fixing bugs, and any other code change no matter how small. Contains the authoritative rule content from common-standards.md, coding-standards.md, testing-standards.md, and code-style.md. Agent instructions summarize standards behavior only — the actual rules are in this skill and must be loaded explicitly. Resolves conflicts between task specs and standards. Defines global/local priority and scope-specific application rules."
+description: "Enforce project coding standards on all produced code changes. Also use as a pre-write reference — load standards before writing code so all decisions follow the rules from the start. MUST be loaded before any task that writes, modifies, refactors, or reviews code — including implementation, refactoring, adding comments, renaming, fixing bugs, and any other code change no matter how small. Contains the authoritative rule content from common-standards.md, coding-standards.md, testing-standards.md, and code-style.md. Agent instructions summarize standards behavior only — the actual rules are in this skill and must be loaded explicitly. Resolves conflicts between task descriptions and standards. Defines global/local priority and scope-specific application rules."
 ---
 
 # Standards Compliance Enforcement
@@ -19,8 +19,8 @@ Language-agnostic — works with any language that has standards files.
   the rules from the start
 - Writing or modifying **any** file: production code, tests, stubs,
   integration wiring
-- Resolving conflicts between a task spec and coding standards
-- Validating code examples in task specifications
+- Resolving conflicts between a task description and coding standards
+- Validating code examples in requirement documents
 
 ---
 
@@ -106,13 +106,13 @@ This applies to every file type: stubs, tests, implementation, and
 integration changes alike. Write compliant code from the start —
 do not write non-compliant code and fix it after.
 
-### 2. Conflict resolution — standards win over task specs
+### 2. Conflict resolution — standards win over task descriptions
 
-Task documents (`task.md`, user descriptions, attached specs) are
+Task descriptions (user text, attached specs, requirement documents) are
 **behavioral specs, not code specs.** Code snippets and type definitions
 illustrate intent — not authorized final syntax.
 
-When any detail in a task document conflicts with loaded standards:
+When any detail in a task description conflicts with loaded standards:
 
 | Conflict | Resolution |
 |---|---|
@@ -136,9 +136,9 @@ Apply the relevant standards files based on what you're writing:
   throw unambiguous "not implemented" error; only export symbols that
   tests reference
 
-### 4. Task specification validation
+### 4. Requirement-document validation
 
-When reviewing or producing code examples in task documents (`task.md`):
+When reviewing or producing code examples in requirement documents:
 
 - **Executable code blocks** (imports, function signatures, class
   definitions) must comply with coding standards

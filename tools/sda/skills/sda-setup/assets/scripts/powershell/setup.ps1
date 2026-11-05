@@ -19,7 +19,6 @@ Set-Content -Path "$targetDir/secrets/.gitignore" -Value "*`n!.gitignore`n!qa.ex
 New-Item -ItemType Directory -Force -Path "$targetDir/resources/dev" | Out-Null
 Copy-Item "$scriptDir/project-config.example.json"       "$targetDir/resources/project-config.example.json"
 Copy-Item "$scriptDir/project-config.reference.yml"      "$targetDir/project-config.reference.yml"
-Copy-Item "$scriptDir/dev/task-schema.md"                  "$targetDir/resources/dev/task-schema.md"
 Copy-Item "$scriptDir/dev/dev-report-schema.md"            "$targetDir/resources/dev/dev-report-schema.md"
 New-Item -ItemType Directory -Force -Path "$targetDir/resources/qa" | Out-Null
 Copy-Item "$scriptDir/qa/qa-task-schema.md"                "$targetDir/resources/qa/qa-task-schema.md"
@@ -36,11 +35,6 @@ Copy-Item "$scriptDir/qa/qa.example.secrets.env"           "$targetDir/secrets/q
 # Copy read-config hook script
 New-Item -ItemType Directory -Force -Path "$targetDir/scripts" | Out-Null
 Copy-Item "$PSScriptRoot/read-config.ps1"              "$targetDir/scripts/read-config.ps1"
-
-# Copy task-state script (PowerShell)
-New-Item -ItemType Directory -Force -Path "$targetDir/scripts/dev" | Out-Null
-Copy-Item "$scriptDir/dev/powershell/task-state.ps1"       "$targetDir/scripts/dev/task-state.ps1"
-Copy-Item "$scriptDir/dev/powershell/unit-file-size.ps1"   "$targetDir/scripts/dev/unit-file-size.ps1"
 
 # Copy QA credential scripts
 $qaSrc = Join-Path (Join-Path $scriptDir 'qa') 'powershell'
@@ -61,6 +55,8 @@ Copy-Item "$workflowSrc/workflow.ps1"                   "$targetDir/scripts/work
 $legacyPaths = @(
     "$targetDir/scripts/decisions"                     # docs-integrity's first location
     "$targetDir/scripts/docs"                          # docs-integrity's second location — the checkers now ship in the docs skills
+    "$targetDir/scripts/dev"                           # task-state + unit-file-size retired with the task layer
+    "$targetDir/resources/dev/task-schema.md"          # task layer retired
     "$targetDir/resources/design/design-report-schema.md"  # replaced by design-record-schema.md
     "$targetDir/project-tools.md"                      # toolchain scan output
     "$targetDir/project-tools_backup.md"               # toolchain scan backup

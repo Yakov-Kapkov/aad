@@ -6,7 +6,7 @@
 # workflow.json; folders and state are never hand-edited.
 #
 # Commands:
-#   init      Create a workflow folder, its tasks/ folder, and workflow.json,
+#   init      Create a workflow folder, its escalations/ folder, and workflow.json,
 #             at story by default or the --at stage.
 #   list      One line per workflow; marks the deepest open escalation.
 #   current   Print the stage, any open escalation, and artifact gaps.
@@ -24,13 +24,9 @@
 # The stage order is story -> design -> dev -> ready. A container starts at
 # story by default; --at design or --at dev skips the stages before it, which
 # then produce no artifact. Every stage from the start onward produces one
-# artifact, and advance refuses to leave a stage whose artifact is absent. The
-# dev stage carries the whole implementation pipeline in two sessions -- task
-# specs, then implementation -- so its artifact is the tasks/ tree complete: at
-# least one task folder, a task.md in every folder, and a dev-report.md beside
-# each. A container with an unproduced task spec or an unimplemented task cannot
-# reach ready. While any escalation is open, advance is refused and only resolve
-# clears it.
+# artifact -- user-story.md, design.md, or the dev stage's dev-report.md -- and
+# advance refuses to leave a stage whose artifact is absent. While any
+# escalation is open, advance is refused and only resolve clears it.
 #
 # Usage:
 #   workflow.sh init     --slug <slug> [--at <story|design|dev>]
@@ -172,75 +168,23 @@ next_escalation_id() {
   jq -r '([.notes[] | select(.type == "escalation")] | length) + 1 | "E\(.)"' "$1"
 }
 
-# One task folder name per line, in name order.
-task_folders() {
-  local dir="$1/tasks" name
-  [ -d "$dir" ] || return 0
-  for name in "$dir"/*/; do
-    [ -d "$name" ] || continue
-    basename "$name"
-  done | sort
-}
-
-# One task folder name per line for the folders that hold no dev-report.md.
-dev_missing() {
-  local dir="$1/tasks" name
-  while IFS= read -r name; do
-    [ -f "$dir/$name/dev-report.md" ] || printf '%s\n' "$name"
-  done < <(task_folders "$1")
-}
-
-# One task folder name per line for the folders that hold no task.md.
-task_spec_missing() {
-  local dir="$1/tasks" name
-  while IFS= read -r name; do
-    [ -f "$dir/$name/task.md" ] || printf '%s\n' "$name"
-  done < <(task_folders "$1")
-}
-
-# 0 when the stage's artifact exists. 'ready' has no artifact of its own;
-# 'dev' counts only when the tasks/ tree is complete -- at least one task folder,
-# a task.md in every folder, and a dev-report.md beside each -- so the stage is
-# complete on the whole container rather than on the last task implemented.
+# 0 when the stage's artifact exists. 'ready' has no artifact of its own; every
+# other stage has one file at the container root.
 artifact_present() {
   local folder="$1"
   case "$2" in
     story)  [ -e "$folder/user-story.md" ] && return 0 ;;
     design) [ -e "$folder/design.md" ] && return 0 ;;
-    dev)    [ -n "$(task_folders "$folder")" ] \
-              && [ -z "$(task_spec_missing "$folder")" ] \
-              && [ -z "$(dev_missing "$folder")" ] && return 0 ;;
+    dev)    [ -e "$folder/dev-report.md" ] && return 0 ;;
   esac
   return 1
 }
 
 artifact_label() {
-  local folder="$1" total=0 count=0 names="" name
   case "$2" in
     story)  printf 'user-story.md does not exist; produce it first' ;;
     design) printf 'design.md does not exist; produce it first' ;;
-    dev)
-      while IFS= read -r name; do total=$((total + 1)); done < <(task_folders "$folder")
-      if [ "$total" -eq 0 ]; then
-        printf 'the tasks/ folder has no task folder; produce it first'
-        return 0
-      fi
-      while IFS= read -r name; do
-        count=$((count + 1))
-        if [ -z "$names" ]; then names="$name"; else names="$names, $name"; fi
-      done < <(task_spec_missing "$folder")
-      if [ "$count" -gt 0 ]; then
-        printf '%s of %s task folders have no task.md: %s; every task folder needs one first' \
-          "$count" "$total" "$names"
-        return 0
-      fi
-      while IFS= read -r name; do
-        count=$((count + 1))
-        if [ -z "$names" ]; then names="$name"; else names="$names, $name"; fi
-      done < <(dev_missing "$folder")
-      printf '%s of %s task folders have no dev-report.md: %s; every task folder needs one first' \
-        "$count" "$total" "$names"
-      ;;
+    dev)    printf 'dev-report.md does not exist; produce it first' ;;
   esac
 }
 
@@ -312,7 +256,7 @@ case "$COMMAND" in
 
     id="$(printf '%03d' "$next")"
     folder="$ROOT/$id. $SLUG"
-    mkdir -p "$folder/tasks" "$folder/escalations" \
+    mkdir -p "$folder/escalations" \
       || fail "init cannot create '$SLUG' because $folder could not be created"
 
     jq -n --arg id "$id" --arg slug "$SLUG" --arg created "$(date +%F)" --arg start "$start" \
@@ -411,10 +355,7 @@ case "$COMMAND" in
       i=$((i + 1))
     done
 
-    # Artifact gaps from the start to the current stage. 'ready' has none. A
-    # 'dev' gap names the task folders still missing their task.md, then those
-    # still missing their dev-report.md, because .sda/ is unsearchable and
-    # neither producer can list them.
+    # Artifact gaps from the start to the current stage. 'ready' has none.
     lo="$start_index"
     [ "$index" -lt "$lo" ] && lo="$index"
     i="$lo"
@@ -422,18 +363,6 @@ case "$COMMAND" in
       name="$(stage_name "$i")"
       if [ "$name" != "ready" ] && ! artifact_present "$folder" "$name"; then
         printf 'gap=%s\n' "$name"
-        if [ "$name" = "dev" ]; then
-          names=""
-          while IFS= read -r n; do
-            if [ -z "$names" ]; then names="$n"; else names="$names, $n"; fi
-          done < <(task_spec_missing "$folder")
-          [ -n "$names" ] && printf 'specs=%s\n' "$names"
-          names=""
-          while IFS= read -r n; do
-            if [ -z "$names" ]; then names="$n"; else names="$names, $n"; fi
-          done < <(dev_missing "$folder")
-          [ -n "$names" ] && printf 'missing=%s\n' "$names"
-        fi
       fi
       i=$((i + 1))
     done

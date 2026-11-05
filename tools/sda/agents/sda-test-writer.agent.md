@@ -132,7 +132,7 @@ that returned exactly 500 lines.
 Read the **Source** and **Test** files from the unit specification.
 
 For each path in **Source** and **Test**: if it does not exist on disk and is not explicitly marked **new** in the unit specification → **🚨 HARD STOP.** Report:
-_"`{path}` not found. `task.md` may be out of sync. Update the path and retry."_
+_"`{path}` not found. The caller's paths may be out of sync. Update the path and retry."_
 Do not search for the file. Do not create it.
 
 ### 2. Pre-check — stubs

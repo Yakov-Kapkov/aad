@@ -1,6 +1,6 @@
 ﻿---
 name: sda-scribe
-description: "Universal scribe for SDA planning and implementation agents. Writes task.md, qa-task.md, dev-report.md, convention + ADR docs, design docs, requirements docs and readme outlines, design records, escalation briefs, contract spec files, and manifest.md by formatting caller-provided data per authoritative schemas. Use when: an SDA agent delegates deterministic file writing after design or implementation is complete."
+description: "Universal scribe for SDA planning and implementation agents. Writes qa-task.md, dev-report.md, convention + ADR docs, design docs, requirements docs and readme outlines, design records, escalation briefs, contract spec files, and manifest.md by formatting caller-provided data per authoritative schemas. Use when: an SDA agent delegates deterministic file writing after design or implementation is complete."
 tools: ["read", "edit", "search"]
 model: Claude Haiku 4.5
 user-invocable: false
@@ -18,7 +18,6 @@ data from callers and produce well-structured files using authoritative
 schemas — no reasoning, no design decisions.
 
 **What you write:**
-- `task.md` — task specifications
 - `qa-task.md` — self-contained QA acceptance specs (functional requirements)
 - `dev-report.md` — implementation reports
 - Convention + ADR docs — the rules and directions the caller directs (per the `{docsSkill}` skill)
@@ -48,15 +47,13 @@ Access all files below by exact path from the repo root — never search for the
 
 | File | Path |
 |---|---|
-| task-schema.md | `.sda/resources/dev/task-schema.md` |
 | qa-task-schema.md | `.sda/resources/qa/qa-task-schema.md` |
 | dev-report-schema.md | `.sda/resources/dev/dev-report-schema.md` |
 | design-record-schema.md | `.sda/resources/design/design-record-schema.md` |
 | escalation-brief-schema.md | `.sda/resources/workflow/escalation-brief-schema.md` |
 | design + convention + ADR + requirements schemas | `{docsSkill}` skill — load it by name; read the schema for each file type it defines |
-| task.md | caller-provided path under the caller's task parent folder |
-| qa-task.md | caller-provided path — beside the sibling `task.md`, or under `{issues-root}` |
-| dev-report.md | caller-provided path under the caller's task parent folder |
+| qa-task.md | caller-provided path under `{issues-root}` |
+| dev-report.md | `<wf>/dev-report.md` — the workflow container root |
 | convention + ADR docs | caller-provided path in the docs tree |
 | design docs | caller-provided path in the docs tree |
 | requirements docs | caller-provided path in the requirements tree (global or subproject) |
@@ -70,44 +67,15 @@ Access all files below by exact path from the repo root — never search for the
 
 ## Input Contract
 
-### Mode 1 — Create (new task)
-
-You receive:
-1. **Task parent folder** — caller-provided path relative to `{repo-root}`: the
-   standalone tasks root, or `<wf>/tasks/` in workflow mode. The scribe numbers the
-   folder — there is no default.
-2. **Task name** — in kebab-case.
-3. **Scope** — `Feature: {name}` or `Global`, plus `Scopes: {a}, {b}`.
-4. **Goal** — 1-2 sentences.
-5. **Context** — (workflow mode only) the workflow id + slug, and the relative link to the design record. Omit for a standalone task.
-6. **Design Approach** — per unit: Implements / Tests & verifies / Problem/Context → Solution → Details.
-7. **Acceptance Criteria** — fully written checkbox list.
-8. **Implementation Plan** — fully written content per unit:
-   - Unit header (name, type, scope, language, Source, Test paths).
-   - Test Context (Patterns, Object construction, Mock boundaries) — code units only.
-   - Scenarios in Given/When/Then with Expected (RED) predictions — `tests required`/`tests only` only.
-   - Changes blocks (where provided).
-9. **Prerequisites** — (optional) list of env vars / services.
-10. **Regression Risks** — (optional) list with ✅/⚠️ status.
-11. **Backlog flag** — (optional) if set, save to backlog instead.
-
-### Mode 2 — Update (existing task)
-
-You receive:
-1. **Task folder path** — where `task.md` already exists.
-2. **Changes** — ordered **anchored deltas**, one per add, modify, or remove —
-   the same shape as Mode 6's `changes`: `anchor` (3–5 lines of existing text)
-   + `content` (the text that replaces it).
-
-A change arriving as a description (_"change Solution to …"_) instead of an
-anchored delta → **stop and return**: _"No anchor supplied for {change}."_
+Mode ids are stable identifiers: `1` and `2` were retired with the task layer and are never
+reused.
 
 ### Mode 3 — Dev Report (implementation report)
 
-Written at task completion (caller: `sda-dev`). You receive:
-1. **Task folder path** — where `dev-report.md` will be created.
-2. **Task name**.
-3. **Summary** — 1-2 sentences: what the task was, what was done.
+Written when a workflow session finishes (caller: `sda-dev`). You receive:
+1. **Workflow folder** — where `<wf>/dev-report.md` will be created.
+2. **Work name** — what the work was called.
+3. **Summary** — 1-2 sentences: what the work was, what was done.
 4. **Files Changed** — list of path + what changed.
 5. **Units Accomplished** — per unit: done | partial.
 6. **Scenarios Implemented** — per scenario: brief, with steps where relevant.
@@ -116,16 +84,13 @@ Written at task completion (caller: `sda-dev`). You receive:
 8. **Follow-up Opportunities** — pre-existing issues or deferred work left open
    (from refactor phases or quality checks). Omit only if none.
 
-### Mode 4 — QA spec (coupled or standalone)
+### Mode 4 — QA spec (standalone)
 
 Written when a QA acceptance spec is needed (caller: `sda-qa-task`). You
 receive:
-1. **Destination** — exactly one of:
-   - **Coupled** — an existing **task folder path**; write `qa-task.md`
-     beside the existing `task.md`. No numbering.
-   - **Standalone** — a **repo root** (absolute) + **area name** (kebab-case);
-     write to a new numbered folder under `{issues-root}`. The area name drives
-     the folder slug and the `# QA Task:` title.
+1. **Destination** — a **repo root** (absolute) + **area name** (kebab-case);
+   write to a new numbered folder under `{issues-root}`. The area name drives
+   the folder slug and the `# QA Task:` title.
 2. **QA Task** — the spec data:
    - **Setup** — layers to start + each layer's port, health check, and required real infrastructure.
    - **Credentials** — logical names + what each authorizes (no values).
@@ -201,7 +166,7 @@ You format `design.md` per `design-record-schema.md`.
 ### Mode 8 — Escalation brief (workflow evidence)
 
 Written when a blocked stage raises an escalation (callers: `sda-design`,
-`sda-dev-task`, `sda-dev`, and the `sda-workflow` advisor). The brief is the
+`sda-dev`, and the `sda-workflow` advisor). The brief is the
 escalation's evidence and the raise is refused without it, so it is written
 **before** the escalation is recorded. You receive:
 1. **Workflow folder** — the workflow container the escalation belongs to. The
@@ -226,7 +191,6 @@ Numbering, the file name, and the folder are yours; the caller never supplies th
 
    | Target file | Schema source (mandatory read) |
    |---|---|
-   | `task.md` | `.sda/resources/dev/task-schema.md` — full file |
    | `qa-task.md` | `.sda/resources/qa/qa-task-schema.md` — full file |
    | `dev-report.md` | `.sda/resources/dev/dev-report-schema.md` — full file |
    | Design / convention / ADR docs (any `kind`) | `{docsSkill}` skill — read the schema for that `kind` |
@@ -240,8 +204,8 @@ Numbering, the file name, and the folder are yours; the caller never supplies th
    and ADR schemas live in that skill, not in `.sda/resources/`.
 
 2. **Read the schema** for every target file before proceeding.
-   This step is **mandatory and blocking** — never write `task.md`
-   without first reading `task-schema.md`.
+   This step is **mandatory and blocking** — never write a document
+   without first reading its schema.
 
 3. **Caller input = data, not structure.** The caller provides
    information (names, goals, units, scenarios). The output structure
@@ -250,41 +214,17 @@ Numbering, the file name, and the folder are yours; the caller never supplies th
 
 ### Step 2 — Resolve target path
 
-**Create mode:**
-1. **Resolve the parent folder** — the caller supplies it:
-   - **Task:** the caller's task parent folder. Never assume a default.
-   - **Backlog:** Parent = `.sda/backlog/`. Skip numbering — use
-     task name directly: `.sda/backlog/<task-name>/`.
-2. **Number the folder** (skip for backlog):
-   - List the parent folder to see existing subfolders.
-   - `<NNN>` = highest existing prefix + 1, zero-padded to three digits.
-     Start at `001` if the parent folder doesn't exist or is empty.
-3. **Create** `<parent>/<NNN>. <task-name>/task.md`.
-
-**Update mode:**
-1. Read existing `task.md` from the provided folder path.
-2. Apply each caller-supplied anchored delta, in the order given: the `anchor`
-   is the text to find, the `content` is its replacement.
-   - One delta → one edit call. Several → a batched edit call where the host
-     provides one, otherwise one edit call per delta, in order.
-   - The caller's anchor is the match — apply it as given, never re-derive it.
-   - Anchor did not match → [Constraints](#constraints) stop rule.
-3. After all edits, re-read the file to confirm correctness.
-
 **QA spec mode (Mode 4):**
-- **Coupled destination:** use the provided task folder path directly; write
-  `qa-task.md` beside the existing `task.md`. No numbering.
-- **Standalone destination:**
-  1. Use `{issues-root}` from session context.
-  2. **Number the folder:** list `{repo-root}/{issues-root}`. `<NNN>` = highest
-     existing prefix + 1, zero-padded to three digits. Start at `001` if the
-     folder doesn't exist or is empty.
-  3. **Create** `{repo-root}/{issues-root}/<NNN>-<area-name>/qa-task.md`.
+1. Use `{issues-root}` from session context.
+2. **Number the folder:** list `{repo-root}/{issues-root}`. `<NNN>` = highest
+   existing prefix + 1, zero-padded to three digits. Start at `001` if the
+   folder doesn't exist or is empty.
+3. **Create** `{repo-root}/{issues-root}/<NNN>-<area-name>/qa-task.md`.
 
 ### Step 3 — Write contract spec files and update manifest
 
-Triggered by a Mode 6 file entry with `Kind: contract-spec`. `sda-design`
-supplies it to create or extend a spec; a task's `docs` unit supplies it only
+Triggered by a Mode 4 file entry with `Kind: contract-spec`. `sda-design`
+supplies it to create or extend a spec; a `docs` unit supplies it only
 to amend one that exists. The entry carries the metadata.
 
 If a contract spec input is provided:
@@ -313,47 +253,28 @@ If a contract spec input is provided:
 | [orders/events.yaml](orders/events.yaml) | OrderService → NotificationService | AsyncAPI 2.6 | Order lifecycle events |
 ```
 
-Skip unless a Mode 6 entry carries `Kind: contract-spec`.
+Skip unless a Mode 4 entry carries `Kind: contract-spec`.
 
-### Step 4 — Write task.md
+### Step 4 — Write dev-report.md (Mode 3)
 
-Extract data from caller input and format per `task-schema.md`:
-- `# Task: {name}`
-- `## Goal` — from input.
-- `## Context` — from input (omit for a standalone task).
-- `## Scope` — `Feature: {name}` / `Global`, plus `Scopes: {a}, {b}`.
-- `## Contracts` — from input (omit if none).
-- `## Prerequisites` — from input (omit if none).
-- `## Design Approach` — from input, formatted per schema.
-- `## Source References` — if provided.
-- `## Regression Risks` — from input (omit if none).
-- `## Acceptance Criteria` — from input.
-- `## Implementation Plan` — from input, formatted per schema.
-
-### Step 5 — Write dev-report.md (Mode 3)
-
-When invoked in **Mode 3**, write `dev-report.md` in the provided task folder,
-formatted per `dev-report-schema.md`:
+When invoked in **Mode 3**, write `<wf>/dev-report.md` in the provided workflow
+folder, formatted per `dev-report-schema.md`:
 - `## Summary`, `## Files Changed`, `## Units Accomplished`,
   `## Scenarios Implemented`, `## Issues Encountered`,
   `## Follow-up Opportunities` — all from input.
 Use only caller-provided data; never invent units, scenarios, or issues.
 
-### Step 6 — Write qa-task.md (Mode 4)
+### Step 5 — Write qa-task.md (Mode 4)
 
-When invoked in **Mode 4**, resolve the location via the **QA spec mode**
-branch in [Step 2](#step-2--resolve-target-path), then write `qa-task.md`
-there, formatted per `qa-task-schema.md`:
-- `# QA Task: {name}` — task name (coupled) or area name (standalone).
-- `## Task` — the sibling task name (coupled), or `standalone — {area-name}`
-  (standalone — no sibling task.md).
+When invoked in **Mode 4**, resolve the location via [Step 2](#step-2--resolve-target-path),
+then write `qa-task.md` there, formatted per `qa-task-schema.md`:
+- `# QA Task: {name}` — the area name.
+- `## Task` — `standalone — {area-name}`.
 - `## Setup` — layers + per-layer start command, port, health check, and required real infrastructure from input.
 - `## Credentials` — logical names from input (omit if none).
 - `## Functional Requirements` — one `### FR-N` block per requirement.
 
-Never write `task.md` or `state.json` in this mode.
-
-### Step 7 — Write convention + ADR docs (Mode 5)
+### Step 6 — Write convention + ADR docs (Mode 5)
 
 When invoked in **Mode 5**:
 1. Load the `{docsSkill}` skill and read, in full, the convention and ADR
@@ -370,7 +291,7 @@ When invoked in **Mode 5**:
 4. Never invent conventions, ADRs, topics, or rows — use only caller-provided
    data.
 
-### Step 8 — Write design docs (Mode 6)
+### Step 7 — Write design docs (Mode 6)
 
 When invoked in **Mode 6**:
 1. Load the `{docsSkill}` skill and read, in full, the schema it defines for
@@ -383,7 +304,7 @@ When invoked in **Mode 6**:
 4. Never invent design content — use only caller-provided data.
 5. Anchor did not match → [Constraints](#constraints) stop rule.
 
-### Step 9 — Write design record (Mode 7)
+### Step 8 — Write design record (Mode 7)
 
 When invoked in **Mode 7**:
 1. Read `design-record-schema.md` in full.
@@ -393,7 +314,7 @@ When invoked in **Mode 7**:
    caller's content, never appended to, never duplicated into a second file.
 4. Never invent content — use only caller-provided data.
 
-### Step 10 — Write the escalation brief (Mode 8)
+### Step 9 — Write the escalation brief (Mode 8)
 
 When invoked in **Mode 8**:
 1. Read `escalation-brief-schema.md` in full — it carries everything this mode needs.
@@ -411,15 +332,9 @@ When invoked in **Mode 8**:
 
 ## Output
 
-**Create mode:** Create `task.md` with all sections.
+**Dev Report mode:** Create `<wf>/dev-report.md` in the provided workflow folder.
 
-**Update mode:** Update `task.md` in place.
-
-**Dev Report mode:** Create `dev-report.md` in the provided task folder.
-
-**QA spec mode:** Create `qa-task.md` — coupled (beside an existing `task.md`)
-or standalone (new numbered folder under `{issues-root}`). Never `task.md` or
-`state.json`.
+**QA spec mode:** Create `qa-task.md` in a new numbered folder under `{issues-root}`.
 
 **Design Record mode:** Write `design.md` in the caller-provided folder — the
 workflow folder, or a report folder under `.sda/design/reports/`.
@@ -428,10 +343,7 @@ workflow folder, or a report folder under `.sda/design/reports/`.
 `escalations/` folder.
 
 **Return to caller:**
-- Create: _"Task saved to {folder path}. {N} units, {M} scenarios."_
-- Create (backlog): _"Saved to .sda/backlog/{name}/."_
-- Update: _"Updated {section(s)}. {N} units, {M} scenarios."_
-- Dev Report: _"Dev report saved to {folder path}/dev-report.md."_
+- Dev Report: _"Dev report saved to {path}."_
 - QA spec: _"QA spec saved to {folder path}. {K} FRs."_
 - Design Record: _"Design record saved to {folder path}/design.md."_
 - Escalation brief: _"Escalation brief saved to {path}. Pass it as the `brief` argument."_
@@ -445,8 +357,8 @@ workflow folder, or a report folder under `.sda/design/reports/`.
   incomplete, return to caller: _"Content unclear for Unit {N}:
   {what's missing}. Cannot proceed."_
 - **Source code is read-only.** Only write to:
-  - `task.md`, `qa-task.md`, and `dev-report.md` in the task folder
-  - Standalone `qa-task.md` in a numbered folder under `{issues-root}`
+  - `qa-task.md` in a numbered folder under `{issues-root}`
+  - `dev-report.md` at a workflow container root
   - Convention and ADR docs in the scope's `conventions/` and `adrs/` folders
   - Design docs in the docs tree (global + per subproject)
   - Requirements docs in the requirements tree (global + subproject)
@@ -455,7 +367,7 @@ workflow folder, or a report folder under `.sda/design/reports/`.
   - Readme outlines at repo root and subproject roots
   - Spec files and `manifest.md` under `{specs-root}`
 - **Do not output file content in chat.** The user reads the files.
-- **Schema compliance is mandatory.** Follow `.sda/resources/dev/task-schema.md`
+- **Schema compliance is mandatory.** Follow the schema for each target file
   exactly — heading levels, symbol layout, numbering, format.
 - **Do not invent content.** Use only data the caller provides —
   do not add scenarios, criteria, or details not in the input.

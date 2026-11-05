@@ -2,7 +2,7 @@
 
 A **design record** carries the design-level context for one workflow's requirement: what the
 design commits to, what it deliberately leaves out, and where the durable decisions live. It
-exists so the task breakdown can be designed without re-deriving the architecture.
+exists so implementation can begin without re-deriving the architecture.
 
 The file lives at `{workflow}/design.md`. It is **renewed in place** — an existing record is
 read and updated, never duplicated into a new location.
@@ -48,7 +48,7 @@ read and updated, never duplicated into a new location.
 - {unsettled question} — {what it affects}
 
 ## Handoff
-**Settled:** {the constraints a task must honour}
+**Settled:** {the constraints implementation must honour}
 **Specs:** use-as-is — {spec} · extend — {spec} · create — {spec}
 **Not to re-decide:** {what is closed, and the location that closes it}
 ```
@@ -109,7 +109,7 @@ read and updated, never duplicated into a new location.
 - Omit only if none.
 
 ### Handoff
-- **Settled** — the constraints the task breakdown must honour.
+- **Settled** — the constraints implementation must honour.
 - **Specs** — the contracts this design touched, split `use-as-is` / `extend` / `create`.
   The next stage traces contracts from this line. Every entry names a file that
   exists when this stage ends.
@@ -153,12 +153,12 @@ Walk the list — do not recall it.
 
 | Not a design decision | Home |
 |---|---|
-| test scenarios and cases | the task document |
-| file layout, symbol and type names | the task document |
-| schema field lists, exact payloads | spec files; inlined into the task document |
+| test scenarios and cases | derived at implementation time |
+| file layout, symbol and type names | implementation |
+| schema field lists, exact payloads | spec files |
 | CLI flags, config keys, env vars | readmes (mechanical) |
-| logging message text | the task document |
-| implementation order / unit sequencing | the task document's implementation plan |
+| logging message text | implementation |
+| implementation order / unit sequencing | implementation |
 
 ### 4. Altitude trigger
 
@@ -173,9 +173,8 @@ requires it in [Context](#context) and [Docs](#docs).
 
 ## Form
 
-- **Not BDD.** Behaviour already has two homes — acceptance in the user story, executable
-  scenarios in the task document. A third home means two copies, and the non-executable one
-  drifts. The record holds no scenarios.
+- **Not BDD.** Behaviour already has a home — acceptance in the user story; executable
+  scenarios are derived at implementation time. The record holds no scenarios.
 - **Declarative.** decision → what it constrains → consequence.
 - **Specific, not syntactic.** `outbox`, not `OutboxDispatcher.Dispatch()`.
 
@@ -183,7 +182,7 @@ requires it in [Context](#context) and [Docs](#docs).
 
 ## Completeness
 
-> If the tasks were designed from this record alone, what would they have to invent?
+> If implementation started from this record alone, what would it have to invent?
 
 Everything they would invent is a missed design decision. The record is complete when nothing
 is left that the design already settled.

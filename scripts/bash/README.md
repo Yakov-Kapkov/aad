@@ -39,7 +39,7 @@ chmod +x *.sh
 
 # Override model for all SDA agents at once
 ./install-dev-suite.sh \
-    -m "sda-dev-task=Claude Opus 4.6" \
+    -m "sda-design=Claude Opus 4.6" \
     -m "sda-coder=Claude Haiku 4.5" \
     -m "sda-test-writer=Claude Haiku 4.5" \
     -m "sda-dev=Claude Sonnet 5"
