@@ -149,7 +149,6 @@ After the user answers, continue with the branch for their choice.
 **Init check — mandatory blocking gate:** Complete steps 1–3 in order before any tool read, CLI call, sub-agent delegation, or FR shaping. No exceptions.
 1. **Resolve and hold for the session** (from session context; use defaults for any absent value):
    - `repoRoot` → `{repo-root}`
-   - `designOwnership` — who leads design (`user` | `ai`)
    - `paths.issues` → `{issues-root}`
    - `paths.specs` → `{specs-root}`
    - `scripts.listQaSecrets` → `{list-qa-secrets}`
@@ -226,9 +225,8 @@ verify, never run or fix it.
    reachable route/endpoint and where the source-of-truth data lives. Locate,
    do not transcribe structure.
 3. **Shape FRs with the user** — the user owns what "correct" means.
-   - `designOwnership: user` (default): pressure-test the user's definition;
-     never volunteer FRs they did not propose.
-   - `designOwnership: ai`: propose the FRs and explain the reasoning.
+   Pressure-test the user's definition; never volunteer FRs they did not
+   propose.
    Capture each as a black-box, user-observable FR per the schema.
 4. **Self-check** — apply the [FR self-check](#fr-self-check--pre-delegation-gate).
 5. **Delegate to `sda-scribe` (Mode 4)** — see [Delegation](#delegation).

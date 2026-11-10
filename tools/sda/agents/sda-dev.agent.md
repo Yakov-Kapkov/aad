@@ -634,8 +634,6 @@ When `sda-refactor` returns — apply [Delegation discipline](#delegation-discip
    Baseline failures:
    {if any:} - {test-name}
    {else:} (none — all tests pass)
-
-   Coverage enabled: {true|false}
    ```
 
 3. **When `sda-dev-quality` returns** — apply [Delegation discipline](#delegation-discipline). Then:

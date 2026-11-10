@@ -84,6 +84,8 @@ The first column names the level the index routes to.
   kebab-case names — no `d{N}` numbering.
 - Lead with the convention; link its ADR when one exists — never restate the
   rationale here.
+- **Code appears only inside an `Application` bullet** — at most three lines,
+  never a whole function or file. The prose sections above it stay prose.
 - **No stale wording.** Record only the current convention — never keep a
   "previous convention" block or past wording in the file. When a convention
   changes, amend only the part that changed (e.g. the `**Convention:**`

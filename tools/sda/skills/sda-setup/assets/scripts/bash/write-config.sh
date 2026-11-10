@@ -52,14 +52,12 @@ SHIPPED = {
     "listQaSecrets": (".sda/scripts/qa/list-qa-secrets.ps1", ".sda/scripts/qa/list-qa-secrets.sh"),
     "qaSessionInit": (".sda/scripts/qa/qa-session-init.ps1", ".sda/scripts/qa/qa-session-init.sh"),
     "invokeHttp":    (".sda/scripts/qa/invoke-http.ps1",     ".sda/scripts/qa/invoke-http.sh"),
-    "workflow":      (".sda/scripts/workflow/workflow.ps1",  ".sda/scripts/workflow/workflow.sh"),
 }
 PLATFORM = {
     "loadQaSecrets": ".sda/scripts/qa/load-qa-secrets.sh",
     "listQaSecrets": ".sda/scripts/qa/list-qa-secrets.sh",
     "qaSessionInit": ".sda/scripts/qa/qa-session-init.sh",
     "invokeHttp":    ".sda/scripts/qa/invoke-http.sh",
-    "workflow":      ".sda/scripts/workflow/workflow.sh",
 }
 scripts = config.setdefault("scripts", {})
 for key, platform_value in PLATFORM.items():
@@ -68,8 +66,12 @@ for key, platform_value in PLATFORM.items():
         scripts[key] = platform_value
 
 # Step 3: Drop retired fields — a field no longer shipped must not linger.
-for key in ("docsIntegrity", "readProjectTools", "taskState", "unitFileSize"):
+for key in ("docsIntegrity", "readProjectTools", "taskState", "unitFileSize", "workflow"):
     scripts.pop(key, None)
+
+# The workflow layer's paths are fixed and ship inside the sda-workflow-guide skill,
+# so a config that still carries them would keep a field nothing reads.
+config.get("paths", {}).pop("workflows", None)
 
 with open("$CONFIG_FILE", "w") as f:
     json.dump(config, f, indent=2)

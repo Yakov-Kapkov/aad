@@ -109,6 +109,10 @@ proposal.
 | **Adapt** | existing repo, "organize our docs", "onboard this repo" | the assessment |
 | **Reconcile** | "update docs", "docs are stale", code changed | the code diff |
 
+**Reconcile never overwrites intent.** A documented rule the code contradicts is
+reported with its evidence and left unchanged — which side is right is a decision,
+not an edit.
+
 Modes are scope-agnostic: any mode runs on the repo, one subproject, one artifact, or
 one file. When the signal is ambiguous, ask one question: *"new repo, existing
 repo to organize, or docs to update?"*
@@ -176,7 +180,7 @@ The work is complete when:
 - **Declaration** — the Docs map matches the repo, and a readme routes to it.
 - **Links** — `check-links` exits 0 on the levels in scope.
 - **Fidelity** — the docs describe the code; no invented command, structure, or
-  feature.
+  feature; a contradicted rule is reported, not rewritten.
 - **Assessment** — the re-run shows the targeted findings resolved.
 - **Approval** — every file written was on the approved list, and no other.
 - **No waiver** — nothing in the declaration weakens a criterion.

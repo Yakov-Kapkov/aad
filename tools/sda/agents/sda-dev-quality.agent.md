@@ -32,7 +32,6 @@ Mode:              local | global
 Scopes:            [{scope}, ...]        ← global mode; omit → the caller's scope, else the repo root
 Target files:      [{path}, ...]         ← local mode
 Baseline failures: [{test-name}, ...]    ← global mode
-Coverage enabled:  true|false
 ```
 
 `Mode` absent → infer: file paths = `local`; a scope name, "all scopes", or "global" = `global`.
@@ -57,7 +56,6 @@ tests once and record the failing test names; the tests check reuses that run.
 For each scope, run every check the repo provides and keep its verdict:
 - **Local** — types, lint, tests, coverage for the target files.
 - **Global** — types, lint, tests, coverage, build, pre-merge for the scope.
-- Skip coverage when `tests.coverage.enabled` is `false`.
 
 Stream one line per check (`Types: ✅`, `Lint: ❌ 12 warnings`). Classify test
 failures against `{baseline-failures}`: a name absent from it is a **regression**.

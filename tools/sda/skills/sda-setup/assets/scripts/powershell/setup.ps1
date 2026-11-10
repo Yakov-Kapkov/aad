@@ -26,9 +26,6 @@ New-Item -ItemType Directory -Force -Path "$targetDir/resources/design" | Out-Nu
 Copy-Item "$scriptDir/design/design-record-schema.md"  "$targetDir/resources/design/design-record-schema.md"
 New-Item -ItemType Directory -Force -Path "$targetDir/resources/ba" | Out-Null
 Copy-Item "$scriptDir/ba/user-story-schema.md"            "$targetDir/resources/ba/user-story-schema.md"
-New-Item -ItemType Directory -Force -Path "$targetDir/resources/workflow" | Out-Null
-Copy-Item "$scriptDir/workflow/workflow-schema.md"        "$targetDir/resources/workflow/workflow-schema.md"
-Copy-Item "$scriptDir/workflow/escalation-brief-schema.md" "$targetDir/resources/workflow/escalation-brief-schema.md"
 
 Copy-Item "$scriptDir/qa/qa.example.secrets.env"           "$targetDir/secrets/qa.example.secrets.env"
 
@@ -43,11 +40,6 @@ Copy-Item "$qaSrc/load-qa-secrets.ps1"              "$targetDir/scripts/qa/load-
 Copy-Item "$qaSrc/list-qa-secrets.ps1"              "$targetDir/scripts/qa/list-qa-secrets.ps1"
 Copy-Item "$qaSrc/qa-session-init.ps1"              "$targetDir/scripts/qa/qa-session-init.ps1"
 Copy-Item "$qaSrc/invoke-http.ps1"                  "$targetDir/scripts/qa/invoke-http.ps1"
-
-# Copy workflow script
-$workflowSrc = Join-Path (Join-Path $scriptDir 'workflow') 'powershell'
-New-Item -ItemType Directory -Force -Path "$targetDir/scripts/workflow" | Out-Null
-Copy-Item "$workflowSrc/workflow.ps1"                   "$targetDir/scripts/workflow/workflow.ps1"
 
 # --- Remove artifacts retired by earlier versions ---
 # Setup only creates and copies, so a path that moved or was replaced leaves a
@@ -64,6 +56,8 @@ $legacyPaths = @(
     "$targetDir/resources/toolscan"                    # project-tools schema retired
     "$targetDir/scripts/read-project-tools.ps1"        # command lookup retired
     "$targetDir/scripts/read-project-tools.sh"         # command lookup retired
+    "$targetDir/scripts/workflow"                      # the workflow script now ships in sda-workflow-guide
+    "$targetDir/resources/workflow"                    # the workflow schemas now ship in sda-workflow-guide
 )
 foreach ($legacy in $legacyPaths) {
     if (Test-Path $legacy) {

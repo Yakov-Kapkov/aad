@@ -9,7 +9,6 @@ A User Story has two layers: one **Actor statement** (Layer 1), then machine-rea
 # User Story: {slug}
 
 ## Context
-{Omit entirely for a standalone story.}
 - **Workflow:** {id}. {slug}
 - **Requirements:** [{FEATURE-SLUG}-{NNN}]({path})
 
@@ -95,6 +94,6 @@ Scenario Outline: Withdrawal rejected at balance limits (edge)
   constrains.
 - **`## Context` is the first section** — workflow id + slug, and relative links to the
   requirement entries the story covers. Links are relative, so they resolve from the story's
-  own folder. Omit the section entirely for a standalone story — never write an empty header.
+  own folder.
 - Entity doc — describes only the User Story document; it names no agent, phase, or
   pipeline role.

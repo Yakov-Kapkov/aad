@@ -22,7 +22,7 @@ schemas — no reasoning, no design decisions.
 - `dev-report.md` — implementation reports
 - Convention + ADR docs — the rules and directions the caller directs (per the `{docsSkill}` skill)
 - Design docs — the design docs, requirements docs, and readme outlines the caller directs (per the `{docsSkill}` skill)
-- Design records — `design.md` design-session records (workflow or standalone)
+- Design records — `design.md` design-session records, in the workflow container root
 - Escalation briefs — the evidence behind a workflow escalation
 - Contract spec files — OpenAPI, JSON Schema, etc.
 - `manifest.md` — contract discovery index
@@ -50,14 +50,14 @@ Access all files below by exact path from the repo root — never search for the
 | qa-task-schema.md | `.sda/resources/qa/qa-task-schema.md` |
 | dev-report-schema.md | `.sda/resources/dev/dev-report-schema.md` |
 | design-record-schema.md | `.sda/resources/design/design-record-schema.md` |
-| escalation-brief-schema.md | `.sda/resources/workflow/escalation-brief-schema.md` |
+| escalation-brief-schema.md | `sda-workflow-guide` skill — `assets/escalation-brief-schema.md` |
 | design + convention + ADR + requirements schemas | `{docsSkill}` skill — load it by name; read the schema for each file type it defines |
 | qa-task.md | caller-provided path under `{issues-root}` |
 | dev-report.md | `<wf>/dev-report.md` — the workflow container root |
 | convention + ADR docs | caller-provided path in the docs tree |
 | design docs | caller-provided path in the docs tree |
 | requirements docs | caller-provided path in the requirements tree (global or subproject) |
-| design.md | caller-provided folder — the workflow folder or `.sda/design/reports/<yyyy-MM-dd_HH-mm_<short-name>>/` |
+| design.md | caller-provided workflow folder — `<wf>/design.md` |
 | escalation brief | caller-provided workflow folder — `<wf>/escalations/<NNN>. <yyyy-MM-dd_HH-mm>-<from>-to-<to>.md` |
 | readme outlines | caller-provided paths at repo root + subproject roots |
 | spec files | caller-provided path under `{specs-root}` |
@@ -148,9 +148,9 @@ decided placement and content.
 ### Mode 7 — Design Record (design-session handoff)
 
 Written at the end of a design session (caller: `sda-design`). You receive:
-1. **Target folder** — the workflow folder, or `.sda/design/reports/yyyy-MM-dd_HH-mm_<short-name>/`. You write `design.md` there.
+1. **Target folder** — the workflow folder. You write `design.md` there.
 2. **Title** — used in the `# Design:` heading.
-3. **Context** — workflow id + slug, and the user-story link. Omit the section entirely when standalone.
+3. **Context** — workflow id + slug, and the user-story link.
 4. **Scope** — in / out / deferred + reason + revisit trigger.
 5. **Approach** — components, interactions, patterns — stated as constraints.
 6. **Decisions** — pointers: title + why it matters here + ADR link.
@@ -166,7 +166,7 @@ You format `design.md` per `design-record-schema.md`.
 ### Mode 8 — Escalation brief (workflow evidence)
 
 Written when a blocked stage raises an escalation (callers: `sda-design`,
-`sda-dev`, and the `sda-workflow` advisor). The brief is the
+`sda-dev`, and the `sda-workflow` orchestrator). The brief is the
 escalation's evidence and the raise is refused without it, so it is written
 **before** the escalation is recorded. You receive:
 1. **Workflow folder** — the workflow container the escalation belongs to. The
@@ -195,7 +195,7 @@ Numbering, the file name, and the folder are yours; the caller never supplies th
    | `dev-report.md` | `.sda/resources/dev/dev-report-schema.md` — full file |
    | Design / convention / ADR docs (any `kind`) | `{docsSkill}` skill — read the schema for that `kind` |
    | `design.md` | `.sda/resources/design/design-record-schema.md` — full file |
-   | Escalation brief | `.sda/resources/workflow/escalation-brief-schema.md` — full file |
+   | Escalation brief | `sda-workflow-guide` skill — `assets/escalation-brief-schema.md`, full file |
    | Contract spec | Format from caller input (OpenAPI, JSON Schema, etc.) |
    | `manifest.md` | Built-in format (see Step 3) |
 
@@ -317,7 +317,8 @@ When invoked in **Mode 7**:
 ### Step 9 — Write the escalation brief (Mode 8)
 
 When invoked in **Mode 8**:
-1. Read `escalation-brief-schema.md` in full — it carries everything this mode needs.
+1. Read the `sda-workflow-guide` skill's `assets/escalation-brief-schema.md` in full — it
+   carries everything this mode needs.
 2. Create `<workflow folder>/escalations/` if it does not exist.
 3. Number and name the file: `<NNN>. <yyyy-MM-dd_HH-mm>-<from>-to-<to>.md`. `<NNN>` is
    the highest existing prefix in `<workflow folder>/escalations/` plus one, zero-padded
@@ -336,8 +337,7 @@ When invoked in **Mode 8**:
 
 **QA spec mode:** Create `qa-task.md` in a new numbered folder under `{issues-root}`.
 
-**Design Record mode:** Write `design.md` in the caller-provided folder — the
-workflow folder, or a report folder under `.sda/design/reports/`.
+**Design Record mode:** Write `design.md` in the caller-provided workflow folder.
 
 **Escalation brief mode:** Number and write the brief in the workflow's
 `escalations/` folder.
@@ -362,7 +362,7 @@ workflow folder, or a report folder under `.sda/design/reports/`.
   - Convention and ADR docs in the scope's `conventions/` and `adrs/` folders
   - Design docs in the docs tree (global + per subproject)
   - Requirements docs in the requirements tree (global + subproject)
-  - Design records (`design.md`) — in the workflow folder or under `.sda/design/reports/`
+  - Design records (`design.md`) — in a workflow container root
   - Escalation briefs — in a workflow's `escalations/` folder
   - Readme outlines at repo root and subproject roots
   - Spec files and `manifest.md` under `{specs-root}`

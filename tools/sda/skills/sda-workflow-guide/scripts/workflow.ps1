@@ -9,7 +9,7 @@
     only writer of workflow.json; folders and state are never hand-edited.
 
     Commands:
-      init      Create a workflow folder, its escalations/ folder, and workflow.json,
+      init      Create a workflow folder, its escalations/ and assets/ folders, and workflow.json,
                 at story by default or the -At stage.
       list      One line per workflow; marks the deepest open escalation.
       current   Print the stage, any open escalation, and artifact gaps.
@@ -335,6 +335,7 @@ switch ($Command) {
 
         New-Item -ItemType Directory -Force -Path $folder | Out-Null
         New-Item -ItemType Directory -Force -Path (Join-Path $folder 'escalations') | Out-Null
+        New-Item -ItemType Directory -Force -Path (Join-Path $folder 'assets') | Out-Null
 
         $state = [ordered]@{
             id      = $id

@@ -1,31 +1,43 @@
 ---
 name: sda-workflow-guide
-description: "Workflow-mode operating instructions for SDA stage agents — the workflow CLI, the stage gate, and the finish/escalate/resolve steps. Use when: a stage agent (sda-ba, sda-design) is running a session declared as workflow mode by its entry prompt, or a request names a workflow container. Otherwise never load it."
+description: "Workflow layer for SDA — the fixed container paths, the workflow CLI, the stage gate, finish/escalate/resolve, and the orchestrator's container housekeeping. Use when: a stage agent (sda-ba, sda-design, sda-dev) runs a workflow session, sda-workflow is orchestrating a container, or a request names a workflow container. Otherwise never load it."
 ---
 
-# Workflow Mode
+# Workflow layer
 
-You are a stage agent running in **workflow mode**. A workflow is a numbered container
-(`.sda/workflows/<NNN>. <slug>/`) holding one issue's artifacts plus script-written state
-(`workflow.json`). This skill is the workflow machinery — the CLI, the gate, and the
-finish/escalate/resolve steps. Your stage's specifics live in your stage card:
+A workflow is a numbered container (`.sda/workflows/<NNN>. <slug>/`) holding one issue's
+artifacts plus script-written state (`workflow.json`). This skill is the whole workflow layer —
+the CLI, the layout, the gate, and the steps of each role. Your role's specifics live in its
+card:
 
-| Your stage | Agents | Card |
+| Role | Agent | Card |
 |---|---|---|
-| `story` | `sda-ba` | [`assets/stage-story.md`](assets/stage-story.md) |
-| `design` | `sda-design` | [`assets/stage-design.md`](assets/stage-design.md) |
-| `dev` | implementation session | [`assets/stage-dev.md`](assets/stage-dev.md) |
+| orchestrator | `sda-workflow` | [`assets/orchestrator.md`](assets/orchestrator.md) |
+| `story` stage | `sda-ba` | [`assets/stage-story.md`](assets/stage-story.md) |
+| `design` stage | `sda-design` | [`assets/stage-design.md`](assets/stage-design.md) |
+| `dev` stage | implementation session | [`assets/stage-dev.md`](assets/stage-dev.md) |
 
-Read your card first. It names your stage, your artifact, your input, who you escalate to,
-and when you may `advance`.
+Read your card first. It names your role, your artifact, your input, who you escalate to, and
+when you may `advance`.
+
+## Paths — fixed
+
+Nothing about the workflow layer is configurable.
+
+| What | Path |
+|---|---|
+| containers | `.sda/workflows/<NNN>. <slug>/` |
+| state script | `<this-skill-folder>/scripts/workflow.ps1` · `<this-skill-folder>/scripts/workflow.sh` |
+
+`<this-skill-folder>` is the directory containing this `SKILL.md`.
 
 ## Entry
 
 - The container is named by the entry prompt or the request — usually with its `issue.md`
-  attached. `<wf>` = `{workflows-root}/<NNN>. <slug>`; `<folder>` = the container's folder
+  attached. `<wf>` = `.sda/workflows/<NNN>. <slug>`; `<folder>` = the container's folder
   name (`<NNN>. <slug>`).
-- Told a container that does not exist → **stop and ask**; never create one — `init` belongs
-  to `sda-workflow`.
+- Told a container that does not exist → **stop and ask**; never create one — the
+  orchestrator's `init` is the only creator.
 - Read `<wf>/issue.md` first — it names the issue and the artifact paths.
 
 ## Stage gate
@@ -35,19 +47,21 @@ stop — its owner runs first. A `gap=<stage>` line means that stage's artifact 
 
 ## CLI
 
-**Use the raw relative path — no `&`, no quotes, no absolute paths, no `bash`/`sh`/`zsh` prefix.** On `error=...` →
-**🚨 HARD STOP**: print the exact message, end your response. Never read the script's source —
-this table is the full interface.
+`{workflow}` is the script itself — an absolute path, always quoted:
 
-| Placeholder | Session context key |
-|---|---|
-| `{workflow}` | `scripts.workflow` |
-| `{workflows-root}` | `paths.workflows` |
+- PowerShell: `& "<this-skill-folder>\scripts\workflow.ps1"`
+- Bash: `bash "<this-skill-folder>/scripts/workflow.sh"`
+
+Run every command from the repo root. Never unquote the path, never add `-File` or `-Command`,
+never read the script's source — this table is the full interface. On `error=...` →
+**🚨 HARD STOP**: print the exact message, end your response.
 
 | Command | PowerShell | Bash/zsh | What it gives you |
 |---|---|---|---|
+| `list` | `{workflow} list` | `{workflow} list` | one line per container; marks the deepest open escalation |
 | `current` | `{workflow} current -slug <folder>` | `{workflow} current --slug <folder>` | `stage=`, any `gap=<stage>`, open escalation (`owner`, `reason`, `brief`) |
 | `read` | `{workflow} read -slug <folder> [-field <id\|slug\|created\|stage\|start\|notes>]` | `{workflow} read --slug <folder> [--field <id\|slug\|created\|stage\|start\|notes>]` | one state field, or the whole state |
+| `init` | `{workflow} init -slug <slug> [-at <story\|design\|dev>]` | `{workflow} init --slug <slug> [--at <story\|design\|dev>]` | creates the container, its `escalations/` folder, and `workflow.json`, starting at the given stage (default `story`) |
 | `advance` | `{workflow} advance -slug <folder>` | `{workflow} advance --slug <folder>` | forward exactly one stage |
 | `escalate` | `{workflow} escalate -slug <folder> [-to <stage>] -reason <text> -brief <path>` | `{workflow} escalate --slug <folder> [--to <stage>] --reason <text> --brief <path>` | back one or more stages |
 | `resolve` | `{workflow} resolve -slug <folder> -id <E#> -report <text>` | `{workflow} resolve --slug <folder> --id <E#> --report <text>` | close the open escalation, forward one |
@@ -55,6 +69,10 @@ this table is the full interface.
 Every mutation prints `ok: … -> '<stage>'`; every failure prints `error=<X cannot do Y
 because Z>`. On `error=`, print it verbatim and stop. Never retry a rejected transition with
 different arguments unless the user asks.
+
+## Stage steps
+
+The three sections below are stage roles' steps. The orchestrator's own steps are in its card.
 
 ## Finish — advance
 
@@ -97,12 +115,24 @@ exact path from the repo root — never search for them. **Never read workflow s
 container's files — `current` is the only source of it**, including whether an artifact
 exists (`gap=<stage>` means that stage's artifact is absent).
 
+`<wf>` = `.sda/workflows/<NNN>. <slug>/` — fixed, and the default root of the state script.
+
 | File | Path |
 |---|---|
-| workflow containers | `{workflows-root}/<NNN>. <slug>/` |
-| issue.md (entry) | `{workflows-root}/<NNN>. <slug>/issue.md` |
-| stage artifact | `{workflows-root}/<NNN>. <slug>/<your-artifact>` — see your card |
-| escalation briefs | `{workflows-root}/<NNN>. <slug>/escalations/` |
-| workflow script | `{workflow}` |
+| containers | `.sda/workflows/<NNN>. <slug>/` |
+| issue.md (entry) | `<wf>/issue.md` |
+| assets (orchestrator) | `<wf>/assets/` |
+| story artifact — `sda-ba` | `<wf>/user-story.md` |
+| design artifact — `sda-design` | `<wf>/design.md` |
+| dev artifact — implementation session | `<wf>/dev-report.md` |
+| escalation briefs | `<wf>/escalations/` |
+| state | `<wf>/workflow.json` — written by the script, read only through `current`/`read` |
 
-The workflow root and script are injected at session start by the read-config hook.
+**Write your role's artifact at the container root, under exactly that name.** The script
+reads only that path — a different name, or a subfolder, is an absent artifact: `current`
+reports `gap=<your stage>` and `advance` is refused. A stage card adds what else its stage
+produces — specs under `{specs-root}`, design docs in the repo's docs tree — but the stage
+artifact never moves out of the container root.
+
+The script and the container template ship with this skill: `scripts/workflow.ps1`,
+`scripts/workflow.sh`, `assets/workflow-schema.md`.

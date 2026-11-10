@@ -14,13 +14,11 @@ REPO_ROOT="$(pwd)"
 
 # Agent → config keys (space-separated)
 case "$AGENT" in
-    sda-ba)            KEYS="paths.userStories paths.workflows scripts.workflow" ;;
-    sda-dev)           KEYS="standardsSkill paths.workflows scripts.workflow tests.coverage.enabled" ;;
-    sda-dev-quality)   KEYS="tests.coverage.enabled" ;;
+    sda-ba)            KEYS="docsSkill" ;;
+    sda-dev)           KEYS="standardsSkill" ;;
     sda-qa)            KEYS="paths.issues scripts.qaSessionInit scripts.loadQaSecrets scripts.invokeHttp" ;;
-    sda-qa-task)       KEYS="designOwnership paths.issues paths.specs scripts.listQaSecrets" ;;
-    sda-design)        KEYS="designOwnership paths.specs docsSkill paths.workflows scripts.workflow" ;;
-    sda-workflow)      KEYS="paths.workflows scripts.workflow" ;;
+    sda-qa-task)       KEYS="paths.issues paths.specs scripts.listQaSecrets" ;;
+    sda-design)        KEYS="paths.specs docsSkill" ;;
     sda-scribe)        KEYS="paths.specs paths.issues docsSkill" ;;
     sda-docs-check)    KEYS="docsSkill docsCheck.enabled paths.specs" ;;
     *)                 KEYS="" ;;
@@ -38,16 +36,11 @@ get_default() {
         scripts.listQaSecrets)  echo ".sda/scripts/qa/list-qa-secrets.sh" ;;
         scripts.qaSessionInit)  echo ".sda/scripts/qa/qa-session-init.sh" ;;
         scripts.invokeHttp)     echo ".sda/scripts/qa/invoke-http.sh" ;;
-        scripts.workflow)       echo ".sda/scripts/workflow/workflow.sh" ;;
-        designOwnership)        echo "user" ;;
         standardsSkill)         echo "standards-compliance" ;;
         docsSkill)              echo "make-repo-ai-friendly" ;;
         docsCheck.enabled)      echo "true" ;;
         paths.specs)            echo ".sda/specs" ;;
         paths.issues)           echo ".sda/issues" ;;
-        paths.userStories)      echo ".sda/stories" ;;
-        paths.workflows)        echo ".sda/workflows" ;;
-        tests.coverage.enabled) echo "true" ;;
         *)                      echo "" ;;
     esac
 }

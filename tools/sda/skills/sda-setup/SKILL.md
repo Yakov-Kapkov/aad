@@ -112,8 +112,6 @@ On update, the script also deletes paths retired by earlier versions — it prin
 
 Read `.sda/resources/project-config.example.json` into `{template}` via `read_file` (exact path — do NOT search). If missing, abort: _"`project-config.example.json` not found — Step 2 may have failed. Re-run setup."_
 
-Test coverage defaults to `enabled: true` on first setup. On update, the existing `tests.coverage.enabled` value is preserved — setup never resets it.
-
 ### Step 4 — Normalize project-config.json
 
 **Post:** `**Step 4 — Writing project-config.json.**`
@@ -144,7 +142,5 @@ Adds missing fields, preserves existing values. **Mandatory — do not skip.**
 
 ---
 ## SDA is ready.
-
-**Test coverage** `enabled = true` on first setup; preserved on update.
 
 ---

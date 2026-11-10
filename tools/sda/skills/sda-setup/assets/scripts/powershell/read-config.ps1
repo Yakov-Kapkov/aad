@@ -7,13 +7,11 @@ $ErrorActionPreference = 'Stop'
 
 # Per-agent key manifests — controls what each agent receives
 $agentKeys = @{
-    'sda-ba'            = @('paths.userStories','paths.workflows','scripts.workflow')
-    'sda-dev'           = @('standardsSkill','paths.workflows','scripts.workflow','tests.coverage.enabled')
-    'sda-dev-quality'   = @('tests.coverage.enabled')
+    'sda-ba'            = @('docsSkill')
+    'sda-dev'           = @('standardsSkill')
     'sda-qa'            = @('paths.issues','scripts.qaSessionInit','scripts.loadQaSecrets','scripts.invokeHttp')
-    'sda-qa-task'       = @('designOwnership','paths.issues','paths.specs','scripts.listQaSecrets')
-    'sda-design'        = @('designOwnership','paths.specs','docsSkill','paths.workflows','scripts.workflow')
-    'sda-workflow'      = @('paths.workflows','scripts.workflow')
+    'sda-qa-task'       = @('paths.issues','paths.specs','scripts.listQaSecrets')
+    'sda-design'        = @('paths.specs','docsSkill')
     'sda-scribe'        = @('paths.specs','paths.issues','docsSkill')
     'sda-docs-check'    = @('docsSkill','docsCheck.enabled','paths.specs')
 }
@@ -29,16 +27,11 @@ $defaults = @{
     'scripts.listQaSecrets'  = '.sda/scripts/qa/list-qa-secrets.ps1'
     'scripts.qaSessionInit'  = '.sda/scripts/qa/qa-session-init.ps1'
     'scripts.invokeHttp'     = '.sda/scripts/qa/invoke-http.ps1'
-    'scripts.workflow'       = '.sda/scripts/workflow/workflow.ps1'
-    'designOwnership'        = 'user'
     'standardsSkill'         = 'standards-compliance'
     'docsSkill'              = 'make-repo-ai-friendly'
     'docsCheck.enabled'      = 'true'
     'paths.specs'            = '.sda/specs'
     'paths.issues'           = '.sda/issues'
-    'paths.userStories'      = '.sda/stories'
-    'paths.workflows'        = '.sda/workflows'
-    'tests.coverage.enabled' = 'true'
 }
 
 function Get-NestedValue {

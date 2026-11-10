@@ -31,9 +31,9 @@ $ErrorActionPreference = 'Stop'
 Set-StrictMode -Version Latest
 
 $ScriptDir = $PSScriptRoot
-$RepoRoot  = (Resolve-Path (Join-Path $ScriptDir '..\..\..\..\..\..')).Path
-$PsTwin    = Join-Path $ScriptDir 'powershell\workflow.ps1'
-$ShTwin    = Join-Path $ScriptDir 'bash\workflow.sh'
+$RepoRoot  = (Resolve-Path (Join-Path $ScriptDir '..\..\..\..\..')).Path
+$PsTwin    = Join-Path $ScriptDir 'workflow.ps1'
+$ShTwin    = Join-Path $ScriptDir 'workflow.sh'
 $Bash      = 'C:\Program Files\Git\bin\bash.exe'
 if (-not (Test-Path $Bash)) {
     $onPath = Get-Command bash -ErrorAction SilentlyContinue

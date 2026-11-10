@@ -28,9 +28,6 @@ mkdir -p "$TARGET_DIR/resources/design"
 cp "$ASSETS_DIR/design/design-record-schema.md"  "$TARGET_DIR/resources/design/design-record-schema.md"
 mkdir -p "$TARGET_DIR/resources/ba"
 cp "$ASSETS_DIR/ba/user-story-schema.md"            "$TARGET_DIR/resources/ba/user-story-schema.md"
-mkdir -p "$TARGET_DIR/resources/workflow"
-cp "$ASSETS_DIR/workflow/workflow-schema.md"        "$TARGET_DIR/resources/workflow/workflow-schema.md"
-cp "$ASSETS_DIR/workflow/escalation-brief-schema.md" "$TARGET_DIR/resources/workflow/escalation-brief-schema.md"
 
 cp "$ASSETS_DIR/qa/qa.example.secrets.env"           "$TARGET_DIR/secrets/qa.example.secrets.env"
 
@@ -45,11 +42,6 @@ cp "$QA_SRC/load-qa-secrets.sh"               "$TARGET_DIR/scripts/qa/load-qa-se
 cp "$QA_SRC/list-qa-secrets.sh"               "$TARGET_DIR/scripts/qa/list-qa-secrets.sh"
 cp "$QA_SRC/qa-session-init.sh"               "$TARGET_DIR/scripts/qa/qa-session-init.sh"
 cp "$QA_SRC/invoke-http.sh"                   "$TARGET_DIR/scripts/qa/invoke-http.sh"
-
-# Copy workflow script
-WORKFLOW_SRC="$ASSETS_DIR/workflow/bash"
-mkdir -p "$TARGET_DIR/scripts/workflow"
-cp "$WORKFLOW_SRC/workflow.sh"                     "$TARGET_DIR/scripts/workflow/workflow.sh"
 
 # The workflow CLI and other .sda scripts run by path, so every copied script
 # needs the executable bit — the source mode does not survive every transfer.
@@ -70,6 +62,8 @@ LEGACY_PATHS=(
   "$TARGET_DIR/resources/toolscan"                       # project-tools schema retired
   "$TARGET_DIR/scripts/read-project-tools.ps1"           # command lookup retired
   "$TARGET_DIR/scripts/read-project-tools.sh"            # command lookup retired
+  "$TARGET_DIR/scripts/workflow"                         # the workflow script now ships in sda-workflow-guide
+  "$TARGET_DIR/resources/workflow"                       # the workflow schemas now ship in sda-workflow-guide
 )
 for legacy in "${LEGACY_PATHS[@]}"; do
   if [ -e "$legacy" ]; then

@@ -6,7 +6,7 @@
 # workflow.json; folders and state are never hand-edited.
 #
 # Commands:
-#   init      Create a workflow folder, its escalations/ folder, and workflow.json,
+#   init      Create a workflow folder, its escalations/ and assets/ folders, and workflow.json,
 #             at story by default or the --at stage.
 #   list      One line per workflow; marks the deepest open escalation.
 #   current   Print the stage, any open escalation, and artifact gaps.
@@ -256,7 +256,7 @@ case "$COMMAND" in
 
     id="$(printf '%03d' "$next")"
     folder="$ROOT/$id. $SLUG"
-    mkdir -p "$folder/escalations" \
+    mkdir -p "$folder/escalations" "$folder/assets" \
       || fail "init cannot create '$SLUG' because $folder could not be created"
 
     jq -n --arg id "$id" --arg slug "$SLUG" --arg created "$(date +%F)" --arg start "$start" \

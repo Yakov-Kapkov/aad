@@ -4,8 +4,8 @@ A **workflow** is a numbered container holding one requirement's planning
 artifacts together with the state that records how far those artifacts have
 progressed.
 
-It lives at `{workflows-root}/<NNN>. <slug>/`. `{workflows-root}` defaults to
-`.sda/workflows`.
+It lives at `.sda/workflows/<NNN>. <slug>/` — fixed. No config key moves it, and the
+state script defaults to that root.
 
 `workflow.json` is written only by the workflow script; every field below is
 script-owned. Progress runs `story → design → dev → ready`; an escalation
@@ -17,11 +17,11 @@ moves the pointer back, is recorded in `notes`, and keeps its evidence in
 ## Template
 
 ```
-{workflows-root}/
+.sda/workflows/
   001. const-refactoring/
     workflow.json
     issue.md
-    assets/               optional: context the user attached at init
+    assets/               context the user attached at init; created empty with the container
       prior-investigation.md
     user-story.md
     design.md
@@ -105,9 +105,9 @@ moves the pointer back, is recorded in `notes`, and keeps its evidence in
   it produces no `gap=` line, and it never blocks `advance`. It is created with the
   container.
 - `assets/` holds context the user attached at `init` — files, text, or excerpts that
-  clarify the issue. Optional: absent when nothing was attached. Every file is linked from
-  `issue.md`. Not state and not a stage artifact — the script never reads it, it produces no
-  `gap=`, and it never blocks `advance`.
+  clarify the issue. Created with the container and left empty when nothing was attached.
+  Every file is linked from `issue.md`. Not state and not a stage artifact — the script
+  never reads it, it produces no `gap=`, and it never blocks `advance`.
 - Every stage from `start` onward produces its artifact; a stage can be passed
   over only by starting the container after it. A design pass with nothing to
   decide renews `design.md` with what was considered and why it stands.

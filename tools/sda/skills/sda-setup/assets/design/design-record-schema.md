@@ -1,11 +1,11 @@
 # Design Record Schema
 
-A **design record** carries the design-level context for one workflow's requirement: what the
+A **design record** carries the design-level context for one design session: what the
 design commits to, what it deliberately leaves out, and where the durable decisions live. It
 exists so implementation can begin without re-deriving the architecture.
 
-The file lives at `{workflow}/design.md`. It is **renewed in place** — an existing record is
-read and updated, never duplicated into a new location.
+Where the record lives is outside this schema. It is **renewed in place** — an existing
+record is read and updated, never duplicated into a new location.
 
 ---
 

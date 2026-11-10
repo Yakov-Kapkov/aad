@@ -53,7 +53,7 @@ Multi-agent tool suites.
 
 | Tool | Description |
 |---|---|
-| [`sda`](tools/sda/README.md) | Software Development Assistant — coordinated agents and skills for specification-driven development (sda-ba user story → setup → design → dev → qa-spec → qa). Planning artifacts live in numbered workflow containers (`.sda/workflows/<NNN>. <slug>/`) whose stage is held by a state script and run by the `sda-workflow` advisor |
+| [`sda`](tools/sda/README.md) | Software Development Assistant — coordinated agents and skills for specification-driven development (sda-ba user story → setup → design → dev → qa-spec → qa). Planning artifacts live in numbered workflow containers (`.sda/workflows/<NNN>. <slug>/`) whose stage is held by a state script and run by the `sda-workflow` orchestrator |
 
 ---
 

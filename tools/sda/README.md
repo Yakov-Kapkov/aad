@@ -99,9 +99,12 @@ linked from `issue.md`. Every stage starts from it, so the work is never re-stat
 `/sda.workflow.design.issue` (`sda-design`), or `/sda.workflow.dev.issue` (`sda-dev`).
 
 Create one with `/sda.workflow.init`, then start the owning agent on it in its own session. The
-`sda-workflow` agent is the advisor surface: it reports where a container sits, names the next
-action and its owning agent, and runs `init`, a user-requested `escalate`, and a user-requested
+`sda-workflow` agent is the orchestrator surface: it reports where a container sits, names the next
+action and its owning agent, and runs `init`, a user-requested `escalate`, `advance`, and a user-requested
 `commit` — delegating the commit to `commit` with links to the workflow's artifacts as the recorded intention, which it reads to ground the message.
+After `init` it opens one nested session per stage of the container, so every stage of a workflow
+is grouped under the orchestrator's session; the agent cannot be chosen by the session call, so each
+one names the agent to select and the entry prompt to paste.
 The stage machine is `story → design → dev → ready`: `init` starts at `story` by default, or at
 `design` / `dev` for pure technical work that has no user-visible change — the stages before the
 start are skipped and produce no artifact. `dev` is the single implementation stage: it counts as
@@ -113,13 +116,15 @@ the target stage reads the brief, then the artifact it cites, renews its own art
 the escalation with `resolve`. While an escalation is open, `advance` is refused.
 
 A stage agent works a workflow session by following the **`sda-workflow-guide`** skill: the
-stage-entry prompt declares the session and points at it. The skill carries the workflow CLI
-(`current`, `read`, `advance`, `escalate`, `resolve`), the stage gate, and the
-finish/escalate/resolve steps, plus one stage card per stage naming its artifact, input, and
-escalation targets — so the producers' own files
-carry none of that, just a dispatch line and the escalation-evidence rule. The `sda-workflow` advisor owns `init`, and may raise a user-requested
-escalation from any stage with an upstream. Standalone use is unchanged: a producer invoked
-without a workflow declaration works its own default paths.
+stage-entry prompt declares the session and points at it. The skill is the whole workflow layer —
+the workflow CLI (`list`, `current`, `read`, `init`, `advance`, `escalate`, `resolve`), the fixed
+container paths, the stage gate, the finish/escalate/resolve steps, one card per role (orchestrator,
+and one stage card per stage naming its artifact, input, and escalation targets), plus the state-script
+twins and both workflow schemas — so the producers' own files
+carry none of that, just a dispatch line and the escalation-evidence rule. Nothing about the workflow
+layer is a `project-config.json` key. The `sda-workflow` orchestrator owns `init`, and may raise a user-requested
+escalation from any stage with an upstream. `sda-ba` and `sda-design` work a workflow container
+only; `sda-dev` also handles ad-hoc requests.
 
 ### Capture the requirement — `sda-ba`
 
@@ -174,7 +179,7 @@ One agent, any altitude — judged from what is being discussed:
   file for every boundary the feature crosses, and writes the design record
   (`design.md`).
 
-`sda-design` is conversational. By default it pressure-tests the design **you** propose rather than authoring it — describe the area you're tackling, defend your direction against its push-back on complexity and risk, and iterate together before committing. (Configurable via `designOwnership` — see [project-config.json](#project-configjson).) At the end of every session it writes the design record, `design.md` — inside the workflow folder when the requirement has one, otherwise under `.sda/design/reports/<yyyy-MM-dd_HH-mm_<name>>/` — so the next agent reads a compact record instead of the full conversation.
+`sda-design` is conversational. It pressure-tests the design **you** propose rather than authoring it — describe the area you're tackling, defend your direction against its push-back on complexity and risk, and iterate together before committing. At the end of every session it writes the design record, `design.md`, into the workflow container — so the next agent reads a compact record instead of the full conversation.
 
 ### Author the QA acceptance spec — `sda-qa-task`
 
@@ -219,7 +224,7 @@ finds — it reports, and leaves routing to you.
 | `sda-qa-task` | Authors the black-box acceptance spec (`qa-task.md`) for existing behaviour | Claude Sonnet 5 | read, search, execute, agent |
 | `sda-dev` | TDD implementation orchestrator — delegates RED/GREEN to subagents to keep context small; routes `docs` units to sda-scribe + sda-docs-check; owns the workflow's `dev` stage | project config | read, execute, agent |
 | `sda-qa` | Runtime acceptance QA — starts the app, drives a real browser/CLI through the functional requirements, writes `qa-report.md` (read-only on source) | Claude Sonnet 5 | read, edit, search, execute, browser |
-| `sda-workflow` | Workflow advisor surface — reports where a container sits, names the single next action and its owner, owns `init`, a user-requested escalation, and a user-requested commit (delegated to `commit` with links to the workflow's artifacts), and delegates the escalation brief to sda-scribe. Never triggers a producer, never resolves an escalation | Claude Sonnet 5 | read, edit, agent, execute |
+| `sda-workflow` | Workflow orchestrator surface — reports where a container sits, names the single next action and its owner, owns `init` (plus `issue.md`, `assets/`, and the per-stage nested sessions), a user-requested escalation, `advance` on request, and a user-requested commit (delegated to `commit` with links to the workflow's artifacts), and delegates the escalation brief to sda-scribe. Follows the `sda-workflow-guide` skill's orchestrator card; never triggers a producer, never resolves an escalation | Claude Sonnet 5 | all (none declared) |
 
 ### Subagents (invoked by pipeline agents)
 
@@ -249,7 +254,7 @@ All pipeline agents are user-invokable and used as needed.
 | Skill | Role |
 |---|---|
 | `sda-setup` | Scaffolds `.sda/` folder with resource files — schemas, scripts, and config example |
-| `sda-workflow-guide` | Workflow-mode operating instructions for stage agents — the workflow CLI, the stage gate, finish/escalate/resolve steps, and one stage card per producer |
+| `sda-workflow-guide` | The workflow layer — the workflow CLI, the fixed container paths and script location, the stage gate, finish/escalate/resolve steps, the orchestrator card, one stage card per stage, the state-script twins, and both workflow schemas |
 | `sda-spec-guide` | Contract spec conventions — the spec model, storage layout, metadata, and content rules |
 
 ### Prompts
@@ -259,8 +264,8 @@ All pipeline agents are user-invokable and used as needed.
 | `sda.qa.session-run` | Triggers sda-qa agent — runs QA verification |
 | `sda.qa.task-create` | Triggers sda-qa-task agent — creates a QA spec |
 | `sda.setup` | Sets up SDA tool — scaffolds `.sda/` and writes `project-config.json` |
-| `sda.design.reconcile` | Reconciles design docs with code — finds and fixes inconsistencies across the AI readme, global + per-subproject docs, and convention + ADR docs |
-| `sda.workflow.init` | Creates a workflow container for one requirement, saves any attached assets, then names the start stage's session to run |
+| `sda.docs.reconcile` | Runs the `make-repo-ai-friendly` skill's **Reconcile** mode — repo-wide by default, or one named subproject, artifact, or file |
+| `sda.workflow.init` | Creates a workflow container for one requirement, writes `issue.md` and any attached assets, opens one nested session per stage through `dev`, then names the agent and entry prompt for each |
 | `sda.workflow.status` | Reports where the workflow containers sit, ending with the single next action and the agent that owns it |
 | `sda.workflow.advance` | Moves a workflow forward one stage, after showing the state and confirming |
 | `sda.workflow.escalate` | Sends a workflow back a stage — elicits what is wrong, writes the evidence brief, then raises |
@@ -327,14 +332,14 @@ PHASE 6 — FINALIZE  (workflow mode)
 
 ## Configuration
 
-All resources are read from a `.sda/` folder in the project root (may be git-ignored). Agents always use exact literal paths — they never search for these files.
+Project-scaffolded resources are read from a `.sda/` folder in the project root (may be git-ignored); the workflow layer — script and schemas — ships inside the `sda-workflow-guide` skill. Agents always use exact literal paths — they never search for these files.
 
 | Resource | Path |
 |---|---|
 | Project config | `.sda/project-config.json` |
 | Project config reference | `.sda/project-config.reference.yml` |
 | User Story schema | `.sda/resources/ba/user-story-schema.md` |
-| User Story | `.sda/stories/<slug>/user-story.md` |
+| User Story | `.sda/workflows/<NNN>. <slug>/user-story.md` |
 | QA acceptance spec | `.sda/issues/<NNN>-<slug>/qa-task.md` |
 | QA report | `.sda/issues/<NNN>-<slug>/qa-report.md` |
 | QA credentials | `.sda/secrets/qa.secrets.env` (git-ignored) |
@@ -342,17 +347,16 @@ All resources are read from a `.sda/` folder in the project root (may be git-ign
 | Design + convention + ADR + requirements schemas | `{docsSkill}` skill (`make-repo-ai-friendly`) — load it by name; its `SKILL.md` routes to the readme-outline, docs-index, architecture, vocabulary, requirements, convention, ADR, coding-standards, and docs-map schemas |
 | AI-friendliness artifact list + link checker | `is-repo-ai-friendly` skill — load it by name; `SKILL.md` holds the artifact list, and `assets/scripts/check-links.*` resolves links |
 | Design record schema | `.sda/resources/design/design-record-schema.md` |
-| Design record (workflow) | `.sda/workflows/<NNN>. <slug>/design.md` |
-| Design record (standalone) | `.sda/design/reports/<yyyy-MM-dd_HH-mm_<short-name>>/design.md` |
+| Design record | `.sda/workflows/<NNN>. <slug>/design.md` — the container root |
 | Workflow container | `.sda/workflows/<NNN>. <slug>/` |
 | Workflow state | `.sda/workflows/<NNN>. <slug>/workflow.json` |
 | Workflow entry artifact | `.sda/workflows/<NNN>. <slug>/issue.md` |
 | Workflow assets | `.sda/workflows/<NNN>. <slug>/assets/` — context the user attached at init |
 | Dev report (workflow) | `.sda/workflows/<NNN>. <slug>/dev-report.md` — the `dev` stage's artifact |
 | Escalation brief | `.sda/workflows/<NNN>. <slug>/escalations/<NNN>. <yyyy-MM-dd_HH-mm>-<from>-to-<to>.md` |
-| Workflow schema | `.sda/resources/workflow/workflow-schema.md` |
-| Escalation brief schema | `.sda/resources/workflow/escalation-brief-schema.md` |
-| Workflow state script | `.sda/scripts/workflow/workflow.ps1` or `.sda/scripts/workflow/workflow.sh` |
+| Workflow schema | `sda-workflow-guide` skill — `assets/workflow-schema.md` |
+| Escalation brief schema | `sda-workflow-guide` skill — `assets/escalation-brief-schema.md` |
+| Workflow state script | `sda-workflow-guide` skill — `scripts/workflow.ps1` or `scripts/workflow.sh`, resolved from the skill folder |
 | Link checker | `check-links` in the `is-repo-ai-friendly` skill — links resolve; `-NoFence`, `-NoPathToken`, `-Forbid` |
 | Tree checker | `check-tree` in the `{docsSkill}` skill — `index.md` routing, orphan, duplicate row |
 | Design docs (global) | `docs/` — `architecture.md`, `vocabulary.md`, `index.md`, `conventions/`, `adrs/`, `diagrams/` |
@@ -361,10 +365,11 @@ All resources are read from a `.sda/` folder in the project root (may be git-ign
 | ADR docs (per-subproject) | `<subproject>/docs/adrs/<feature>/` — `index.md` + descriptive kebab-case `.md` files (`shared/` for cross-cutting) |
 | Requirements docs (per-subproject) | `<subproject>/docs/requirements/` — `index.md` at every level + `<feature>/[<concern>/]<item>.md` + `nfr.md` |
 
-On macOS/Linux, `setup.sh` marks every `*.sh` it copies into `.sda/scripts/` executable, so the
-workflow CLI (`{workflow}`) and every script run by path is invoked by its raw relative path — never
-with a `bash`/`sh`/`zsh` prefix. The only `bash`-prefixed invocations are the per-agent frontmatter
-hooks, the installers, and third-party executables.
+On macOS/Linux, `setup.sh` marks every `*.sh` it copies into `.sda/scripts/` executable, so every
+script run by path is invoked by its raw relative path — never
+with a `bash`/`sh`/`zsh` prefix. The exceptions: the per-agent frontmatter hooks, the installers,
+third-party executables, and the workflow state script — which ships inside the `sda-workflow-guide`
+skill and is therefore invoked by its absolute, quoted path.
 
 ### Model configuration
 
@@ -392,7 +397,7 @@ The `models` section in `project-config.json` controls which AI model each agent
 
 | Key | Role | Default |
 |---|---|---|
-| `sda-workflow` | Workflow advisor: container position, next action, `init` (writes `issue.md` + attached `assets/`) / `escalate` / `commit` (`advance` on request) | `Claude Sonnet` |
+| `sda-workflow` | Workflow orchestrator: container position, next action, `init` (writes `issue.md`, `assets/`, and the per-stage nested sessions) / `escalate` / `commit` (`advance` on request) | `Claude Sonnet` |
 | `sda-ba` | Authors User Stories from raw requirements | `Claude Sonnet` |
 | `sda-design` | System + feature design; owns the doc tree and readmes | `Claude Sonnet` |
 | `sda-qa-task` | Authors the black-box QA acceptance spec | `Claude Sonnet` |
@@ -423,42 +428,31 @@ Written by the `sda-setup` skill. Stores project-level settings injected into ea
 
 | Field | Type | Default | Description |
 |---|---|---|---|
-| `designOwnership` | `string` | `user` | Who owns the design decision in `sda-design`. When `user` (default), the agent never volunteers an approach — it pressure-tests the approach **you** propose and hands the decision back to you; it only proposes options when your message explicitly asks for them. When `ai`, the agent may propose the design itself (legacy behaviour). |
 | `standardsSkill` | `string` | `standards-compliance` | Name of the skill carrying coding standards. `sda-dev`, `sda-coder`, `sda-refactor`, and `sda-test-writer` load it before generating code. |
 | `docsSkill` | `string` | `make-repo-ai-friendly` | Name of the skill carrying the docs-map schema, the default tree profile, and the doc schemas. Loaded by `sda-design`, `sda-scribe`, `sda-ba`, and `sda-docs-check`. |
 | `paths.specs` | `string` | `.sda/specs` | Root folder for specification files (OpenAPI, JSON Schema, etc.). Written by sda-scribe — `sda-design` creates specs, a `docs` unit amends an existing one. Read by sda-design, sda-qa-task, and sda-docs-check. |
 | `paths.issues` | `string` | `.sda/issues` | Root folder for QA specs: each `<NNN>-<slug>/` holds a `qa-task.md` authored by sda-qa-task and the `qa-report.md` written by sda-qa. |
 | `paths.secrets` | `string` | `.sda/secrets` | Git-ignored folder holding `qa.secrets.env` credentials used by sda-qa. |
-| `paths.userStories` | `string` | `.sda/stories` | Root folder for User Stories authored by sda-ba. Written by sda-ba when no output path is given. |
-| `paths.workflows` | `string` | `.sda/workflows` | Root folder for workflow containers. Read by the `sda-workflow-guide` skill (in workflow sessions) and the `sda-workflow` advisor. |
 | `scripts.loadQaSecrets` | `string` | `.sda/scripts/qa/load-qa-secrets.ps1` | Path to the QA secrets loader script (legacy — superseded by `qaSessionInit`). Still used as a fallback when `qaSessionInit` is absent. Use the `.sh` variant on Bash/Unix. |
 | `scripts.listQaSecrets` | `string` | `.sda/scripts/qa/list-qa-secrets.ps1` | Path to the QA secrets lister script. Called by sda-qa-task to discover existing credential key names. Use the `.sh` variant on Bash/Unix. |
 | `scripts.qaSessionInit` | `string` | `.sda/scripts/qa/qa-session-init.ps1` | Path to the QA session init script. Dot-sourced by sda-qa at Phase 2; sets UTF-8 encoding and loads credentials. Outputs a combined summary and `var_name \| is_empty` table. Use the `.sh` variant on Bash/Unix. |
 | `docsCheck.enabled` | `boolean` | `true` | Turns `sda-docs-check` off for a repo whose docs must not be maintained or verified. When false the agent reports `docs-check disabled` and runs nothing. |
 | `scripts.invokeHttp` | `string` | `.sda/scripts/qa/invoke-http.ps1` | Path to the HTTP helper script. Called by sda-qa for every CLI/HTTP request; outputs `STATUS: N` and `BODY: ...`; supports `-StatusOnly` / `--status-only`. Use the `.sh` variant on Bash/Unix. |
-| `scripts.workflow` | `string` | `.sda/scripts/workflow/workflow.ps1` | Path to the workflow state script — the only writer of `workflow.json`. Run by the `sda-workflow` advisor (`/sda.workflow.init` · `.status` · `.advance` · `.escalate`), and by the `sda-workflow-guide` skill that stage agents follow in workflow sessions. `escalate` also takes the path of the escalation brief, which must already exist. Use the `.sh` variant on Bash/Unix. |
-| `tests.coverage.enabled` | `boolean` | `true` | Whether to run coverage checks in Phase 5 (Quality). When disabled, coverage gate is skipped entirely. |
+
+Workflow containers, their state, and the state script are **not** configurable: `.sda/workflows/`
+and the skill's `scripts/workflow.ps1` / `workflow.sh` are fixed, and no config key exposes them.
 
 Example:
 ```json
 {
   "scripts": {
-    "loadQaSecrets": ".sda/scripts/qa/load-qa-secrets.ps1",
-    "workflow": ".sda/scripts/workflow/workflow.ps1"
+    "loadQaSecrets": ".sda/scripts/qa/load-qa-secrets.ps1"
   },
-  "designOwnership": "user",
   "standardsSkill": "standards-compliance",
   "paths": {
     "specs": ".sda/specs",
     "issues": ".sda/issues",
-    "secrets": ".sda/secrets",
-    "userStories": ".sda/stories",
-    "workflows": ".sda/workflows"
-  },
-  "tests": {
-    "coverage": {
-      "enabled": true
-    }
+    "secrets": ".sda/secrets"
   }
 }
 ```
@@ -471,20 +465,21 @@ Loaded by the code-producing agents — `sda-test-writer`, `sda-coder`, and `sda
 
 ## Tests
 
-Scripts that ship in `skills/sda-setup/assets/` are covered by tests that live **beside the code
+Scripts that ship in `skills/sda-setup/assets/` and `skills/sda-workflow-guide/scripts/` are
+covered by tests that live **beside the code
 they test**, named `_<subject>.Tests.ps1`. Tests never ship: the skill installers prune
 `_*.Tests.*` from the installed copy, and none is copied into a project's `.sda/`.
 
 | Test | Covers | Asserts |
 |---|---|---|
-| `_twins.Tests.ps1` | `assets/workflow/powershell/workflow.ps1` and `assets/workflow/bash/workflow.sh` | One scenario sequence, run against both twins: stdout, exit code, and the written `workflow.json` must match. A few refusals are also checked against the documented contract, not just against each other — a corrupted container must stop `list` without printing a partial list |
+| `_twins.Tests.ps1` | `sda-workflow-guide/scripts/workflow.ps1` and `sda-workflow-guide/scripts/workflow.sh` | One scenario sequence, run against both twins: stdout, exit code, and the written `workflow.json` must match. A few refusals are also checked against the documented contract, not just against each other — a corrupted container must stop `list` without printing a partial list |
 
 The two workflow scripts are one contract with two implementations, and nothing else compares
 them, so a change to either can diverge from the other in silence. Run the harness after
 editing one:
 
 ```powershell
-powershell -NoProfile -File tools/sda/skills/sda-setup/assets/workflow/_twins.Tests.ps1
+powershell -NoProfile -File tools/sda/skills/sda-workflow-guide/scripts/_twins.Tests.ps1
 ```
 
 It prints `PASS`/`FAIL` and exits 0/1. Its scratch lives in `.test-scratch/workflow-twins/` —

@@ -29,17 +29,6 @@ scripts:
   # Bash:       .sda/scripts/qa/invoke-http.sh
   invokeHttp: .sda/scripts/qa/invoke-http.ps1
 
-  # Full path to the workflow script. Creates and maintains workflow
-  # containers and their workflow.json state under paths.workflows.
-  # Set automatically by setup.
-  # PowerShell: .sda/scripts/workflow/workflow.ps1
-  # Bash:       .sda/scripts/workflow/workflow.sh
-  workflow: .sda/scripts/workflow/workflow.ps1
-
-# user — sda-design pressure-tests YOUR proposed approach and never designs for you
-# ai   — it may propose the design approach itself (legacy behaviour)
-designOwnership: user
-
 # Name of the skill that carries coding standards. sda-dev, sda-coder,
 # sda-refactor, and sda-test-writer load it before writing code. Defaults to
 # standards-compliance if omitted.
@@ -70,17 +59,3 @@ paths:
   # Folder holding gitignored QA credentials (qa.secrets.env). Defaults to
   # .sda/secrets if omitted. Never commit real credential values.
   secrets: .sda/secrets
-
-  # Root folder for User Stories authored by sda-ba (user-story.md). Defaults
-  # to .sda/stories if omitted. sda-ba writes here when no output path is given.
-  userStories: .sda/stories
-
-  # Root folder for workflow containers (.sda/workflows/<NNN>. <slug>/), each
-  # holding an issue outline, a user story, a design record, and its dev report.
-  # Defaults to .sda/workflows if omitted.
-  workflows: .sda/workflows
-
-tests:
-  coverage:
-    # true | false
-    enabled: true
