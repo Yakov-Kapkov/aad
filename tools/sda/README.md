@@ -18,6 +18,7 @@ sda-setup skill  →  sda-ba  →  sda-design  →  sda-dev
 Installs the **sda-setup** skill, the **sda-workflow-guide** skill, the **sda-spec-guide**
 skill, SDA agents, and the
 supporting skills — [**CLI Tool Scan**](../../skills/cli-tool-scan/),
+[**Design Partner**](../../skills/design-partner/),
 [**Standards Compliance**](../../skills/standards-compliance/),
 [**Troubleshooting**](../../skills/troubleshooting/),
 [**Software Design Best Practices**](../../skills/software-design-best-practices/),
@@ -257,6 +258,7 @@ All pipeline agents are user-invokable and used as needed.
 | `sda-setup` | Scaffolds `.sda/` folder with resource files — schemas, scripts, and config example |
 | `sda-workflow-guide` | The workflow layer — the workflow CLI, the fixed container paths and script location, the stage gate, finish/escalate/resolve steps, the orchestrator card, one stage card per stage, the state-script twins, and both workflow schemas |
 | `sda-spec-guide` | Contract spec conventions — the spec model, storage layout, metadata, and content rules |
+| `design-partner` | The pressure-testing posture — ownership, option format, consistency and completeness checks, quality rules, altitude discipline, and a per-round acceptance checklist. Loaded by `sda-design`; usable without SDA |
 | `test-driven-design` | The design method — the participant vocabulary, the level grouping, the pseudo-tests a behaviour change needs, and what earns one. Loaded by `sda-design` |
 
 ### Prompts

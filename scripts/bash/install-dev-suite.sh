@@ -100,7 +100,7 @@ if [ "$ACTION" = "uninstall" ]; then
     done
 
     # Skills
-    for skill in sda-setup sda-workflow-guide sda-spec-guide cli-tool-scan sda-tool-check standards-compliance troubleshooting software-design-best-practices is-repo-ai-friendly make-repo-ai-friendly test-driven-design; do
+    for skill in sda-setup sda-workflow-guide sda-spec-guide cli-tool-scan sda-tool-check standards-compliance troubleshooting software-design-best-practices is-repo-ai-friendly make-repo-ai-friendly test-driven-design design-partner; do
         dir="$TARGET_BASE/skills/$skill"
         if [ -d "$dir" ]; then
             rm -rf "$dir"
@@ -207,5 +207,9 @@ echo -e "${YELLOW}== Installing make-repo-ai-friendly skill ==${NC}"
 echo
 echo -e "${YELLOW}== Installing test-driven-design skill ==${NC}"
 "$SCRIPT_DIR/install-skill.sh" -t "$TARGET_BASE" -n "test-driven-design"
+
+echo
+echo -e "${YELLOW}== Installing design-partner skill ==${NC}"
+"$SCRIPT_DIR/install-skill.sh" -t "$TARGET_BASE" -n "design-partner"
 
 echo

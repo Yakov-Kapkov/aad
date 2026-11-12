@@ -38,6 +38,7 @@ Reusable skills that extend agent capabilities.
 | Skill | Description |
 |---|---|
 | [`cli-tool-scan`](skills/cli-tool-scan/README.md) | Scans which CLI tools a repository's own commands need, reports the missing ones, and installs them after approval — never writes files or edits manifests |
+| [`design-partner`](skills/design-partner/README.md) | Design-partner posture — the user owns every decision, the agent pressure-tests rather than authors, with the option format, consistency and completeness checks, over-/under-engineering checks, altitude discipline, and a per-round acceptance checklist; usable outside SDA |
 | [`is-repo-ai-friendly`](skills/is-repo-ai-friendly/README.md) | Defines what makes a repository AI-friendly and checks every subproject of a repo, artifact by artifact — a name-free list (vocabulary, structure, BA/designer/developer context, dev commands, QA context, deployment, run locally, operations, docs map); read-only |
 | [`make-repo-ai-friendly`](skills/make-repo-ai-friendly/README.md) | Makes a repository AI-friendly — authors routing readmes (AGENTS.md/CLAUDE.md) and a root + per-subproject docs tree (architecture, vocabulary, testing, deployment, operations, requirements, conventions, ADRs, coding standards, commands), adapting it to the repo's declared contract |
 | [`software-design-best-practices`](skills/software-design-best-practices/README.md) | Route-table skill mapping topic areas (web API, database, UI, layers) to language-agnostic design best-practice files — consulted at spec-creation and implementation time |
