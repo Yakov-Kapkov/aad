@@ -52,6 +52,9 @@ read and updated, never duplicated into a new location.
 ### List
 - Second section, before any pseudo-test.
 - One line per pseudo-test: its id, an em dash, one line stating the behaviour.
+- Every acceptance criterion in the design record is developed by at least one pseudo-test;
+  a criterion with none is a design gap. The record states the outcome; the pseudo-test
+  states how it is proven.
 - Ids are `T1`, `T2`, … and are stable — a renewed file keeps them.
 - The list is the file's index: every pseudo-test has exactly one line, every line has exactly
   one pseudo-test. An id listed twice, or a pseudo-test with no line, is a defect.

@@ -160,9 +160,11 @@ Written at the end of a design session (caller: `sda-design`). You receive:
 7. **Conventions** — pointers: title + the rule it establishes + convention link.
 8. **Docs** — the documents the design produced or changed: link + what it covers.
 9. **Requirements** — requirement id + how the design satisfies it.
-10. **Impacts & risks** — cross-layer effects, contracts, migration, risks.
-11. **Open questions** — unsettled questions + what each affects. Omit only if none.
-12. **Handoff** — settled constraints, the affected-spec list, what must not be re-decided.
+10. **Acceptance criteria** — one entry per criterion: id + the observable outcome and the
+    design condition it must honour, in design language.
+11. **Impacts & risks** — cross-layer effects, contracts, migration, risks.
+12. **Open questions** — unsettled questions + what each affects. Omit only if none.
+13. **Handoff** — settled constraints, the affected-spec list, what must not be re-decided.
 
 You format `design.md` per `design-record-schema.md`.
 

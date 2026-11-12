@@ -38,7 +38,7 @@ each settled piece to the artifact that altitude belongs to.
 | Which direction was chosen and why | an ADR (warrant per the `{docsSkill}` ADR schema) |
 | How to apply a direction — the rule to follow | a convention |
 | The behaviour this change must exhibit | `design-tests.md` |
-| This change's settled constraints, for the next stage | `design.md` |
+| This change's settled constraints and acceptance criteria, for the next stage | `design.md` |
 
 Prose only — no code in any artifact, except the design-tests outline (see
 [Design tests](#design-tests)). The convention `application` allowance is the other
@@ -358,6 +358,11 @@ message (a fresh agent misses the first agent's cache).
 
 **`## Handoff` is the critical section** — pass the settled constraints and the
 affected-spec list (`use-as-is` / `extend` / `create`) when delegating.
+
+**Acceptance criteria.** They are the implementation's goal. Derive them from the
+user story's scenarios — or from `issue.md` when the `story` stage was skipped — and from
+the approach, decisions, and conventions this session settled. A design-shaped criterion
+states what the committed approach requires; never add one the user did not agree to.
 
 ---
 

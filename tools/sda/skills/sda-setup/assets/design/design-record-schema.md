@@ -40,6 +40,9 @@ record is read and updated, never duplicated into a new location.
 ## Requirements
 - {FR/NFR id} — {one line: how the design satisfies it}
 
+## Acceptance criteria
+- {id} — {one line: the outcome and the design condition the implementation must honour}
+
 ## Impacts & risks
 - {cross-layer effect, contract touched, migration needed}
 - {risk} — {what it breaks, what must tolerate it}
@@ -99,6 +102,20 @@ record is read and updated, never duplicated into a new location.
 ### Requirements
 - One line per requirement entry the design covers: id + how the design satisfies it.
 - Cite the id; never restate the requirement text.
+
+### Acceptance criteria
+- The implementation stage's goal: what must be observably true when the change is done.
+- Written from two sources: the requirement — a user-story scenario, or an `issue.md` item
+  when no story exists — and the design this record settles.
+- One line per criterion: id + the outcome, in design language. Add implementation detail
+  only when the criterion cannot be stated without it.
+- A design-shaped criterion states the condition the implementation must honour — the
+  component that owns the rule, the seam the flow crosses, the pattern the behaviour goes
+  through. Name the condition, never the symbol or source file.
+- Ids are stable across renewals; a criterion the design drops moves to [Scope](#scope)
+  as `Out` or `Deferred`.
+- Never a Gherkin block. The pseudo-tests that develop each criterion live in `design-tests.md`.
+- Omit only if the change delivers no user-observable behaviour.
 
 ### Impacts & risks
 - Cross-layer effects, contracts touched, migration needed.
@@ -174,9 +191,10 @@ requires it in [Context](#context) and [Docs](#docs).
 
 ## Form
 
-- **Not BDD.** Behaviour has two homes off this record — acceptance in the user story, and
-  the pseudo-tests in the change's `design-tests.md`. The record holds no scenarios; it links
-  the file.
+- **Not BDD.** Acceptance detail has two homes off this record — the Gherkin scenarios in the
+  user story, and the pseudo-tests in the change's `design-tests.md`. The record carries only
+  the one-line [acceptance criteria](#acceptance-criteria); it holds no scenarios and links
+  the design-tests file.
 - **Declarative.** decision → what it constrains → consequence.
 - **Specific, not syntactic.** `outbox`, not `OutboxDispatcher.Dispatch()`.
 
