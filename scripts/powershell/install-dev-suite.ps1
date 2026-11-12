@@ -74,7 +74,7 @@ if ($Action -eq 'uninstall') {
 
     # Skills
     $SkillsDst = Join-Path $TargetBase 'skills'
-    foreach ($Skill in @('sda-setup', 'sda-workflow-guide', 'sda-spec-guide', 'cli-tool-scan', 'sda-tool-check', 'standards-compliance', 'troubleshooting', 'software-design-best-practices', 'is-repo-ai-friendly', 'make-repo-ai-friendly')) {
+    foreach ($Skill in @('sda-setup', 'sda-workflow-guide', 'sda-spec-guide', 'cli-tool-scan', 'sda-tool-check', 'standards-compliance', 'troubleshooting', 'software-design-best-practices', 'is-repo-ai-friendly', 'make-repo-ai-friendly', 'test-driven-design')) {
         $Dir = Join-Path $SkillsDst $Skill
         if (Test-Path $Dir) { Remove-Item $Dir -Recurse -Force; Write-Host "  Removed skills\$Skill\" }
     }
@@ -169,5 +169,9 @@ Write-Host "`n== Installing is-repo-ai-friendly skill ==" -ForegroundColor Yello
 # ── make-repo-ai-friendly skill ─────────────────────────────────────────────
 Write-Host "`n== Installing make-repo-ai-friendly skill ==" -ForegroundColor Yellow
 & (Join-Path $PSScriptRoot 'install-skill.ps1') -TargetBase $TargetBase -Name 'make-repo-ai-friendly'
+
+# ── test-driven-design skill ────────────────────────────────────────────────
+Write-Host "`n== Installing test-driven-design skill ==" -ForegroundColor Yellow
+& (Join-Path $PSScriptRoot 'install-skill.ps1') -TargetBase $TargetBase -Name 'test-driven-design'
 
 Write-Host ''

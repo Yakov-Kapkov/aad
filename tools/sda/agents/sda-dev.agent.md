@@ -304,7 +304,7 @@ This phase resolves the work unit. Follow the [Ad-hoc mode](#ad-hoc-mode) sub-fl
 | | Workflow mode | Ad-hoc mode |
 |---|---|---|
 | **Trigger** | A workflow container is named, or the entry prompt declares one. | Everything else. Default. |
-| **Input source** | The container's `issue.md` and `design.md` | User conversation |
+| **Input source** | The container's `issue.md`, `design.md`, and `design-tests.md` | User conversation |
 | **Key subagent** | `sda-scribe` (Phase 6, `dev-report.md`) | `sda-code-explore` (Phase 1) |
 | `{dev-report}` | true — `<wf>/dev-report.md` | false |
 | `{multi-unit}` | true when ≥ 2 units | true when ≥ 2 units |

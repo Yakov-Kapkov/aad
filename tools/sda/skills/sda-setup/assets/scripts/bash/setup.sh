@@ -26,6 +26,7 @@ mkdir -p "$TARGET_DIR/resources/qa"
 cp "$ASSETS_DIR/qa/qa-task-schema.md"                "$TARGET_DIR/resources/qa/qa-task-schema.md"
 mkdir -p "$TARGET_DIR/resources/design"
 cp "$ASSETS_DIR/design/design-record-schema.md"  "$TARGET_DIR/resources/design/design-record-schema.md"
+cp "$ASSETS_DIR/design/design-tests-schema.md"   "$TARGET_DIR/resources/design/design-tests-schema.md"
 mkdir -p "$TARGET_DIR/resources/ba"
 cp "$ASSETS_DIR/ba/user-story-schema.md"            "$TARGET_DIR/resources/ba/user-story-schema.md"
 

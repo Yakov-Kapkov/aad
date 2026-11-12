@@ -92,6 +92,7 @@ record is read and updated, never duplicated into a new location.
   entries.
 - Convention and ADR docs are listed under [Decisions](#decisions) and
   [Conventions](#conventions), not here.
+- The design-tests file is listed here — linked, never summarised.
 - Relative `.md` links are expected here — [Altitude trigger](#4-altitude-trigger) exempts them.
 - Omit only if the design changed no document.
 
@@ -153,7 +154,7 @@ Walk the list — do not recall it.
 
 | Not a design decision | Home |
 |---|---|
-| test scenarios and cases | derived at implementation time |
+| pseudo-tests and their scenarios | the change's `design-tests.md` |
 | file layout, symbol and type names | implementation |
 | schema field lists, exact payloads | spec files |
 | CLI flags, config keys, env vars | readmes (mechanical) |
@@ -173,8 +174,9 @@ requires it in [Context](#context) and [Docs](#docs).
 
 ## Form
 
-- **Not BDD.** Behaviour already has a home — acceptance in the user story; executable
-  scenarios are derived at implementation time. The record holds no scenarios.
+- **Not BDD.** Behaviour has two homes off this record — acceptance in the user story, and
+  the pseudo-tests in the change's `design-tests.md`. The record holds no scenarios; it links
+  the file.
 - **Declarative.** decision → what it constrains → consequence.
 - **Specific, not syntactic.** `outbox`, not `OutboxDispatcher.Dispatch()`.
 

@@ -42,7 +42,7 @@ Reusable skills that extend agent capabilities.
 | [`make-repo-ai-friendly`](skills/make-repo-ai-friendly/README.md) | Makes a repository AI-friendly — authors routing readmes (AGENTS.md/CLAUDE.md) and a root + per-subproject docs tree (architecture, vocabulary, testing, deployment, operations, requirements, conventions, ADRs, coding standards, commands), adapting it to the repo's declared contract |
 | [`software-design-best-practices`](skills/software-design-best-practices/README.md) | Route-table skill mapping topic areas (web API, database, UI, layers) to language-agnostic design best-practice files — consulted at spec-creation and implementation time |
 | [`standards-compliance`](skills/standards-compliance/README.md) | Enforces project coding standards on all produced code changes — resolves conflicts between task descriptions and standards |
-| [`test-driven-design`](skills/test-driven-design/README.md) | Test-driven design for software designers — builds the short list of tests a change needs, then develops each into a pseudo-code case the design is shaped against |
+| [`test-driven-design`](skills/test-driven-design/README.md) | Test-driven design for software designers — records the user's participant vocabulary, groups the pseudo-tests a change needs by level, and pressure-tests the user's design against them |
 | [`troubleshooting`](skills/troubleshooting/) | Troubleshooting dictionary for unexpected command results — test failures, build errors, lint violations, runtime exceptions |
 
 ---

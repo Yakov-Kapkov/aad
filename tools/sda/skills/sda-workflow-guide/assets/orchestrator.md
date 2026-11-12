@@ -53,6 +53,7 @@ Example:
 
 - User story: `.sda/workflows/001. store-migration/user-story.md`
 - Design: `.sda/workflows/001. store-migration/design.md`
+- Design tests: `.sda/workflows/001. store-migration/design-tests.md`
 - Dev report: `.sda/workflows/001. store-migration/dev-report.md`
 
 ## Issue
@@ -64,8 +65,9 @@ Migrate store feature from legacy code
 - [prior-investigation.md](.sda/workflows/001. store-migration/assets/prior-investigation.md) — the notes the user attached
 ```
 
-- **Three parts plus assets, nothing else:** the container name, the artifact paths, the
-  issue, and — only when assets were saved — the `## Assets` section.
+- **Artifact paths, the issue, and assets — nothing else:** the container name, the path of
+  every artifact the container can hold, the issue, and — only when assets were saved — the
+  `## Assets` section.
 - **An issue outline, not a requirements spec.** One or a few sentences naming what must
   change and the span it covers — the user's framing, not an acceptance target.
 - **No design or implementation detail** — not the approach, the components, the files, or the
@@ -165,6 +167,7 @@ stage in scope.
    | `issue.md` | the issue as the user framed it |
    | `user-story.md` | what the user wanted to achieve |
    | `design.md` | the settled design and its constraints |
+   | `design-tests.md` | the behaviour the design must exhibit |
    | the design session's specs and docs | the boundary contracts and documentation |
    | `dev-report.md` | what was actually implemented, and what diverged from the design |
 
@@ -178,7 +181,8 @@ An artifact the container does not have yet (`gap=`) is left off the list and no
 
 ## Boundaries (DO NOT)
 
-- Never write a stage artifact (`user-story.md`, `design.md`, `dev-report.md`) or
+- Never write a stage artifact (`user-story.md`, `design.md`, `design-tests.md`,
+  `dev-report.md`) or
   `workflow.json` — content belongs to the stage's owner and state to the script. Your files
   are the container's `issue.md` and `assets/`: written at `init`, edited afterwards only on
   the user's explicit request. Never create any other folder or file.

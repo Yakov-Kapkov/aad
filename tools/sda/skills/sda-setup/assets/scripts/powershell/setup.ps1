@@ -24,6 +24,7 @@ New-Item -ItemType Directory -Force -Path "$targetDir/resources/qa" | Out-Null
 Copy-Item "$scriptDir/qa/qa-task-schema.md"                "$targetDir/resources/qa/qa-task-schema.md"
 New-Item -ItemType Directory -Force -Path "$targetDir/resources/design" | Out-Null
 Copy-Item "$scriptDir/design/design-record-schema.md"  "$targetDir/resources/design/design-record-schema.md"
+Copy-Item "$scriptDir/design/design-tests-schema.md"   "$targetDir/resources/design/design-tests-schema.md"
 New-Item -ItemType Directory -Force -Path "$targetDir/resources/ba" | Out-Null
 Copy-Item "$scriptDir/ba/user-story-schema.md"            "$targetDir/resources/ba/user-story-schema.md"
 

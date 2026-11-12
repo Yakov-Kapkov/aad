@@ -86,12 +86,13 @@ Planning artifacts live in a **workflow**: a numbered container for one requirem
     assets/                optional: context the user attached (files, text, excerpts)
     user-story.md          owner: sda-ba
     design.md              owner: sda-design
+    design-tests.md        owner: sda-design — the behaviour list and its pseudo-tests
     dev-report.md          owner: sda-dev
     escalations/           one evidence brief per escalation
 ```
 
 `init` also writes the container's **`issue.md`** — the entry artifact, holding the container
-name, the three artifact paths, the issue in the user's own words, and a link to each asset the
+name, the artifact paths, the issue in the user's own words, and a link to each asset the
 user attached: an outline, not a requirements spec, with no design or implementation detail.
 Files, text, or excerpts the user attaches are saved under the container's `assets/` folder and
 linked from `issue.md`. Every stage starts from it, so the work is never re-stated:
@@ -176,10 +177,10 @@ One agent, any altitude — judged from what is being discussed:
   Design a feature for paginated order listing filtered by status.
   ```
   Records conventions and ADRs, updates the features section of all readmes, writes a spec
-  file for every boundary the feature crosses, and writes the design record
-  (`design.md`).
+  file for every boundary the feature crosses, and writes the design tests
+  (`design-tests.md`) and the design record (`design.md`).
 
-`sda-design` is conversational. It pressure-tests the design **you** propose rather than authoring it — describe the area you're tackling, defend your direction against its push-back on complexity and risk, and iterate together before committing. At the end of every session it writes the design record, `design.md`, into the workflow container — so the next agent reads a compact record instead of the full conversation.
+`sda-design` is conversational. It pressure-tests the design **you** propose rather than authoring it — describe the area you're tackling, defend your direction against its push-back on complexity and risk, and iterate together before committing. A behaviour-changing design also carries a **design tests** outline, `design-tests.md`: the participants the behaviour is made of, then the pseudo-tests grouped by level, each written in the subproject's own language with the noise removed. A pseudo-test glues its participants together and states the behaviour that must emerge — one that reads badly against the proposed abstraction sends the abstraction back for revision. The outline is the feature's acceptance criteria: the implementation stage turns every pseudo-test into a runnable test, and the change is done when all of them pass. At the end of every session it writes the design record, `design.md`, into the workflow container — so the next agent reads a compact record instead of the full conversation.
 
 ### Author the QA acceptance spec — `sda-qa-task`
 
@@ -220,7 +221,7 @@ finds — it reports, and leaves routing to you.
 | Agent | Role | Model | Tools |
 |---|---|---|---|
 | `sda-ba` | Business Analyst — elicits a raw requirement into one ready User Story (Actor + Gherkin + measurable NFRs) and owns the durable requirements tree, gated by the Definition of Ready | Claude Sonnet 5 | read, search, agent, edit, execute |
-| `sda-design` | System architecture + feature design — components, contracts, diagrams, convention + ADR docs | Claude Sonnet 5 | read, search, agent, execute |
+| `sda-design` | System architecture + feature design — components, contracts, diagrams, behaviour outline, convention + ADR docs | Claude Sonnet 5 | read, search, agent, execute |
 | `sda-qa-task` | Authors the black-box acceptance spec (`qa-task.md`) for existing behaviour | Claude Sonnet 5 | read, search, execute, agent |
 | `sda-dev` | TDD implementation orchestrator — delegates RED/GREEN to subagents to keep context small; routes `docs` units to sda-scribe + sda-docs-check; owns the workflow's `dev` stage | project config | read, execute, agent |
 | `sda-qa` | Runtime acceptance QA — starts the app, drives a real browser/CLI through the functional requirements, writes `qa-report.md` (read-only on source) | Claude Sonnet 5 | read, edit, search, execute, browser |
@@ -230,7 +231,7 @@ finds — it reports, and leaves routing to you.
 
 | Agent | Role | Model | Tools |
 |---|---|---|---|
-| `sda-scribe` | Universal scribe: writes qa-task.md, dev-report.md, convention + ADR docs, design docs, requirements docs, design records, contract specs, manifest.md, and the files of a `docs` unit | Claude Haiku 4.5 | read, edit, search |
+| `sda-scribe` | Universal scribe: writes qa-task.md, dev-report.md, convention + ADR docs, design docs, requirements docs, design tests, design records, contract specs, manifest.md, and the files of a `docs` unit | Claude Haiku 4.5 | read, edit, search |
 | `sda-code-explore` | Fast read-only codebase exploration (invoked by sda-qa-task, sda-dev, sda-design) | Claude Haiku 4.5 | read, search |
 | `sda-web-explore` | Web research — fetches live API docs and library specs (invoked by sda-design) | Claude Haiku 4.5 | web |
 | `sda-test-writer` | Writes tests for TDD slices (RED) and tests-only slices. Mechanical worker: makes domain decisions within the assigned unit; stops and reports anything outside scope. | project config | read, edit, search, execute |
@@ -245,7 +246,7 @@ finds — it reports, and leaves routing to you.
 
 `sda-dev` orchestrates the TDD loop and owns quality checks, delegating test writing, coding, refactoring, and gate execution to subagents to keep each context small. A `docs` unit routes to `sda-scribe` (write) and then `sda-docs-check` (targeted verification).
 
-`sda-scribe` is the universal scribe for SDA planning and implementation agents — it writes qa-task.md, dev-report.md, convention + ADR docs, design docs, requirements docs, design records, contract spec files, and manifest.md. It uses Haiku for cost efficiency since it performs no reasoning — only schema formatting and file I/O. `sda-code-explore` is invoked by `sda-qa-task`, `sda-dev`, and `sda-design` for codebase research — also Haiku, since it only reads and reports. `sda-web-explore` is invoked by `sda-design` for live web/API research when documentation may have changed.
+`sda-scribe` is the universal scribe for SDA planning and implementation agents — it writes qa-task.md, dev-report.md, convention + ADR docs, design docs, requirements docs, design tests, design records, contract spec files, and manifest.md. It uses Haiku for cost efficiency since it performs no reasoning — only schema formatting and file I/O. `sda-code-explore` is invoked by `sda-qa-task`, `sda-dev`, and `sda-design` for codebase research — also Haiku, since it only reads and reports. `sda-web-explore` is invoked by `sda-design` for live web/API research when documentation may have changed.
 
 All pipeline agents are user-invokable and used as needed.
 
@@ -256,6 +257,7 @@ All pipeline agents are user-invokable and used as needed.
 | `sda-setup` | Scaffolds `.sda/` folder with resource files — schemas, scripts, and config example |
 | `sda-workflow-guide` | The workflow layer — the workflow CLI, the fixed container paths and script location, the stage gate, finish/escalate/resolve steps, the orchestrator card, one stage card per stage, the state-script twins, and both workflow schemas |
 | `sda-spec-guide` | Contract spec conventions — the spec model, storage layout, metadata, and content rules |
+| `test-driven-design` | The design method — the participant vocabulary, the level grouping, the pseudo-tests a behaviour change needs, and what earns one. Loaded by `sda-design` |
 
 ### Prompts
 
@@ -287,7 +289,7 @@ sda-dev execution — phases 0–6 (per sda-dev.agent.md)
 
 PHASE 0 — BOOTSTRAP  (once per conversation)
   Retains shell + project config from session context; detects mode.
-  Workflow: works from the container's design.md.
+  Workflow: works from the container's design.md and design-tests.md.
   Ad-hoc: delegates exploration, then derives the work unit.
 
 PHASE 1 — PLAN  (per unit)
@@ -347,7 +349,9 @@ Project-scaffolded resources are read from a `.sda/` folder in the project root 
 | Design + convention + ADR + requirements schemas | `{docsSkill}` skill (`make-repo-ai-friendly`) — load it by name; its `SKILL.md` routes to the readme-outline, docs-index, architecture, vocabulary, requirements, convention, ADR, coding-standards, and docs-map schemas |
 | AI-friendliness artifact list + link checker | `is-repo-ai-friendly` skill — load it by name; `SKILL.md` holds the artifact list, and `assets/scripts/check-links.*` resolves links |
 | Design record schema | `.sda/resources/design/design-record-schema.md` |
+| Design tests schema | `.sda/resources/design/design-tests-schema.md` |
 | Design record | `.sda/workflows/<NNN>. <slug>/design.md` — the container root |
+| Design tests | `.sda/workflows/<NNN>. <slug>/design-tests.md` — the container root |
 | Workflow container | `.sda/workflows/<NNN>. <slug>/` |
 | Workflow state | `.sda/workflows/<NNN>. <slug>/workflow.json` |
 | Workflow entry artifact | `.sda/workflows/<NNN>. <slug>/issue.md` |

@@ -124,6 +124,7 @@ exists (`gap=<stage>` means that stage's artifact is absent).
 | assets (orchestrator) | `<wf>/assets/` |
 | story artifact — `sda-ba` | `<wf>/user-story.md` |
 | design artifact — `sda-design` | `<wf>/design.md` |
+| design tests — `sda-design` | `<wf>/design-tests.md` |
 | dev artifact — implementation session | `<wf>/dev-report.md` |
 | escalation briefs | `<wf>/escalations/` |
 | state | `<wf>/workflow.json` — written by the script, read only through `current`/`read` |
@@ -131,8 +132,8 @@ exists (`gap=<stage>` means that stage's artifact is absent).
 **Write your role's artifact at the container root, under exactly that name.** The script
 reads only that path — a different name, or a subfolder, is an absent artifact: `current`
 reports `gap=<your stage>` and `advance` is refused. A stage card adds what else its stage
-produces — specs under `{specs-root}`, design docs in the repo's docs tree — but the stage
-artifact never moves out of the container root.
+produces — specs under `{specs-root}`, design docs in the repo's docs tree, design tests at
+the container root — but the stage artifact never moves out of the container root.
 
 The script and the container template ship with this skill: `scripts/workflow.ps1`,
 `scripts/workflow.sh`, `assets/workflow-schema.md`.

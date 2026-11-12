@@ -25,6 +25,7 @@ moves the pointer back, is recorded in `notes`, and keeps its evidence in
       prior-investigation.md
     user-story.md
     design.md
+    design-tests.md
     dev-report.md
     escalations/
       001. 2026-09-15_14-20-dev-to-design.md
@@ -101,6 +102,9 @@ moves the pointer back, is recorded in `notes`, and keeps its evidence in
 - `user-story.md` (story), `design.md` (design), and `dev-report.md` (dev) — one
   file at the container root per stage. `ready` has no artifact of its own — it
   is terminal.
+- `design-tests.md` is the design stage's second, optional file — present when the change
+  alters observable behaviour. Like `assets/`, the script never reads it: it produces no
+  `gap=` and never blocks `advance`. The design stage's card gates it.
 - `issue.md` is the container's **entry artifact**, not a stage artifact: no stage owns it,
   it produces no `gap=` line, and it never blocks `advance`. It is created with the
   container.
