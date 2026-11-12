@@ -2,7 +2,9 @@
 
 A **design record** carries the design-level context for one design session: what the
 design commits to, what it deliberately leaves out, and where the durable decisions live. It
-exists so implementation can begin without re-deriving the architecture.
+is the implementation stage's primary input — what behaviour to deliver, and, where the shape
+is load-bearing, the how that behaviour must take. It exists so implementation can begin
+without re-deriving the architecture.
 
 Where the record lives is outside this schema. It is **renewed in place** — an existing
 record is read and updated, never duplicated into a new location.
@@ -73,7 +75,8 @@ record is read and updated, never duplicated into a new location.
 
 ### Approach
 - Components touched or created, the interactions between them, and the patterns in use —
-  **stated as constraints**, not as a narrative of how to build it.
+  **stated as constraints**, not as a narrative of how to build it. A complex case states the
+  how too: the owner, the seam, the pattern the behaviour must go through.
 - Name a component by its role (`shared contract package`), never by symbol.
 - Name a pattern only when it is load-bearing (`outbox`) — never as decoration.
 
@@ -109,9 +112,8 @@ record is read and updated, never duplicated into a new location.
   when no story exists — and the design this record settles.
 - One line per criterion: id + the outcome, in design language. Add implementation detail
   only when the criterion cannot be stated without it.
-- A design-shaped criterion states the condition the implementation must honour — the
-  component that owns the rule, the seam the flow crosses, the pattern the behaviour goes
-  through. Name the condition, never the symbol or source file.
+- A design-shaped criterion states the condition the implementation must honour — the shape
+  [Approach](#approach) settles. Never the symbol or source file.
 - Ids are stable across renewals; a criterion the design drops moves to [Scope](#scope)
   as `Out` or `Deferred`.
 - Never a Gherkin block. The pseudo-tests that develop each criterion live in `design-tests.md`.

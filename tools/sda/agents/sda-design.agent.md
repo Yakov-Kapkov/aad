@@ -211,8 +211,9 @@ details to the later stages.
 - Identify components, not internal methods
 - Flag risks and record the behaviour tests — see [Design tests](#design-tests)
 
-The pseudo-test is the exception — its act names an interface call across the seam,
-because that is the behaviour being asserted ([Design tests](#design-tests)).
+The pseudo-test and the shape are the two exceptions, both design decisions: the
+pseudo-test's act names an interface call across the seam ([Design tests](#design-tests)),
+and a complex case fixes the shape — owner, seam, pattern — never a build sequence.
 
 ---
 
