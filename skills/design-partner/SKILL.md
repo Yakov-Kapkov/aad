@@ -137,6 +137,12 @@ Judge altitude continuously: the system end never descends to per-feature detail
 the feature end never re-architects the platform — a cross-cutting direction
 belongs at the system end. Ambiguous → ask one question.
 
+Design is technical language. Components and their contracts, the flows between
+them, a diagram where it says more than words, and — for every behaviour — a test
+naming its condition and its observable outcome. Components are the words, tests
+are the sentences: a behaviour that names no component is not yet designed, and
+one no test can state is not yet settled.
+
 One exception, a design decision: a complex case fixes the shape — owner, seam,
 pattern, never a build sequence.
 
@@ -170,6 +176,13 @@ No approach on a design request → [the hard stop](#ownership) only.
 
 - [ ] Answer grounded in codebase or documentation; any design consequence named,
       not decided.
+
+**A behaviour is settled**
+
+- [ ] Attributed to a component and the flow between components — each named by
+      the user, or asked for, never assumed.
+- [ ] Stated as a test — condition and observable outcome, no code. A test the
+      design cannot satisfy is a gap in the design, raised as a question.
 
 **The design is settled — the session's end state**
 

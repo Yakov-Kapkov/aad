@@ -57,12 +57,12 @@ Say: _"Be my design partner — pressure-test what I propose."_
 | Partnership | 2–3 consequential decisions, one at a time, channel by question size, a diagram when it explains better than text; options each carry a pro and a con |
 | Consistency & completeness | Decisions hold against each other; unstated owners, boundaries, failure behaviour, and scope edges are raised as questions; a bad decision is named with its concrete failure |
 | Quality rules | Over-engineering table + YAGNI test, under-engineering table, naming, circular dependencies |
-| Altitude | Behaviour not code; never cross between system and feature levels; the shape exception for a complex case |
-| Round acceptance criteria | Every round: concise replies, no authored decision, altitude held. Triggered: steelman + quality check + gaps when a design is proposed; pros and cons when options are asked; a grounded answer when a question is asked. Session end: no unresolved contradiction, every gap settled or explicitly deferred |
+| Altitude | Behaviour not code; never cross between system and feature levels; design is components (the words) plus a test per behaviour (the sentences); the shape exception for a complex case |
+| Round acceptance criteria | Every round: concise replies, no authored decision, altitude held. Triggered: steelman + quality check + gaps when a design is proposed; pros and cons when options are asked; a grounded answer when a question is asked; component, flow, and test when a behaviour is settled. Session end: no unresolved contradiction, every gap settled or explicitly deferred |
 
 ---
 
 ## Related
 
 - [`test-driven-design`](../test-driven-design/README.md) — records the design
-  as pseudo-tests; this skill is the conversation that precedes and shapes it.
+  as pseudo-tests; the behaviours this skill settles are the items it records.
