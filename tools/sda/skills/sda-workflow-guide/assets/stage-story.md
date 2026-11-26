@@ -6,4 +6,6 @@
 - **Escalate:** never — no upstream stage.
 - **Resolve:** escalations addressed to `story` (`owner: story`).
 - **Advance:** story written and DoR passed → ask, then `advance`.
-- **Durable requirements** go through `sda-scribe` (Mode 6), not this card.
+- **Requirements documentation** goes through `sda-scribe` (Mode 6), not this card.
+- **Requirements-only work is ad hoc** — it runs outside a container and never completes this
+  stage. `advance` still needs `user-story.md`.

@@ -10,6 +10,7 @@ make-repo-ai-friendly/
 ├── README.md                       ← human index
 ├── AGENTS.md                       ← this file
 └── assets/                         ← schemas (entity-level, structure only)
+    ├── schema-index.md            ← file type → schema map
     ├── docs-tree.md                ← default profile (a proposal)
     ├── docs-map-schema.md          ← the docs declaration
     ├── readme-outline-schema.md
@@ -46,7 +47,7 @@ make-repo-ai-friendly/
 
 When you add, remove, or rename an asset:
 
-1. Update the **Assets** table in `SKILL.md` (file type → schema path).
+1. Update the schema index in `assets/schema-index.md` (file type → schema path).
 2. Update the **What's Inside** table in `README.md`.
 3. Update the folder-structure block above.
 

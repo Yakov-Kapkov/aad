@@ -74,7 +74,7 @@ if ($Action -eq 'uninstall') {
 
     # Skills
     $SkillsDst = Join-Path $TargetBase 'skills'
-    foreach ($Skill in @('sda-setup', 'sda-workflow-guide', 'sda-spec-guide', 'standards-compliance', 'troubleshooting', 'software-design-best-practices', 'is-repo-ai-friendly', 'make-repo-ai-friendly')) {
+    foreach ($Skill in @('sda-setup', 'sda-workflow-guide', 'sda-spec-guide', 'cli-tool-scan', 'sda-tool-check', 'standards-compliance', 'troubleshooting', 'software-design-best-practices', 'is-repo-ai-friendly', 'make-repo-ai-friendly', 'test-driven-design', 'design-partner')) {
         $Dir = Join-Path $SkillsDst $Skill
         if (Test-Path $Dir) { Remove-Item $Dir -Recurse -Force; Write-Host "  Removed skills\$Skill\" }
     }
@@ -96,6 +96,12 @@ Write-Host "`n=== Installing SDA tool ===" -ForegroundColor Cyan
 $sdaToolArgs = @{ TargetBase = $TargetBase; Name = 'sda' }
 & (Join-Path $PSScriptRoot 'install-tool.ps1') @sdaToolArgs
 
+# ── Retired skills ──────────────────────────────────────────────────────────
+foreach ($Retired in @('sda-tool-check')) {
+    $Dir = Join-Path (Join-Path $TargetBase 'skills') $Retired
+    if (Test-Path $Dir) { Remove-Item $Dir -Recurse -Force; Write-Host "  Removed skills\$Retired\" }
+}
+
 # ── sda-setup skill ─────────────────────────────────────────────────────────
 Write-Host "`n== Installing sda-setup skill ==" -ForegroundColor Yellow
 & (Join-Path $PSScriptRoot 'install-skill.ps1') -TargetBase $TargetBase -Name 'sda-setup' -SourcePath 'tools\sda\skills\sda-setup'
@@ -107,6 +113,10 @@ Write-Host "`n== Installing sda-workflow-guide skill ==" -ForegroundColor Yellow
 # ── sda-spec-guide skill ────────────────────────────────────────────────────
 Write-Host "`n== Installing sda-spec-guide skill ==" -ForegroundColor Yellow
 & (Join-Path $PSScriptRoot 'install-skill.ps1') -TargetBase $TargetBase -Name 'sda-spec-guide' -SourcePath 'tools\sda\skills\sda-spec-guide'
+
+# ── cli-tool-scan skill ─────────────────────────────────────────────────────
+Write-Host "`n== Installing cli-tool-scan skill ==" -ForegroundColor Yellow
+& (Join-Path $PSScriptRoot 'install-skill.ps1') -TargetBase $TargetBase -Name 'cli-tool-scan'
 
 # ── commit agent ─────────────────────────────────────────────────────────────
 if ($Exclude -notcontains 'commit') {
@@ -159,5 +169,13 @@ Write-Host "`n== Installing is-repo-ai-friendly skill ==" -ForegroundColor Yello
 # ── make-repo-ai-friendly skill ─────────────────────────────────────────────
 Write-Host "`n== Installing make-repo-ai-friendly skill ==" -ForegroundColor Yellow
 & (Join-Path $PSScriptRoot 'install-skill.ps1') -TargetBase $TargetBase -Name 'make-repo-ai-friendly'
+
+# ── test-driven-design skill ────────────────────────────────────────────────
+Write-Host "`n== Installing test-driven-design skill ==" -ForegroundColor Yellow
+& (Join-Path $PSScriptRoot 'install-skill.ps1') -TargetBase $TargetBase -Name 'test-driven-design'
+
+# ── design-partner skill ────────────────────────────────────────────────────
+Write-Host "`n== Installing design-partner skill ==" -ForegroundColor Yellow
+& (Join-Path $PSScriptRoot 'install-skill.ps1') -TargetBase $TargetBase -Name 'design-partner'
 
 Write-Host ''

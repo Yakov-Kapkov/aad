@@ -42,24 +42,16 @@ Merge-Defaults $config $template
 
 # --- Step 2: Set platform script paths (never override user values) ---
 $platformPaths = [ordered]@{
-    taskState        = '.sda/scripts/dev/task-state.ps1'
-    unitFileSize     = '.sda/scripts/dev/unit-file-size.ps1'
-    readProjectTools = '.sda/scripts/read-project-tools.ps1'
     loadQaSecrets = '.sda/scripts/qa/load-qa-secrets.ps1'
     listQaSecrets = '.sda/scripts/qa/list-qa-secrets.ps1'
     qaSessionInit = '.sda/scripts/qa/qa-session-init.ps1'
     invokeHttp    = '.sda/scripts/qa/invoke-http.ps1'
-    workflow      = '.sda/scripts/workflow/workflow.ps1'
 }
 $shippedPaths = @{
-    taskState        = @('.sda/scripts/dev/task-state.ps1', '.sda/scripts/dev/task-state.sh')
-    unitFileSize     = @('.sda/scripts/dev/unit-file-size.ps1', '.sda/scripts/dev/unit-file-size.sh')
-    readProjectTools = @('.sda/scripts/read-project-tools.ps1', '.sda/scripts/read-project-tools.sh')
     loadQaSecrets = @('.sda/scripts/qa/load-qa-secrets.ps1', '.sda/scripts/qa/load-qa-secrets.sh')
     listQaSecrets = @('.sda/scripts/qa/list-qa-secrets.ps1', '.sda/scripts/qa/list-qa-secrets.sh')
     qaSessionInit = @('.sda/scripts/qa/qa-session-init.ps1', '.sda/scripts/qa/qa-session-init.sh')
     invokeHttp    = @('.sda/scripts/qa/invoke-http.ps1', '.sda/scripts/qa/invoke-http.sh')
-    workflow      = @('.sda/scripts/workflow/workflow.ps1', '.sda/scripts/workflow/workflow.sh')
 }
 foreach ($key in $platformPaths.Keys) {
     if ($null -eq $config.scripts.PSObject.Properties[$key]) {
@@ -71,9 +63,19 @@ foreach ($key in $platformPaths.Keys) {
 
 # --- Step 3: Drop retired fields ---
 # A field no longer shipped is removed, so an old install cannot keep a stale path.
-foreach ($key in @('docsIntegrity')) {
+foreach ($key in @('docsIntegrity', 'readProjectTools', 'taskState', 'unitFileSize', 'workflow')) {
     if ($null -ne $config.scripts.PSObject.Properties[$key]) {
         $config.scripts.PSObject.Properties.Remove($key)
+    }
+}
+
+# The workflow layer's paths are fixed and ship inside the sda-workflow-guide skill,
+# so a config that still carries them would keep a field nothing reads.
+if ($null -ne $config.paths) {
+    foreach ($key in @('workflows')) {
+        if ($null -ne $config.paths.PSObject.Properties[$key]) {
+            $config.paths.PSObject.Properties.Remove($key)
+        }
     }
 }
 

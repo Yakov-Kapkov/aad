@@ -1,18 +1,11 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-if [ -z "${1:-}" ]; then
-  echo "Usage: setup.sh <language>" >&2
-  exit 1
-fi
-
-LANGUAGE="$1"
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 ASSETS_DIR="$(dirname "$(dirname "$SCRIPT_DIR")")"
 TARGET_DIR=".sda"
 
 # Create folder structure
-mkdir -p "$TARGET_DIR/resources/$LANGUAGE"
 mkdir -p "$TARGET_DIR/issues"
 mkdir -p "$TARGET_DIR/secrets"
 
@@ -28,37 +21,20 @@ printf '*\n!.gitignore\n!qa.example.secrets.env\n' > "$TARGET_DIR/secrets/.gitig
 mkdir -p "$TARGET_DIR/resources/dev"
 cp "$ASSETS_DIR/project-config.example.json"       "$TARGET_DIR/resources/project-config.example.json"
 cp "$ASSETS_DIR/project-config.reference.yml"      "$TARGET_DIR/project-config.reference.yml"
-cp "$ASSETS_DIR/dev/task-schema.md"                  "$TARGET_DIR/resources/dev/task-schema.md"
 cp "$ASSETS_DIR/dev/dev-report-schema.md"            "$TARGET_DIR/resources/dev/dev-report-schema.md"
 mkdir -p "$TARGET_DIR/resources/qa"
 cp "$ASSETS_DIR/qa/qa-task-schema.md"                "$TARGET_DIR/resources/qa/qa-task-schema.md"
-mkdir -p "$TARGET_DIR/resources/toolscan"
-cp "$ASSETS_DIR/toolscan/project-tools-schema.md"    "$TARGET_DIR/resources/toolscan/project-tools-schema.md"
 mkdir -p "$TARGET_DIR/resources/design"
-cp "$ASSETS_DIR/design/design-record-schema.md"  "$TARGET_DIR/resources/design/design-record-schema.md"
+# The whole folder: adding or renaming a design schema needs no change here.
+cp "$ASSETS_DIR/design/"*.md "$TARGET_DIR/resources/design/"
 mkdir -p "$TARGET_DIR/resources/ba"
 cp "$ASSETS_DIR/ba/user-story-schema.md"            "$TARGET_DIR/resources/ba/user-story-schema.md"
-mkdir -p "$TARGET_DIR/resources/workflow"
-cp "$ASSETS_DIR/workflow/workflow-schema.md"        "$TARGET_DIR/resources/workflow/workflow-schema.md"
-cp "$ASSETS_DIR/workflow/escalation-brief-schema.md" "$TARGET_DIR/resources/workflow/escalation-brief-schema.md"
 
-TC_SOURCE="$ASSETS_DIR/tool-catalog/$LANGUAGE/tool-catalog.md"
-if [ -f "$TC_SOURCE" ]; then
-  cp "$TC_SOURCE" "$TARGET_DIR/resources/$LANGUAGE/tool-catalog.md"
-else
-  echo "WARNING: No tool-catalog found for '$LANGUAGE'. Add one to assets/tool-catalog/$LANGUAGE/tool-catalog.md and re-run the install script."
-fi
 cp "$ASSETS_DIR/qa/qa.example.secrets.env"           "$TARGET_DIR/secrets/qa.example.secrets.env"
 
 # Copy read-config hook script
 mkdir -p "$TARGET_DIR/scripts"
 cp "$SCRIPT_DIR/read-config.sh"                      "$TARGET_DIR/scripts/read-config.sh"
-cp "$SCRIPT_DIR/read-project-tools.sh"               "$TARGET_DIR/scripts/read-project-tools.sh"
-
-# Copy task-state script (bash)
-mkdir -p "$TARGET_DIR/scripts/dev"
-cp "$ASSETS_DIR/dev/bash/task-state.sh"              "$TARGET_DIR/scripts/dev/task-state.sh"
-cp "$ASSETS_DIR/dev/bash/unit-file-size.sh"          "$TARGET_DIR/scripts/dev/unit-file-size.sh"
 
 # Copy QA credential scripts
 QA_SRC="$ASSETS_DIR/qa/bash"
@@ -68,28 +44,9 @@ cp "$QA_SRC/list-qa-secrets.sh"               "$TARGET_DIR/scripts/qa/list-qa-se
 cp "$QA_SRC/qa-session-init.sh"               "$TARGET_DIR/scripts/qa/qa-session-init.sh"
 cp "$QA_SRC/invoke-http.sh"                   "$TARGET_DIR/scripts/qa/invoke-http.sh"
 
-# Copy toolscan scripts
-TOOLSCAN_SRC="$ASSETS_DIR/toolscan/bash"
-mkdir -p "$TARGET_DIR/scripts/toolscan"
-cp "$TOOLSCAN_SRC/cleanup-project-tools.sh"        "$TARGET_DIR/scripts/toolscan/cleanup-project-tools.sh"
-cp "$TOOLSCAN_SRC/get-timestamp.sh"                "$TARGET_DIR/scripts/toolscan/get-timestamp.sh"
-cp "$TOOLSCAN_SRC/probe-validators.sh"             "$TARGET_DIR/scripts/toolscan/probe-validators.sh"
-
-# Copy workflow script
-WORKFLOW_SRC="$ASSETS_DIR/workflow/bash"
-mkdir -p "$TARGET_DIR/scripts/workflow"
-cp "$WORKFLOW_SRC/workflow.sh"                     "$TARGET_DIR/scripts/workflow/workflow.sh"
-
 # The workflow CLI and other .sda scripts run by path, so every copied script
 # needs the executable bit — the source mode does not survive every transfer.
 find "$TARGET_DIR/scripts" -type f -name '*.sh' -exec chmod +x {} +
-
-TD_SOURCE="$ASSETS_DIR/tool-discovery/$LANGUAGE/tool-discovery.md"
-if [ -f "$TD_SOURCE" ]; then
-  cp "$TD_SOURCE" "$TARGET_DIR/resources/$LANGUAGE/tool-discovery.md"
-else
-  echo "WARNING: No tool-discovery spec found for '$LANGUAGE'. Add one to .sda/resources/$LANGUAGE/ later."
-fi
 
 # --- Remove artifacts retired by earlier versions ---
 # Setup only creates and copies, so a path that moved or was replaced leaves a
@@ -97,12 +54,32 @@ fi
 LEGACY_PATHS=(
   "$TARGET_DIR/scripts/decisions"                        # docs-integrity's first location
   "$TARGET_DIR/scripts/docs"                             # docs-integrity's second location — the checkers now ship in the docs skills
+  "$TARGET_DIR/scripts/dev"                              # task-state + unit-file-size retired with the task layer
+  "$TARGET_DIR/resources/dev/task-schema.md"             # task layer retired
   "$TARGET_DIR/resources/design/design-report-schema.md"  # replaced by design-record-schema.md
+  "$TARGET_DIR/resources/design/design-tests-schema.md"   # replaced by flow-schema.md
+  "$TARGET_DIR/project-tools.md"                         # toolchain scan output
+  "$TARGET_DIR/project-tools_backup.md"                  # toolchain scan backup
+  "$TARGET_DIR/scripts/toolscan"                         # toolscan scripts retired
+  "$TARGET_DIR/resources/toolscan"                       # project-tools schema retired
+  "$TARGET_DIR/scripts/read-project-tools.ps1"           # command lookup retired
+  "$TARGET_DIR/scripts/read-project-tools.sh"            # command lookup retired
+  "$TARGET_DIR/scripts/workflow"                         # the workflow script now ships in sda-workflow-guide
+  "$TARGET_DIR/resources/workflow"                       # the workflow schemas now ship in sda-workflow-guide
 )
 for legacy in "${LEGACY_PATHS[@]}"; do
   if [ -e "$legacy" ]; then
     rm -rf "$legacy"
     echo "Removed retired path: $legacy"
+  fi
+done
+
+# Retired tool assets live in per-language resource folders
+for retired in "$TARGET_DIR"/resources/*/tool-catalog.md "$TARGET_DIR"/resources/*/tool-discovery.md; do
+  if [ -e "$retired" ]; then
+    rm -f "$retired"
+    echo "Removed retired path: $retired"
+    rmdir "$(dirname "$retired")" 2>/dev/null || true
   fi
 done
 

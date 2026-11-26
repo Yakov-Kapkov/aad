@@ -2,8 +2,7 @@
 
 **Purpose**: AI assistant instructions for maintaining code quality and consistency. Standards are split by language; shared workflow rules live in `common-standards.md`.
 
-These files are bundled with the **standards-compliance** skill. Toolchain specs
-(`tool-discovery.md`, `tool-catalog.md`) ship with the **sda-setup** skill instead.
+These files are bundled with the **standards-compliance** skill.
 
 ---
 

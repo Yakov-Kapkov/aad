@@ -1,6 +1,6 @@
 ---
 name: software-design-best-practices
-description: "Software design best practices reference. MUST be loaded before creating development specifications or making structural decisions during implementation. Contains a route table mapping topic areas (web API, database, UI, layers) to language-agnostic best-practice files. Do NOT use for: trivial bug fixes with no design impact, pure refactoring without structural changes, or documentation-only tasks."
+description: "Software design best practices reference. Load whenever a design is being shaped or pressure-tested, and before creating development specifications or making structural decisions during implementation. Settling an interface shape, an error code, a stored shape, a data model, a layer boundary, or a UI structure means loading it. Contains a route table mapping topic areas (web API, database, UI, layers) to language-agnostic best-practice files. Do NOT use for: trivial bug fixes with no design impact, pure refactoring without structural changes, or documentation-only tasks."
 ---
 
 # Software Design Best Practices
@@ -15,6 +15,7 @@ language or framework.
 
 ## When to Use
 
+- Pressure-testing a design — any round that settles a shape, a boundary, or a failure mode
 - Creating a development specification
 - Making architectural decisions during implementation
 - Reviewing code for design-level issues

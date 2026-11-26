@@ -9,15 +9,14 @@ description: "Authors and maintains AI-friendly documentation: thin routing read
 
 Author and maintain AI-friendly documentation. You produce two things:
 
-1. **Thin routing readmes** — `AGENTS.md` (default), `CLAUDE.md`, or
-   `.cursorrules` (whichever exist) at the root and at each subproject root, plus
-   the human `README.md`. Every link carries a one-line description.
-2. **A docs tree** — the [default profile](assets/docs-tree.md), adapted to the
-   repo's declared contract.
+1. **Thin routing readmes** — `AGENTS.md` (default), `CLAUDE.md`, or `.cursorrules`
+   (whichever exist) at the root and each subproject root, plus the human `README.md`.
+   Every link carries a one-line description.
+2. **A docs tree** — the [default profile](assets/docs-tree.md), adapted to the repo's declared contract.
 
 The criteria are not ours: load **`is-repo-ai-friendly`** and work from its
-assessment. Read the asset schemas before writing any file (see
-[Assets](#assets)). Never invent structure from memory.
+assessment. Read the schema for each file type before writing that file —
+[`assets/schema-index.md`](assets/schema-index.md). Never invent structure from memory.
 
 ---
 
@@ -60,12 +59,11 @@ Three layers, in order of authority:
 
 ## The implementation
 
-One implementation of those criteria: the **default profile** — the folder
-layout, the home of every artifact at the root and in a subproject, and the rules for
-sharing between them: [`assets/docs-tree.md`](assets/docs-tree.md).
-
-A repo that declares its own layout replaces the profile, never the target: all
-eleven artifacts still need an answer at every level, or a declared omission.
+One implementation of those criteria: the **default profile** — the folder layout, the home of
+every artifact at the root and in a subproject, and the sharing rules between them:
+[`assets/docs-tree.md`](assets/docs-tree.md). A repo that declares its own layout replaces the
+profile, never the target: all eleven artifacts still need an answer at every level, or a
+declared omission.
 
 ## The Docs map
 
@@ -109,6 +107,10 @@ proposal.
 | **Adapt** | existing repo, "organize our docs", "onboard this repo" | the assessment |
 | **Reconcile** | "update docs", "docs are stale", code changed | the code diff |
 
+**Reconcile never overwrites intent.** A documented rule the code contradicts is
+reported with its evidence and left unchanged — which side is right is a decision,
+not an edit.
+
 Modes are scope-agnostic: any mode runs on the repo, one subproject, one artifact, or
 one file. When the signal is ambiguous, ask one question: *"new repo, existing
 repo to organize, or docs to update?"*
@@ -125,11 +127,12 @@ Inputs:
 - **The repo** — read the files themselves, never a description of them.
 - **The `is-repo-ai-friendly` report** — run its assessment; work from its
   statuses, never re-derive them.
-- **The schemas** — [`assets/`](assets), read before writing.
+- **The schemas** — [`assets/schema-index.md`](assets/schema-index.md): the file-type → schema
+  map, the default profile, and the tree checker.
 - **The checkers** — `check-links` from `is-repo-ai-friendly`, and `check-tree`
   from [`assets/scripts/`](assets/scripts).
 
-In order, every run.
+In order, every run:
 
 1. **Locate the Docs map.** Apply the rung order and the situation table in
    The Docs map.
@@ -145,15 +148,12 @@ In order, every run.
 6. **Declare.** Write or update the Docs map: layout, names, omissions.
 7. **Verify.** Re-run the assessment and `check-links`; report what remains.
 
-**Stop and report** when the repo cannot be scanned, the user rejects the
-proposal (revise once, then stop), or an artifact has no honest source in the
-repo — never invent one.
+**Stop and report** when the repo cannot be scanned, the user rejects the proposal (revise once,
+then stop), or an artifact has no honest source in the repo — never invent one.
 
 ## Report
 
-Telegraph style. Two outputs.
-
-Proposal, before any write:
+Telegraph style. Proposal, before any write:
 
 | File | Action | Artifact | Why |
 |---|---|---|---|
@@ -176,34 +176,10 @@ The work is complete when:
 - **Declaration** — the Docs map matches the repo, and a readme routes to it.
 - **Links** — `check-links` exits 0 on the levels in scope.
 - **Fidelity** — the docs describe the code; no invented command, structure, or
-  feature.
+  feature; a contradicted rule is reported, not rewritten.
 - **Assessment** — the re-run shows the targeted findings resolved.
 - **Approval** — every file written was on the approved list, and no other.
 - **No waiver** — nothing in the declaration weakens a criterion.
-
----
-
-## Assets
-
-Read the schema for each file type before writing it:
-
-| File type | Schema (mandatory read) |
-|---|---|
-| Default folder layout (a proposal) | [`assets/docs-tree.md`](assets/docs-tree.md) |
-| Docs map — the declaration: layout, naming, omissions, housekeeping | [`assets/docs-map-schema.md`](assets/docs-map-schema.md) |
-| Readme outline (AI + human) | [`assets/readme-outline-schema.md`](assets/readme-outline-schema.md) |
-| `docs/index.md` router | [`assets/docs-index-schema.md`](assets/docs-index-schema.md) |
-| `architecture.md` | [`assets/architecture-schema.md`](assets/architecture-schema.md) |
-| `vocabulary.md` | [`assets/vocabulary-schema.md`](assets/vocabulary-schema.md) |
-| Conventions (per-level `index.md` + convention files) | [`assets/convention-schema.md`](assets/convention-schema.md) |
-| ADRs (per-level `index.md` + ADR files — immutable once accepted) | [`assets/adr-schema.md`](assets/adr-schema.md) |
-| Requirements (`index.md` + one file per feature + `nfr.md`) | [`assets/requirements-schema.md`](assets/requirements-schema.md) |
-| Coding-standards routing | [`assets/coding-standards-schema.md`](assets/coding-standards-schema.md) |
-| Commands and run instructions (`cli.md`) | [`assets/cli-schema.md`](assets/cli-schema.md) |
-| `testing.md` | [`assets/testing-schema.md`](assets/testing-schema.md) |
-| `deployment.md` | [`assets/deployment-schema.md`](assets/deployment-schema.md) |
-| `operations.md` | [`assets/operations-schema.md`](assets/operations-schema.md) |
-| Tree conformance check | [`assets/scripts/check-tree.ps1`](assets/scripts/check-tree.ps1) (`.sh` on Bash) |
 
 ---
 

@@ -45,7 +45,7 @@ Or to bring existing code into compliance:
 Bring this code in compliance with coding standards.
 ```
 
-Also use when resolving conflicts between a task spec and standards, or to validate code examples in task documents.
+Also use when resolving conflicts between a task description and standards, or to validate code examples in requirement documents.
 
 
 ### How standards are resolved

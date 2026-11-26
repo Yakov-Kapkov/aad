@@ -44,8 +44,9 @@ Installs to `~/.copilot/skills/is-repo-ai-friendly/` by default.
 
 | File / Folder | Purpose |
 |---|---|
-| `SKILL.md` | The artifact list, its levels and statuses, the workflow, the report shape, the acceptance criteria |
+| `SKILL.md` | The artifact list, its levels, the workflow, the report shape, the acceptance criteria |
 | `AGENTS.md` | Rules for editing this skill's own files |
+| `assets/statuses.md` | The seven statuses and the rules for a route that leaves the repo |
 | `assets/scripts/check-links.ps1` | Model-free markdown checker (PowerShell) |
 | `assets/scripts/check-links.sh` | Model-free markdown checker (Bash) |
 | `assets/scripts/_check-links.Tests.ps1` | Differential twin test — dev-only, pruned on install |

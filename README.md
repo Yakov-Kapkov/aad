@@ -28,6 +28,7 @@ setup required.
 |---|---|
 | [`prompts/commit/`](prompts/commit/) | Two prompts for the commit agent: `/commit` and `/commit-staged` — both infer session context from the conversation to govern the commit message |
 | [`anything-else`](.github/prompts/anything-else.prompt.md) | End-of-task completeness review — prompts the agent to catch anything forgotten (dependents, docs, cleanup) before finishing |
+| [`sync-changes`](.github/prompts/sync-changes.prompt.md) | Pulls dev-suite artifacts from the folder named in `.sync/source_path.txt`, then runs the dev tests and checks the pulled changes against this repo's quality rules |
 
 ---
 
@@ -37,11 +38,13 @@ Reusable skills that extend agent capabilities.
 
 | Skill | Description |
 |---|---|
+| [`cli-tool-scan`](skills/cli-tool-scan/README.md) | Scans which CLI tools a repository's own commands need, reports the missing ones, and installs them after approval — never writes files or edits manifests |
+| [`design-partner`](skills/design-partner/README.md) | Design-partner posture — the user owns every decision, the agent pressure-tests rather than authors, with the option format, consistency and completeness checks, the risk classes each flow is attacked against, over-/under-engineering checks, altitude discipline, and a per-round acceptance checklist; usable outside SDA |
 | [`is-repo-ai-friendly`](skills/is-repo-ai-friendly/README.md) | Defines what makes a repository AI-friendly and checks every subproject of a repo, artifact by artifact — a name-free list (vocabulary, structure, BA/designer/developer context, dev commands, QA context, deployment, run locally, operations, docs map); read-only |
 | [`make-repo-ai-friendly`](skills/make-repo-ai-friendly/README.md) | Makes a repository AI-friendly — authors routing readmes (AGENTS.md/CLAUDE.md) and a root + per-subproject docs tree (architecture, vocabulary, testing, deployment, operations, requirements, conventions, ADRs, coding standards, commands), adapting it to the repo's declared contract |
-| [`software-design-best-practices`](skills/software-design-best-practices/README.md) | Route-table skill mapping topic areas (web API, database, UI, layers) to language-agnostic design best-practice files — consulted at spec-creation and implementation time |
-| [`standards-compliance`](skills/standards-compliance/README.md) | Enforces project coding standards on all produced code changes — resolves conflicts between task specs and standards |
-| [`test-driven-design`](skills/test-driven-design/README.md) | Test-driven design for software designers — builds the short list of tests a change needs, then develops each into a pseudo-code case the design is shaped against |
+| [`software-design-best-practices`](skills/software-design-best-practices/README.md) | Route-table skill mapping topic areas (web API, database, UI, layers) to language-agnostic design best-practice files — consulted while a design is pressure-tested and at spec-creation and implementation time |
+| [`standards-compliance`](skills/standards-compliance/README.md) | Enforces project coding standards on all produced code changes — resolves conflicts between task descriptions and standards |
+| [`test-driven-design`](skills/test-driven-design/README.md) | Test-driven design for software designers — records the user's participant vocabulary, cuts the change into flows and groups the pseudo-tests under them, and pressure-tests the user's design against them |
 | [`troubleshooting`](skills/troubleshooting/) | Troubleshooting dictionary for unexpected command results — test failures, build errors, lint violations, runtime exceptions |
 
 ---
@@ -52,14 +55,12 @@ Multi-agent tool suites.
 
 | Tool | Description |
 |---|---|
-| [`sda`](tools/sda/README.md) | Software Development Assistant — coordinated agents and skills for specification-driven development (sda-ba user story → setup → design → task → qa-spec → dev → qa). Planning artifacts live in numbered workflow containers (`.sda/workflows/<NNN>. <slug>/`) whose stage is held by a state script and run by the `sda-workflow` advisor |
+| [`sda`](tools/sda/README.md) | Software Development Assistant — coordinated agents and skills for specification-driven development (sda-ba user story → setup → design → dev → qa-spec → qa). Planning artifacts live in numbered workflow containers (`.sda/workflows/<NNN>. <slug>/`) whose stage is held by a state script and run by the `sda-workflow` orchestrator |
 
 ---
 
 Language standards ship with the [`standards-compliance`](skills/standards-compliance/README.md)
-skill — `standards/common-standards.md` plus `standards/{language}/`. Toolchain specs
-(`tool-discovery.md`, `tool-catalog.md`) ship with the
-[`sda-setup`](tools/sda/skills/sda-setup/) skill.
+skill — `standards/common-standards.md` plus `standards/{language}/`.
 
 ---
 
@@ -77,6 +78,7 @@ or accept extra parameters (e.g. model overrides for SDA agents).
 | Script | Description |
 |---|---|
 | `install-dev-suite.ps1` | Installs or uninstalls the dev suite (SDA tool + all skills) |
+| `pull-dev-suite.ps1` | Pulls dev-suite artifacts from an installed folder back into the repo (reverse install) |
 | `install-skill.ps1` | Installs a skill (delegates to custom script if present) |
 | `install-tool.ps1` | Installs a tool (delegates to custom script if present) |
 

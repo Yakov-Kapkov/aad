@@ -7,15 +7,11 @@ $ErrorActionPreference = 'Stop'
 
 # Per-agent key manifests — controls what each agent receives
 $agentKeys = @{
-    'sda-ba'            = @('paths.userStories','paths.workflows','scripts.workflow')
-    'sda-dev'           = @('scripts.taskState','scripts.readProjectTools','standardsSkill','paths.workflows','scripts.workflow','tests.coverage.enabled')
-    'sda-dev-quality'   = @('scripts.readProjectTools','tests.coverage.enabled')
-    'sda-dev-task'          = @('scripts.taskState','scripts.unitFileSize','devTaskUnitSizeLimit','designOwnership','standardsSkill','paths.specs','paths.tasks','paths.workflows','scripts.workflow')
-    'sda-dev-task-verifier' = @('scripts.unitFileSize','devTaskUnitSizeLimit','paths.specs')
-    'sda-qa'            = @('paths.issues','scripts.qaSessionInit','scripts.loadQaSecrets','scripts.invokeHttp','scripts.readProjectTools')
-    'sda-qa-task'       = @('designOwnership','paths.tasks','paths.issues','paths.specs','scripts.listQaSecrets','scripts.readProjectTools')
-    'sda-design'        = @('designOwnership','paths.specs','docsSkill','paths.workflows','scripts.workflow')
-    'sda-workflow'      = @('paths.workflows','scripts.workflow')
+    'sda-ba'            = @('docsSkill')
+    'sda-dev'           = @('standardsSkill')
+    'sda-qa'            = @('paths.issues','scripts.qaSessionInit','scripts.loadQaSecrets','scripts.invokeHttp')
+    'sda-qa-task'       = @('paths.issues','paths.specs','scripts.listQaSecrets')
+    'sda-design'        = @('paths.specs','docsSkill')
     'sda-scribe'        = @('paths.specs','paths.issues','docsSkill')
     'sda-docs-check'    = @('docsSkill','docsCheck.enabled','paths.specs')
 }
@@ -27,25 +23,15 @@ if (-not $keys) {
 }
 
 $defaults = @{
-    'scripts.taskState'      = '.sda/scripts/dev/task-state.ps1'
-    'scripts.unitFileSize'   = '.sda/scripts/dev/unit-file-size.ps1'
-    'scripts.readProjectTools' = '.sda/scripts/read-project-tools.ps1'
     'scripts.loadQaSecrets'  = '.sda/scripts/qa/load-qa-secrets.ps1'
     'scripts.listQaSecrets'  = '.sda/scripts/qa/list-qa-secrets.ps1'
     'scripts.qaSessionInit'  = '.sda/scripts/qa/qa-session-init.ps1'
     'scripts.invokeHttp'     = '.sda/scripts/qa/invoke-http.ps1'
-    'scripts.workflow'       = '.sda/scripts/workflow/workflow.ps1'
-    'devTaskUnitSizeLimit'   = '1000'
-    'designOwnership'        = 'user'
     'standardsSkill'         = 'standards-compliance'
     'docsSkill'              = 'make-repo-ai-friendly'
     'docsCheck.enabled'      = 'true'
     'paths.specs'            = '.sda/specs'
-    'paths.tasks'            = '.sda/tasks'
     'paths.issues'           = '.sda/issues'
-    'paths.userStories'      = '.sda/stories'
-    'paths.workflows'        = '.sda/workflows'
-    'tests.coverage.enabled' = 'true'
 }
 
 function Get-NestedValue {
@@ -67,14 +53,6 @@ $configPath = '.sda/project-config.json'
 $lines = [System.Collections.Generic.List[string]]::new()
 $lines.Add('Project configuration:')
 $lines.Add("repoRoot=$repoRoot")
-
-# Detected shell — authoritative source is project-tools.md (same value the `shell` label returns)
-if (Test-Path '.sda/project-tools.md') {
-    $shellLine = Get-Content '.sda/project-tools.md' | Where-Object { $_ -match '^\*\*Detected shell:\*\*\s+(.+)$' } | Select-Object -First 1
-    if ($shellLine -match '^\*\*Detected shell:\*\*\s+(.+)$') {
-        $lines.Add("shell=$($matches[1].Trim())")
-    }
-}
 
 $systemMessage = $null
 

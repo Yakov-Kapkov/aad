@@ -1,8 +1,9 @@
 # Test-Driven Design — Skill
 
-A Copilot skill for designers who want to design with tests: derive the behaviour a change must
-produce, pressure-test the design against it, and record that behaviour as short pseudo-code
-cases before the design settles. Language- and framework-agnostic — the cases are read, not run.
+A Copilot skill for recording a design as tests: take the vocabulary of participant components
+the user names, cut the behaviour the change must produce into flows, pressure-test the user's
+design against it, and record it as short pseudo-tests before the design settles. Written in the
+project's own language with the noise removed — read, not run.
 
 ---
 
@@ -33,6 +34,17 @@ Installs to `~/.copilot/skills/test-driven-design/` by default.
 
 ---
 
+## What's Inside
+
+| File / Folder | Purpose |
+|---|---|
+| `SKILL.md` | The method — ownership, the four steps, flows, the vocabulary, levels, and the rules |
+| `assets/design-questions.md` | Question tables for the vocabulary, step placement, and what earns an item |
+| `assets/anti-patterns.md` | Anti-patterns for flows, the list, pseudo-tests, and asserting internals |
+| `assets/example-pseudo-tests.md` | A worked example — one flow's developed pseudo-tests |
+
+---
+
 ## Usage
 
 Load it while shaping a design — before the design settles:
@@ -49,17 +61,22 @@ Pin the current behaviour before I refactor this.
 
 The skill supplies:
 
-- a three-step method — build a short list of tests, develop each item into a case, and loop back to the list until it stops changing;
-- what earns an item, and what belongs to a unit test or an interface contract instead;
-- reuse, extend or abandon an existing component before inventing one;
+- a four-step method — record the participant vocabulary, build the list of tests grouped by flow, develop each item into a pseudo-test, and loop back until neither changes;
+- the participant vocabulary — abstract classes, interfaces and other symbols the user names, tested by simplicity and separation of concerns;
+- flows — a trigger, the steps it crosses, a terminal outcome and a mandatory failure outcome; two behaviours share a flow only when they share both the trigger and the outcome, and a flow carries up to about seven pseudo-tests;
+- levels — app, middleware, component, or whatever the system actually has — recorded once with
+  the component that sits at them, placing each step rather than grouping the record, with each
+  pseudo-test written in its level's abstractions;
+- what earns an item, and what belongs to a unit test or an interface contract instead — including the two-pseudo-tests-per-new-seam threshold;
+- reuse, extend or abandon an existing component before inventing one — recording each participant as `new` or `existing`;
 - pinning the behaviour of code you are about to restructure, including how to treat a defect you pin;
-- one case rule (one outcome per case), a worked example in a project's own format, and anti-pattern tables for both stages;
-- asserting the observable outcome, never the internals — gray box for mocking, black box for asserting.
+- two rules (one outcome per pseudo-test; a new seam needs two), a worked example in a project's own format, and anti-pattern tables for flows, the list, and pseudo-tests;
+- asserting the observable outcome, never the internals — gray box at the seam, black box for asserting.
 
 ---
 
 ## Boundaries
 
-This skill is **method only**. It does not define where cases are stored, what fields they carry,
+This skill is **method only**. It does not define where pseudo-tests are stored, what fields they carry,
 or what a project calls them — a project that wants those conventions defines them in its own
 documentation standard.

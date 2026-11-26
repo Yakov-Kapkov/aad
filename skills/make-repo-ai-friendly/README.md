@@ -54,6 +54,7 @@ a repo that declares its own layout.
 |---|---|
 | `SKILL.md` | Skill definition — criteria reference, scope, three modes, workflow, report, acceptance criteria |
 | `AGENTS.md` | Rules for editing this skill's own files |
+| `assets/schema-index.md` | File type → schema map, plus the profile and the tree checker |
 | `assets/docs-tree.md` | Default root + per-subproject layout, and where each artifact lives — a proposal, not a requirement |
 | `assets/docs-map-schema.md` | Docs map declaration — layout, naming, omissions, housekeeping |
 | `assets/readme-outline-schema.md` | AI readme + human README outline |

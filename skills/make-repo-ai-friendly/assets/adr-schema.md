@@ -64,7 +64,7 @@ change a direction only by superseding, never by editing.
 
 **Confidence:** {high · medium · low — which parts are certain, which are not}
 
-**Consequences:** {one line per accepted trade-off}
+**Consequences:** {one line per accepted trade-off, including what the direction stops being able to do}
 ```
 
 ---

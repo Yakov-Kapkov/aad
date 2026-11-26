@@ -6,10 +6,11 @@ Rules for creating and editing this skill's files.
 
 ```
 is-repo-ai-friendly/
-├── SKILL.md                        ← the artifact list, levels, statuses, workflow, report, ACs
+├── SKILL.md                        ← the artifact list, levels, workflow, report, ACs
 ├── README.md                       ← human index
 ├── AGENTS.md                       ← this file
 └── assets/
+    ├── statuses.md                 ← the seven statuses and route rules
     └── scripts/
         ├── check-links.ps1
         ├── check-links.sh
@@ -21,7 +22,9 @@ is-repo-ai-friendly/
 ### 1. Separation of concerns
 
 - `SKILL.md` owns the **artifact list** — what an AI-friendly repo must expose
-  — and how it is judged: levels, statuses, workflow, report, ACs.
+  — and how it is judged: levels, workflow, report, ACs.
+- `assets/statuses.md` owns the **status definitions** and the rules for a route
+  that leaves the repo. `SKILL.md` never restates them.
 - `assets/scripts/*` own **mechanics only**: what a check decides from text.
   They never assume a docs layout.
 

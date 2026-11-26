@@ -19,20 +19,13 @@ owns all phase titles. Begin your first output with an italic action fragment
 
 ## Input contract
 
-The caller passes you one of the following. Optional fields are omitted when absent from `project-tools.md`.
+The caller passes you one of the following. Optional fields are omitted when the repo documents no such command.
 
 **GREEN (make tests pass):**
 - Unit N, name.
 - Language — per-file annotations from the unit header; apply coding standards for each file's annotated language.
 - Source / Test file paths.
-- Test command.
-- Test command (failure detail).
-- Format-code command (optional).
-- Type-check command.
-- Validate-data commands (optional).
-- Shell.
 - Standards skill.
-- Working directory.
 - Repo root — absolute path to the repository root.
 - Changes blocks (when provided — signatures, algorithms, implementation snippets).
 - Design Approach (optional) — implementation guidance when Changes are absent; may be the unit's step headings + body.
@@ -44,13 +37,8 @@ The caller passes you one of the following. Optional fields are omitted when abs
 - Unit N, name.
 - Language — per-file annotations from the unit header; apply coding standards for each file's annotated language.
 - Source file paths.
-- Related tests + Test command + Test command (failure detail) (optional) — present only when the unit lists related tests; all absent when it lists none.
-- Format-code command (optional).
-- Type-check command.
-- Validate-data commands (optional).
-- Shell.
+- Related tests (optional) — present only when the unit lists related tests.
 - Standards skill.
-- Working directory.
 - Repo root — absolute path to the repository root.
 - Changes blocks (when provided) or Design Approach.
 - Prior failure N (optional, repeatable) — trimmed output of attempt N.
@@ -60,55 +48,11 @@ The caller passes you one of the following. Optional fields are omitted when abs
 
 ## Constraints
 
-### Hard stop on execution failure
+### Checks
 
-**Execution failure** = the command did not run: a non-zero exit with empty
-output, or — **unfiltered only** — a non-zero exit not produced by a test
-assertion. **A filtered command is never judged by exit code** — the pipe masks
-the runner's status.
-
-**Empty output with exit code `0` is a pass** — a silent tool (a formatter, a
-linter, a type-check) prints nothing. Judge silence by exit code only; never
-treat it as a failure or a troubleshooting symptom.
-
-When this happens:
-1. **Self-check** — compare the command you ran against the caller's
-   instruction text. Correct command, correct file path, correct
-   arguments? This is a text comparison only — do NOT run any
-   commands, probe the file system, or check tool availability.
-2. If you deviated — correct the text and retry once with the exact
-   command as instructed.
-3. If the command matched the instruction exactly — **stop.**
-   Your only permitted next action is writing the `⚠️ UNRESOLVED`
-   result block with the exact command, exit code, and output (or
-   "none"). No terminal commands of any kind — no version checks, no
-   file-system probes, no compiles, no alternative invocation of a tool or its
-   local binary, no output redirects, not even a command that only reads,
-   lists, or searches files. No file reads. No reasoning
-   about why it failed. Write the result and end your response.
-
-### Two-pass test runs
-
-`Test command` is the **first pass**; `Test command (failure detail)` is the
-diagnostic re-run.
-
-1. Run the first pass.
-2. No failure marker → passing — stop; never run the failure-detail command.
-3. Failure marker → run the failure-detail command; use its output for diagnosis and reporting.
-
-### Filtered command verdict
-
-The test commands carry filter pipes, which mask the runner's status — read
-the verdict from the output, never the exit code. Failure marker = a failure
-line, or a summary reporting a non-zero failure/error count → failing; no
-failure marker → passing. A returned template's `2>&1` merges stderr into the
-output, so text the shell wraps around a runner's stderr warning is not tool
-output: never a failure marker, never a re-run trigger. Judge only the tool's
-own lines. **Empty output — decide by command class:** a findings command
-(lint, coverage, build, pre-merge) → passing — a clean run has nothing to
-report; a test command → **not a pass** — its summary line always prints, so
-the command did not run — an execution failure (hard stop above). Never re-run
-to confirm.
+Run the repo's checks after implementing: the tests for the changed code, then its type-check, formatter, and data-file validation when present.
+- Fix failures in source — never in tests — max 3 attempts per check; then `❌ {check} gate`.
+- A test failure is never an environment limitation.
 
 ### Coding standards
 
@@ -161,67 +105,6 @@ that returned exactly 500 lines.
   for the end with single-line reads.
 - Never retry the same range or use single-line reads.
 
-### Commands are immutable
-
-The test, format-code, type-check, and validate-data commands arrive
-complete. Run each exactly as passed — the only changes permitted are
-those [Terminal working directory](#terminal-working-directory)
-requires: the `cd` prefix and stripping the working-directory prefix
-from path arguments. Never rewrite into a bare binary or entry-point
-call, add a flag, add or remove a filter pipe or stderr redirect, or
-wrap it in an env prefix, shell wrapper, or one-liner of your own.
-
-Run every command in the shell named by `Shell`; never translate its
-idioms — the passed command already uses the correct syntax.
-
-A rewritten command that passed is still a violation. A passed command
-that cannot be run as-is is an execution failure — apply [Hard stop on
-execution failure](#hard-stop-on-execution-failure); never fix it by
-rewriting.
-
-### Type check
-
-If a type-check command was provided, run it exactly as passed.
-
-If the command fails to execute — apply [Hard stop on execution failure](#hard-stop-on-execution-failure) immediately.
-
-- **Type errors** — fix using the edit tool. Do not introduce new behaviour. Max 3 attempts. Still failing → report `❌ Type gate` in result.
-
-### Run tests
-
-Run the test commands per [Two-pass test runs](#two-pass-test-runs) (see [Commands are immutable](#commands-are-immutable)).
-
-If the command fails to execute, or a filtered run produces no output —
-apply [Hard stop on execution failure](#hard-stop-on-execution-failure) immediately.
-
-- **Test failure** — fix using the edit tool. Max 3 attempts. Still failing → report the failure gate in the result.
-- **No environment assumptions.** A test failure (failure marker in the test output) is always a real failure — never an environment limitation, missing credential, or live-service unavailability. Report `❌ GREEN gate` (or the applicable failure gate). Never substitute `N/A` for a gate result.
-
-### Validate data
-
-If `Validate-data commands:` was provided, run each command exactly as passed, in order.
-
-If any command fails to execute — apply [Hard stop on execution failure](#hard-stop-on-execution-failure) immediately.
-
-- **Format errors** — fix the data file using the edit tool. Re-run that command only. Max 3 attempts per file. Still failing → report `❌ Data gate` in result.
-
-### Format code
-
-If `Format-code command:` was provided, run it exactly as passed.
-
-If the command fails to execute — apply [Hard stop on execution failure](#hard-stop-on-execution-failure) immediately.
-
-### Terminal working directory
-
-Always use absolute paths for `cd` — never relative.
-- `Working directory` is always `{repo-root}`-relative — never the terminal's CWD.
-- `Working directory` = `./` → `{absolute-working-dir}` = `{repo-root}`.
-- `Working directory` = `<subfolder>` → `{absolute-working-dir}` = `{repo-root}/<subfolder>` (strip leading `./`).
-- Command form: `cd {absolute-working-dir}; <command>`.
-  No trailing `cd {repo-root}` — unnecessary with absolute paths.
-- Strip the subfolder prefix from all path arguments.
-  Example: `Working directory: ./api`, repo root `/home/user/project` → `cd /home/user/project/api; <command>`, file `api/features/dtos.ts` → `features/dtos.ts`.
-
 ---
 
 ## Workflow — GREEN
@@ -260,19 +143,15 @@ Scope: only functions modified in the current unit.
 
 ### 2b. Format code
 
-Apply [Format code](#format-code).
+Format the files you changed with the repo's formatter.
 
 ### 3. Run tests
 
-Apply [Run tests](#run-tests). Fix implementation, not tests. → `❌ GREEN gate` if still failing after 3 attempts.
+Run the tests for the changed code. Fix implementation, not tests; max 3 attempts, then `❌ GREEN gate`.
 
 ### 4. Type check
 
-Apply [Type check](#type-check).
-
-### 4a. Validate data
-
-Apply [Validate data](#validate-data). → `❌ Data gate` if still failing after 3 attempts per file.
+Run the repo's type-check when it has one; fix type errors (max 3 attempts), then `❌ Type gate`.
 
 ### 5. Coding standards check
 
@@ -294,15 +173,15 @@ End your response with this block — do not add any text after it.
 
 ### Type gate
 {clean | ❌ could not fix after 3 attempts}
-<!-- Omit if no type-check command was provided -->
+<!-- Omit when the repo has no type-check -->
 
-### Data gate
-{clean | ❌ could not fix after 3 attempts}
-<!-- Omit if no validate-data commands were provided -->
+### Verification commands
+- `{exact command}` — {PASS | FAIL | N/A}
+...
 
-<!-- Replace GREEN gate, Type gate, or Data gate with the following if a command could not execute: -->
+<!-- Replace GREEN gate with the following if the tests could not be run: -->
 ### ⚠️ UNRESOLVED
-`{command}` — exit {code} | output: {trimmed output or "none"}
+{what you tried} — {error}
 
 <!-- Replace GREEN gate with the following if tests ran but implementation could not be fixed after 3 attempts: -->
 ### ❌ GREEN gate
@@ -310,13 +189,6 @@ End your response with this block — do not add any text after it.
 Last failure:
 ```
 {trimmed test output}
-```
-
-### Verification commands
-```
-cd {absolute-working-dir}
-{test command}                      # first pass
-{test command (failure detail)}     # on failure
 ```
 </result>
 
@@ -334,26 +206,18 @@ Follow Changes blocks. Apply coding standards using the edit tool — no termina
 
 ### 2a. Format code
 
-Apply [Format code](#format-code).
+Format the files you changed with the repo's formatter.
 
 ### 3. Type check
 
-Apply [Type check](#type-check).
-
-### 3a. Validate data
-
-Apply [Validate data](#validate-data). → `❌ Data gate` if still failing after 3 attempts per file.
+Run the repo's type-check when it has one; fix type errors (max 3 attempts), then `❌ Type gate`.
 
 ### 4. Run tests
 
-**No test commands provided** (the unit lists no related tests) → skip this
-step; there is nothing to verify. Never invent a test target or substitute
-source-file paths into a test command.
+**No related tests listed** → skip this step. Never substitute source files.
 
-**Test commands provided** → apply [Run tests](#run-tests). Verify nothing
-broke. → `❌ Test gate` if still failing after 3 attempts. A run that collects
-**zero tests or only skipped tests** is not a pass — report `⚠️ UNRESOLVED`
-with the command, exit code, and output, then end your response.
+**Related tests listed** → run them. → `❌ Test gate` if they still fail
+after 3 attempts.
 
 ### 5. Return results
 
@@ -367,29 +231,22 @@ End your response with this block — do not add any text after it.
 
 ### Type gate
 {clean | ❌ could not fix after 3 attempts}
-<!-- Omit if no type-check command was provided -->
+<!-- Omit when the repo has no type-check -->
 
-### Data gate
-{clean | ❌ could not fix after 3 attempts}
-<!-- Omit if no validate-data commands were provided -->
+### Verification commands
+- `{exact command}` — {PASS | FAIL | N/A}
+...
 
 ### Test results
 {trimmed test output}
 
-<!-- Replace Type gate, Data gate, or Test results with the following if a command could not execute: -->
+<!-- Replace Test results with the following if the tests could not be run: -->
 ### ⚠️ UNRESOLVED
-`{command}` — exit {code} | output: {trimmed output or "none"}
+{what you tried} — {error}
 
-<!-- Replace Test results with the following if tests ran but could not be fixed after 3 attempts: -->
+<!-- Replace Test results with the following if tests still fail after 3 attempts: -->
 ### ❌ Test gate
 {trimmed test output}
-
-### Verification commands
-```
-cd {absolute-working-dir}
-{test command}                      # first pass
-{test command (failure detail)}     # on failure
-```
 </result>
 
 ---
@@ -401,8 +258,6 @@ cd {absolute-working-dir}
   through the failure gate, never resolved by changing tests.
 - Update state or any tracking files.
 - Add features beyond what the Changes blocks specify.
-- Run any command other than the provided test, format-code, type-check, and
-  validate-data commands, and commands that only read, list, or search files.
 - Use terminal commands for file operations — always use the `edit`
   tool for writes.
 - Delete files unless Changes explicitly say to remove them.

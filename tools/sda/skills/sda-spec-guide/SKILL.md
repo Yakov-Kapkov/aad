@@ -1,6 +1,6 @@
 ---
 name: sda-spec-guide
-description: "Contract spec conventions for SDA planning and implementation agents — the spec model, storage layout, metadata, and content rules. Use when: a session touches a boundary contract — `sda-design` writing or extracting a spec, `sda-dev-task` running the contract trace, `sda-dev-task-verifier` check 4, `sda-docs-check` verifying a written spec, or `sda-qa-task` tracing contract regressions. Otherwise never load it."
+description: "Contract spec conventions for SDA planning and implementation agents — the spec model, storage layout, metadata, and content rules. Use when: a session touches a boundary contract — `sda-design` writing or extracting a spec, `sda-docs-check` verifying a written spec, or `sda-qa-task` tracing contract regressions. Otherwise never load it."
 ---
 
 # Contract Specs
@@ -76,7 +76,7 @@ A spec is checked twice, and the two checks see different things:
 
 | Check | When | Against |
 |---|---|---|
-| Conformance — `task.md` against a spec that exists | Before implementation | the specs in `## Contracts`, judged by its [Content](#content) obligations |
+| Conformance — the implementation against a spec that exists | During implementation | the specs in `## Contracts`, judged by its [Content](#content) obligations |
 | The written spec against the code | After the write | its [Content](#content) obligations, plus Domain placement and the `manifest.md` row |
 
 An extracted spec is verified **after** it is written — there is nothing to
@@ -84,6 +84,6 @@ check it against beforehand.
 
 ## Boundaries
 
-Not covered here: the contract-trace steps, any agent's phase order, the
-`docs`-unit entry shape (`task-schema.md`), and the `manifest.md` table format
+Not covered here: any agent's phase order, the `docs`-unit entry shape
+(`sda-dev`'s route table), and the `manifest.md` table format
 (`sda-scribe` — its write step).

@@ -1,6 +1,6 @@
 ---
 name: sda-web-explore
-description: "Web research subagent. Use when: sda-dev-task needs up-to-date API documentation, library specs, or any information that requires fetching live web pages."
+description: "Web research subagent. Use when: sda-design needs up-to-date API documentation, library specs, or any information that requires fetching live web pages."
 tools: ["web"]
 model: Claude Haiku 4.5
 user-invocable: false

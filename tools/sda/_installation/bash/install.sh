@@ -120,6 +120,20 @@ for f in "${PROMPT_FILES[@]}"; do
     fi
 done
 
+# ── Remove retired files ─────────────────────────────────────────────────────
+RETIRED=(
+    "agents/sda-toolscan.agent.md"
+    "agents/sda-tool-installer.agent.md"
+    "prompts/sda.setup.no-scan.prompt.md"
+)
+for r in "${RETIRED[@]}"; do
+    target="$TARGET_BASE/$r"
+    if [ -f "$target" ]; then
+        rm -f "$target"
+        echo "    retired: $r"
+    fi
+done
+
 # ── Copy ─────────────────────────────────────────────────────────────────────
 echo "  Copy:"
 mkdir -p "$AGENTS_DST" "$PROMPTS_DST"

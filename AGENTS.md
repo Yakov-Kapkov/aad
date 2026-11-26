@@ -71,7 +71,16 @@ An example must never be mistaken for a rule or for template content.
 - Applies to every standalone sample: a code block, a command line, a quoted entry.
 - Never leave an unlabelled sample inside a rule list or a schema body.
 
-### 8. Boundaries
+### 8. Keep SKILL.md Under 200 Lines
+
+A skill's `SKILL.md` must not exceed 200 lines — frontmatter and blank lines included.
+
+- When a `SKILL.md` exceeds the limit, extract the excess detail into that skill's own `assets/` folder and leave a one-line pointer in `SKILL.md`.
+- Extracted files stay inside the owning skill's folder — never a sibling skill's folder, a shared folder, or the repo root.
+
+Example: a 250-line skill moves its `## Rules` tables to `assets/rules.md` and keeps a single `| Rules | [assets/rules.md](assets/rules.md) |` row.
+
+### 9. Boundaries
 
 - ✅ **Always do**: Update docs when changing components, follow existing patterns, keep files concise.
 - ⚠️ **Ask first**: Adding a new top-level folder, removing an existing component, changing the repo structure.

@@ -1,14 +1,9 @@
-param(
-    [Parameter(Mandatory)][string]$Language
-)
-
 $ErrorActionPreference = 'Stop'
 
 $scriptDir = Split-Path -Parent (Split-Path -Parent $PSScriptRoot)  # assets folder
 $targetDir = '.sda'
 
 # Create folder structure
-New-Item -ItemType Directory -Force -Path "$targetDir/resources/$Language" | Out-Null
 New-Item -ItemType Directory -Force -Path "$targetDir/issues" | Out-Null
 New-Item -ItemType Directory -Force -Path "$targetDir/secrets" | Out-Null
 
@@ -24,37 +19,20 @@ Set-Content -Path "$targetDir/secrets/.gitignore" -Value "*`n!.gitignore`n!qa.ex
 New-Item -ItemType Directory -Force -Path "$targetDir/resources/dev" | Out-Null
 Copy-Item "$scriptDir/project-config.example.json"       "$targetDir/resources/project-config.example.json"
 Copy-Item "$scriptDir/project-config.reference.yml"      "$targetDir/project-config.reference.yml"
-Copy-Item "$scriptDir/dev/task-schema.md"                  "$targetDir/resources/dev/task-schema.md"
 Copy-Item "$scriptDir/dev/dev-report-schema.md"            "$targetDir/resources/dev/dev-report-schema.md"
 New-Item -ItemType Directory -Force -Path "$targetDir/resources/qa" | Out-Null
 Copy-Item "$scriptDir/qa/qa-task-schema.md"                "$targetDir/resources/qa/qa-task-schema.md"
-New-Item -ItemType Directory -Force -Path "$targetDir/resources/toolscan" | Out-Null
-Copy-Item "$scriptDir/toolscan/project-tools-schema.md"    "$targetDir/resources/toolscan/project-tools-schema.md"
 New-Item -ItemType Directory -Force -Path "$targetDir/resources/design" | Out-Null
-Copy-Item "$scriptDir/design/design-record-schema.md"  "$targetDir/resources/design/design-record-schema.md"
+# The whole folder: adding or renaming a design schema needs no change here.
+Copy-Item "$scriptDir/design/*.md" "$targetDir/resources/design/"
 New-Item -ItemType Directory -Force -Path "$targetDir/resources/ba" | Out-Null
 Copy-Item "$scriptDir/ba/user-story-schema.md"            "$targetDir/resources/ba/user-story-schema.md"
-New-Item -ItemType Directory -Force -Path "$targetDir/resources/workflow" | Out-Null
-Copy-Item "$scriptDir/workflow/workflow-schema.md"        "$targetDir/resources/workflow/workflow-schema.md"
-Copy-Item "$scriptDir/workflow/escalation-brief-schema.md" "$targetDir/resources/workflow/escalation-brief-schema.md"
 
-$tcSource = "$scriptDir/tool-catalog/$Language/tool-catalog.md"
-if (Test-Path $tcSource) {
-    Copy-Item $tcSource "$targetDir/resources/$Language/tool-catalog.md"
-} else {
-    Write-Warning "No tool-catalog found for '$Language'. Add one to assets/tool-catalog/$Language/tool-catalog.md and re-run the install script."
-}
 Copy-Item "$scriptDir/qa/qa.example.secrets.env"           "$targetDir/secrets/qa.example.secrets.env"
 
 # Copy read-config hook script
 New-Item -ItemType Directory -Force -Path "$targetDir/scripts" | Out-Null
 Copy-Item "$PSScriptRoot/read-config.ps1"              "$targetDir/scripts/read-config.ps1"
-Copy-Item "$PSScriptRoot/read-project-tools.ps1"      "$targetDir/scripts/read-project-tools.ps1"
-
-# Copy task-state script (PowerShell)
-New-Item -ItemType Directory -Force -Path "$targetDir/scripts/dev" | Out-Null
-Copy-Item "$scriptDir/dev/powershell/task-state.ps1"       "$targetDir/scripts/dev/task-state.ps1"
-Copy-Item "$scriptDir/dev/powershell/unit-file-size.ps1"   "$targetDir/scripts/dev/unit-file-size.ps1"
 
 # Copy QA credential scripts
 $qaSrc = Join-Path (Join-Path $scriptDir 'qa') 'powershell'
@@ -64,32 +42,24 @@ Copy-Item "$qaSrc/list-qa-secrets.ps1"              "$targetDir/scripts/qa/list-
 Copy-Item "$qaSrc/qa-session-init.ps1"              "$targetDir/scripts/qa/qa-session-init.ps1"
 Copy-Item "$qaSrc/invoke-http.ps1"                  "$targetDir/scripts/qa/invoke-http.ps1"
 
-# Copy toolscan scripts
-$toolscanSrc = Join-Path (Join-Path $scriptDir 'toolscan') 'powershell'
-New-Item -ItemType Directory -Force -Path "$targetDir/scripts/toolscan" | Out-Null
-Copy-Item "$toolscanSrc/cleanup-project-tools.ps1"      "$targetDir/scripts/toolscan/cleanup-project-tools.ps1"
-Copy-Item "$toolscanSrc/get-timestamp.ps1"              "$targetDir/scripts/toolscan/get-timestamp.ps1"
-Copy-Item "$toolscanSrc/probe-validators.ps1"           "$targetDir/scripts/toolscan/probe-validators.ps1"
-
-# Copy workflow script
-$workflowSrc = Join-Path (Join-Path $scriptDir 'workflow') 'powershell'
-New-Item -ItemType Directory -Force -Path "$targetDir/scripts/workflow" | Out-Null
-Copy-Item "$workflowSrc/workflow.ps1"                   "$targetDir/scripts/workflow/workflow.ps1"
-
-$tdSource = "$scriptDir/tool-discovery/$Language/tool-discovery.md"
-if (Test-Path $tdSource) {
-    Copy-Item $tdSource "$targetDir/resources/$Language/tool-discovery.md"
-} else {
-    Write-Warning "No tool-discovery spec found for '$Language'. Add one to .sda/resources/$Language/ later."
-}
-
 # --- Remove artifacts retired by earlier versions ---
 # Setup only creates and copies, so a path that moved or was replaced leaves a
 # stale copy behind in an existing install. Each entry is a shipped location.
 $legacyPaths = @(
     "$targetDir/scripts/decisions"                     # docs-integrity's first location
     "$targetDir/scripts/docs"                          # docs-integrity's second location — the checkers now ship in the docs skills
+    "$targetDir/scripts/dev"                           # task-state + unit-file-size retired with the task layer
+    "$targetDir/resources/dev/task-schema.md"          # task layer retired
     "$targetDir/resources/design/design-report-schema.md"  # replaced by design-record-schema.md
+    "$targetDir/resources/design/design-tests-schema.md"   # replaced by flow-schema.md
+    "$targetDir/project-tools.md"                      # toolchain scan output
+    "$targetDir/project-tools_backup.md"               # toolchain scan backup
+    "$targetDir/scripts/toolscan"                      # toolscan scripts retired
+    "$targetDir/resources/toolscan"                    # project-tools schema retired
+    "$targetDir/scripts/read-project-tools.ps1"        # command lookup retired
+    "$targetDir/scripts/read-project-tools.sh"         # command lookup retired
+    "$targetDir/scripts/workflow"                      # the workflow script now ships in sda-workflow-guide
+    "$targetDir/resources/workflow"                    # the workflow schemas now ship in sda-workflow-guide
 )
 foreach ($legacy in $legacyPaths) {
     if (Test-Path $legacy) {
@@ -97,5 +67,10 @@ foreach ($legacy in $legacyPaths) {
         Write-Output "Removed retired path: $legacy"
     }
 }
+
+# Retired tool assets live in per-language resource folders
+Get-ChildItem -Path "$targetDir/resources" -Recurse -File -ErrorAction SilentlyContinue |
+    Where-Object { $_.Name -in @('tool-catalog.md', 'tool-discovery.md') } |
+    ForEach-Object { Remove-Item $_.FullName -Force; Write-Output "Removed retired path: $($_.FullName)" }
 
 Write-Output "SDA scaffolding complete: $targetDir/"

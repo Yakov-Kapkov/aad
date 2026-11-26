@@ -1,9 +1,9 @@
 # Software Design Best Practices — Skill
 
 A Copilot skill that provides language-agnostic design best practices
-organized by topic area via a two-level route table. Consulted before
-creating development specifications or making architectural decisions
-during implementation.
+organized by topic area via a two-level route table. Consulted while a design
+is pressure-tested, and before creating development specifications or making
+architectural decisions during implementation.
 
 ---
 

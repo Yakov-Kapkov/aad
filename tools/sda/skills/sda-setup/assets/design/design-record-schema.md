@@ -1,11 +1,17 @@
 # Design Record Schema
 
-A **design record** carries the design-level context for one workflow's requirement: what the
-design commits to, what it deliberately leaves out, and where the durable decisions live. It
-exists so the task breakdown can be designed without re-deriving the architecture.
+A **design record** is the design folder's entry point: the overall design, plus the index that
+reaches every other file the design is recorded in. It carries what the design commits to, what
+it deliberately leaves out, and where the durable decisions live. It is the implementation
+stage's primary input — what behaviour to deliver, and, where the shape is load-bearing, the how
+that behaviour must take.
 
-The file lives at `{workflow}/design.md`. It is **renewed in place** — an existing record is
-read and updated, never duplicated into a new location.
+Every other file of the design — the component model, the contracts, and one file per flow — is
+reached through [Index](#index). The record names them; it never restates what they hold.
+
+Where the design's folder lives is outside this schema. The record sits at its root and is
+**renewed in place** — an existing record is read and updated, never duplicated into a new
+location.
 
 ---
 
@@ -16,7 +22,14 @@ read and updated, never duplicated into a new location.
 
 ## Context
 - **Workflow:** {id}. {slug}
-- **User Story:** [user-story.md](user-story.md)
+- **User Story:** [../user-story.md](../user-story.md)
+
+## Index
+| What | Where | Covers |
+|---|---|---|
+| components | [components.md](components.md) | {what the component model holds} |
+| contracts | [contracts.md](contracts.md) | {what the seams hold} |
+| {flow name} | [flows/{NN}-{slug}.md](flows/{NN}-{slug}.md) | {criterion id} · {test ids} |
 
 ## Scope
 **In:** {what this design covers}
@@ -25,7 +38,6 @@ read and updated, never duplicated into a new location.
 
 ## Approach
 - {component added, split, or merged — and what it owns}
-- {who calls whom — sync or async — ordering}
 - {named pattern, and the problem it solves here}
 
 ## Decisions
@@ -38,18 +50,26 @@ read and updated, never duplicated into a new location.
 - [{document}]({path}) — {what it covers}
 
 ## Requirements
-- {FR/NFR id} — {one line: how the design satisfies it}
+- {FR/NFR id} — {implemented | amended | retired} — {one line: how the design satisfies it}
+
+## Acceptance criteria
+- {id} — {one line: the outcome and the design condition the implementation must honour}
 
 ## Impacts & risks
-- {cross-layer effect, contract touched, migration needed}
+- {cross-layer effect, migration needed}
 - {risk} — {what it breaks, what must tolerate it}
+
+## Rollout
+- {what must land before what}
+- {the condition that blocks release}
+- {the way back, or `none`}
 
 ## Open questions
 - {unsettled question} — {what it affects}
 
 ## Handoff
-**Settled:** {the constraints a task must honour}
-**Specs:** use-as-is — {spec} · extend — {spec} · create — {spec}
+**Settled:** {the constraints implementation must honour}
+**Contracts:** [contracts.md](contracts.md) — {n} seams touched
 **Not to re-decide:** {what is closed, and the location that closes it}
 ```
 
@@ -59,8 +79,23 @@ read and updated, never duplicated into a new location.
 
 ### Context
 - First section. The reference block: workflow id + slug, and a relative link to the user story.
-- Links are **relative**, so they resolve from the record's own folder.
+- Links are **relative**, so they resolve from the record's own folder — the story beside the
+  folder is `../user-story.md`.
 - Requirement ids are not listed here — they belong to [Requirements](#requirements).
+
+### Index
+- Second section: the map a reader follows to everything else the design records.
+- One row per file in the design folder other than this one: `components.md` and `contracts.md`
+  when the folder holds them, and one row per flow file.
+- `What` — the file's subject in a few words: `components`, `contracts`, or the flow's name.
+- `Where` — a relative link. A flow file is exactly `flows/<NN>-<slug>.md`.
+- `Covers` — for a flow row: its criterion id and the ids of its pseudo-tests. For a model
+  row: one short phrase saying what the file holds, and no criterion.
+- Rows run outside-in: the model files, then the flows in the order they are read.
+- Every file in the folder except this one has a row, every row names a file that exists when
+  the session ends, and every acceptance criterion appears in a flow row — unless the record
+  states none. A file with no row, a row with no file, or a criterion in no row is a defect.
+- No other section restates a flow, a component, or a contract — the row points at it instead.
 
 ### Scope
 - Three lines: `In`, `Out`, `Deferred`.
@@ -69,10 +104,13 @@ read and updated, never duplicated into a new location.
   is a dropped requirement.
 
 ### Approach
-- Components touched or created, the interactions between them, and the patterns in use —
-  **stated as constraints**, not as a narrative of how to build it.
+- Components touched or created, and the patterns in use — **stated as constraints**, not as a
+  narrative of how to build it. A complex case states the how too: the owner, the seam, the
+  pattern the behaviour must go through.
 - Name a component by its role (`shared contract package`), never by symbol.
 - Name a pattern only when it is load-bearing (`outbox`) — never as decoration.
+- Call direction, sync vs async, and ordering are not stated here — those are seams, and the
+  [contracts file](#index) owns them.
 
 ### Decisions
 - **Pointers**, one line each: decision title — why it matters here — link to the durable
@@ -92,16 +130,42 @@ read and updated, never duplicated into a new location.
   entries.
 - Convention and ADR docs are listed under [Decisions](#decisions) and
   [Conventions](#conventions), not here.
+- The design folder's other files are not listed here — [Index](#index) is their map.
 - Relative `.md` links are expected here — [Altitude trigger](#4-altitude-trigger) exempts them.
 - Omit only if the design changed no document.
 
 ### Requirements
-- One line per requirement entry the design covers: id + how the design satisfies it.
+- One line per requirement entry the design covers: id, its disposition — `implemented`,
+  `amended`, or `retired` — and how the design satisfies it.
+- A requirement the design narrows, replaces, or drops is named by id; never silently omitted.
 - Cite the id; never restate the requirement text.
 
+### Acceptance criteria
+- The implementation stage's goal: what must be observably true when the change is done.
+- Written from two sources: the requirement — a user-story scenario, or an `issue.md` item
+  when no story exists — and the design this record settles.
+- Each criterion cites the source line it comes from. The chain is criterion → flow →
+  pseudo-test; cite, never restate, and let a flow file carry the next link.
+- One line per criterion: id + the outcome, in design language. Add implementation detail
+  only when the criterion cannot be stated without it.
+- A design-shaped criterion states the condition the implementation must honour — the shape
+  [Approach](#approach) settles. Never the symbol or source file.
+- Ids are stable across renewals; a criterion the design drops moves to [Scope](#scope)
+  as `Out` or `Deferred`.
+- Never a Gherkin block. The pseudo-tests that develop each criterion live in the flow files,
+  reached through [Index](#index).
+- Omit only if the change delivers no user-observable behaviour.
+
 ### Impacts & risks
-- Cross-layer effects, contracts touched, migration needed.
-- Each risk names what breaks and what must tolerate the change.
+- Cross-layer effects and migration needed.
+- Each risk names what breaks and what must tolerate the change. A risk attached to a contract
+  names it as the [contracts file](#index) does — never restates the seam.
+
+### Rollout
+- Only when the change is disruptive: a migration, a stored-shape change, a coordinated
+  multi-layer release, or a step that cannot be undone. Omit otherwise.
+- `Way back` is stated even when it is `none` — an unanswered one is the gap, not the answer.
+- A release-blocking condition is also an [acceptance criterion](#acceptance-criteria).
 
 ### Open questions
 - One bullet per question the design has **not** settled, each naming what it affects.
@@ -109,12 +173,11 @@ read and updated, never duplicated into a new location.
 - Omit only if none.
 
 ### Handoff
-- **Settled** — the constraints the task breakdown must honour.
-- **Specs** — the contracts this design touched, split `use-as-is` / `extend` / `create`.
-  The next stage traces contracts from this line. Every entry names a file that
-  exists when this stage ends.
+- **Settled** — the constraints implementation must honour.
+- **Contracts** — a link to the [contracts file](#index) and how many seams it records. The
+  next stage traces each seam, and its spec, from that file.
 - **Not to re-decide** — what is already closed, plus the location that closes it.
-- Omit the `Specs` line if the design touches no contract.
+- Omit the `Contracts` line if the design crosses no seam.
 
 ### Snippet-free
 - Every line must pass the [Altitude trigger](#4-altitude-trigger).
@@ -153,12 +216,12 @@ Walk the list — do not recall it.
 
 | Not a design decision | Home |
 |---|---|
-| test scenarios and cases | the task document |
-| file layout, symbol and type names | the task document |
-| schema field lists, exact payloads | spec files; inlined into the task document |
+| pseudo-tests and their scenarios | the change's flow files |
+| file layout, symbol and type names | implementation |
+| schema field lists, exact payloads | spec files |
 | CLI flags, config keys, env vars | readmes (mechanical) |
-| logging message text | the task document |
-| implementation order / unit sequencing | the task document's implementation plan |
+| logging message text | implementation |
+| implementation order / unit sequencing | implementation |
 
 ### 4. Altitude trigger
 
@@ -173,9 +236,10 @@ requires it in [Context](#context) and [Docs](#docs).
 
 ## Form
 
-- **Not BDD.** Behaviour already has two homes — acceptance in the user story, executable
-  scenarios in the task document. A third home means two copies, and the non-executable one
-  drifts. The record holds no scenarios.
+- **Not BDD.** Acceptance detail has two homes off this record — the Gherkin scenarios in the
+  user story, and the pseudo-tests in the change's flow files. The record carries only the
+  one-line [acceptance criteria](#acceptance-criteria); it holds no scenarios, and
+  [Index](#index) links each flow file.
 - **Declarative.** decision → what it constrains → consequence.
 - **Specific, not syntactic.** `outbox`, not `OutboxDispatcher.Dispatch()`.
 
@@ -183,7 +247,7 @@ requires it in [Context](#context) and [Docs](#docs).
 
 ## Completeness
 
-> If the tasks were designed from this record alone, what would they have to invent?
+> If implementation started from this record alone, what would it have to invent?
 
 Everything they would invent is a missed design decision. The record is complete when nothing
 is left that the design already settled.
