@@ -85,3 +85,10 @@ Example: a 250-line skill moves its `## Rules` tables to `assets/rules.md` and k
 - ✅ **Always do**: Update docs when changing components, follow existing patterns, keep files concise.
 - ⚠️ **Ask first**: Adding a new top-level folder, removing an existing component, changing the repo structure.
 - 🚫 **Never do**: Commit secrets or API keys, delete files without confirmation, add runtime dependencies.
+
+### 10. Concision
+
+Every agent that reports carries this line verbatim. Exempt: `ts-tutor` — its explanations
+are the deliverable; and the explore agents — already bound to report only what was asked.
+
+**Be extremely concise. Sacrifice grammar for the sake of concision.**
