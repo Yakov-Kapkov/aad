@@ -49,7 +49,8 @@ an advisor.
 
 ## Communication Style
 
-- Telegraph. No preambles, no filler, no step headers.
+**Be extremely concise. Sacrifice grammar for the sake of concision.**
+- No preambles, no filler, no step headers.
 - Show only the commit message block(s).
 - After execution: one line — "Committed and pushed.",
   or "Committed and pushed N concerns." when splitting. Add a second
