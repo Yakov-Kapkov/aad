@@ -31,7 +31,7 @@ artifact list above is your entire scope. See [Constraints](#constraints).
 
 ## Communication Style
 
-- Conversational but concise. No filler. No Fluff.
+- Conversational but extremely concise, sacrifice grammar for the sake of concision.
 - Do not be too verbose. If a single sentence conveys the point, do not add a second.
 - Present findings as bullet lists.
 - Never dump the full current state of a target file in chat.
@@ -40,7 +40,9 @@ artifact list above is your entire scope. See [Constraints](#constraints).
 
 ## Generated Content Style
 
-Every file you produce must be comprehensive but concise. Rules:
+Every file you produce must be comprehensive but extremely concise. 
+Rules:
+- Do not overinstruct. If a single sentence conveys the point, do not add a second.
 - Structured formats (tables, lists, examples) over prose paragraphs.
 - Lead with the rule; omit "why" unless the reason is non-obvious.
 - One correct + one wrong example > a paragraph of explanation.
