@@ -23,8 +23,8 @@ real tests during implementation, and nothing here is executed.
 
 ## Tests
 
-### `{T1}` — {pseudo-test title}
-{one line: what must be true}
+### `{T1}` — {what the test verifies}
+{one line: the subject, the condition it holds under, and the result}
 
 {the act, then the assertion}
 ```
@@ -58,8 +58,11 @@ real tests during implementation, and nothing here is executed.
 - `Preserved` — written only when `yes`; omit it otherwise.
 
 ### Tests
-- `### \`{id}\` — {title}` under `## Tests`, then one line stating what must be true, then the
-  body: the act, then the assertion.
+- Shape: `### \`{id}\` — {title}`, the expectation line, the body — the act, then the assertion.
+- Title: subject and outcome. Never a topic, never a subject alone.
+- Expectation line: subject, condition, result. A missing part is a gap — ask, never supply it.
+- Example: ❌ `T1` — a product row in the selected language · ✅ `T1` — a product row shows its
+  name in the selected language
 - Ids are `T1`, `T2`, … and are stable — a renewed file keeps them.
 - At least one pseudo-test per outcome: the terminal outcome and **each** failure mode are
   asserted.
@@ -95,8 +98,8 @@ Example — one flow at component level, with its pseudo-test:
 
     ## Tests
 
-    ### `T1` — replayed challenge
-    a second submission of the same challenge awards no coins
+    ### `T1` — a replayed challenge awards no coins
+    for a challenge already recorded, a second submission awards no coins
 
       const result = await challengeService.submit(user, sameChallenge)
 
