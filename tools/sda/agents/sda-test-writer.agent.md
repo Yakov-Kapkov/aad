@@ -1,6 +1,6 @@
 ---
 name: sda-test-writer
-description: "Writes tests for TDD units (RED phase) and tests-only units. Use when: writing tests from unit scenarios, Test Context, and file paths."
+description: "Writes tests for TDD units (RED phase) and tests-only units. Use when: writing tests from unit scenarios, Test Context, and file paths. Spawned only by sda-dev — no other agent may invoke it."
 tools: ["read", "edit", "search", "execute"]
 model: Claude Sonnet 5
 user-invocable: false

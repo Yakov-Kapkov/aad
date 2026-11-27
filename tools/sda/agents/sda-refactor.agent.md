@@ -1,6 +1,6 @@
 ---
 name: sda-refactor
-description: "Runs the refactoring pass over modified files — reduce duplication, improve naming, extract responsibilities, without changing behaviour. Handles per-unit (full refactor) and cross-unit (inter-unit duplication) scopes. Use when: a refactoring pass is needed with a file list and scope."
+description: "Runs the refactoring pass over modified files — reduce duplication, improve naming, extract responsibilities, without changing behaviour. Handles per-unit (full refactor) and cross-unit (inter-unit duplication) scopes. Use when: a refactoring pass is needed with a file list and scope. Spawned only by sda-dev — no other agent may invoke it."
 tools: ["read", "edit", "search", "execute"]
 model: Claude Sonnet 5
 user-invocable: false
