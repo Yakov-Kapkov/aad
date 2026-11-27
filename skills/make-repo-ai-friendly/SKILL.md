@@ -153,7 +153,9 @@ then stop), or an artifact has no honest source in the repo — never invent one
 
 ## Report
 
-Telegraph style. Proposal, before any write:
+**Be extremely concise. Sacrifice grammar for the sake of concision.**
+
+Proposal, before any write:
 
 | File | Action | Artifact | Why |
 |---|---|---|---|

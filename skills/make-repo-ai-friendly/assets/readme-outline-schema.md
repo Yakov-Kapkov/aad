@@ -79,6 +79,8 @@ states the rules."}
 - AI readme preamble must state the file is the routing index.
 - The preamble also states the **maintenance rule**: the docs are updated in the
   same change as the code they describe. Mandatory at the root readme.
+- The preamble also states the **concision rule**, verbatim:
+  **Be extremely concise. Sacrifice grammar for the sake of concision.**
 - **No implementation detail** — no endpoint recipes, RBAC lists, DB query
   rules, component prop tables, or code snippets.
 - **AI readme and human `README.md` mirror each other:** identical sections,
