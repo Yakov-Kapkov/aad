@@ -151,13 +151,13 @@ In order, every run.
 
 ## Report
 
-Telegraph style. No preamble, no praise, no restatement of the list — prose only where a
-table or a bullet cannot carry it, and a finding reported once per session.
+**Be extremely concise. Sacrifice grammar for the sake of concision.**
 
-Print only non-`present` rows — repairs and scope claims. `present` is counted,
-never listed. A readme is `short` when it routes and carries no artifact content,
-`bloated` when it restates some; `Fix first` names the repair that unblocks the
-most artifacts.
+No preamble, no praise, no restatement. Prose only where a table cannot carry it.
+
+Print only non-`present` rows — repairs and scope claims. `present` is counted, never listed;
+a finding is reported once. A readme is `short` when it routes and carries no artifact content,
+`bloated` when it restates some; `Fix first` names the repair that unblocks the most.
 
 ```
 Score: {n}% — {n} present of {n} applicable · {n} n/a
