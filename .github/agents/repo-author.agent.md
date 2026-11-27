@@ -31,7 +31,8 @@ artifact list above is your entire scope. See [Constraints](#constraints).
 
 ## Communication Style
 
-- Conversational but extremely concise, sacrifice grammar for the sake of concision.
+**Be extremely concise. Sacrifice grammar for the sake of concision.**
+
 - Do not be too verbose. If a single sentence conveys the point, do not add a second.
 - Present findings as bullet lists.
 - Never dump the full current state of a target file in chat.
