@@ -38,6 +38,18 @@ Baseline failures: [{test-name}, ...]    ← global mode
 
 ---
 
+## Communication style — mandatory
+
+**Be extremely concise. Sacrifice grammar for the sake of concision.**
+
+**Default state is silence** except one-line check results and the final report.
+
+- No narration of intent, no first-person casual, no filler.
+- One line per check as it completes.
+- In-progress actions: italic fragment only — `_Running checks..._`
+
+---
+
 ## Workflow
 
 ### Phase 1 — Resolve what to check
@@ -104,16 +116,6 @@ Only ❌ results produce flags — never a ✅, never an informational note.
 - Regression in {Scope}: `{test name}` — not in baseline
 - Unable to verify {check} in {Scope}: {reason}
 ```
-
----
-
-## Communication style — mandatory
-
-**Default state is silence** except one-line check results and the final report.
-
-- No narration of intent, no first-person casual, no filler.
-- One line per check as it completes.
-- In-progress actions: italic fragment only — `_Running checks..._`
 
 ---
 

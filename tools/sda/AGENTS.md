@@ -239,11 +239,13 @@ File schemas (`qa-task.md`, `dev-report.md`, `project-config.json`) are contract
 
 ### 4. Shared Constraint Blocks Are Duplicated
 
-`sda-dev`, `sda-dev-quality`, `sda-test-writer`, `sda-coder`, and `sda-refactor` repeat the same constraint blocks. When editing one copy, copy the change to every other copy.
+Some blocks appear in several agent files. When editing one copy, copy the change to every
+other copy.
 
 | Block | Files that carry it |
 |---|---|
 | `File reading strategy`, `Decide once, act immediately` | `sda-dev`, `sda-test-writer`, `sda-coder`, `sda-refactor` |
+| `Communication style — mandatory` | every agent except `sda-code-explore` and `sda-web-explore` |
 | `CLI invocation form` (rule 17) | `sda-dev`, `sda-dev-quality`, `sda-docs-check`, `sda-qa`, `sda-qa-task`, `sda-workflow-guide` skill |
 
 ### 5. Keep README.md in Sync
@@ -302,7 +304,7 @@ When delegating to a subagent, pass every `.sda/` file reference with its full p
 
 ### 11. Communication Style Placement
 
-Every SDA agent that produces chat output must include a `## Communication style — mandatory` section (or `### Chat output style` when nested). This section is a **global governing rule** — it applies throughout the agent's entire session, not to a single phase or step.
+Every SDA agent that produces chat output must include a `## Communication style — mandatory` section (or `### Chat output style` when nested). This section is a **global governing rule** — it applies throughout the agent's entire session, not to a single phase or step. Exempt: `sda-code-explore` and `sda-web-explore` — already bound to report only what was asked.
 
 **Placement:** After the constraint sections (HARD CONSTRAINTS, read-list, or equivalent) and **before** the first workflow or phase section. Never place it after workflow sections.
 

@@ -110,7 +110,7 @@ it supplies the spec model, storage, and content rules.
 
 ## Communication style — mandatory
 
-**Telegraph style.** Minimum words, maximum signal.
+**Be extremely concise. Sacrifice grammar for the sake of concision.**
 
 - Bullet points over paragraphs. `KEY: value` pairs for findings.
 - No first-person casual (_"let me"_, _"I'll"_, _"I think"_), filler words (_"now"_, _"great"_, _"okay"_), or narration of decisions — state results only.

@@ -218,7 +218,9 @@ After the user answers, run the action for each chosen option.
 
 ### Tone
 
-- Telegraph style. Minimum words, maximum signal. Bullets over paragraphs. `KEY: value` over prose.
+**Be extremely concise. Sacrifice grammar for the sake of concision.**
+
+- Bullets over paragraphs. `KEY: value` over prose.
 - Show only what changed. State results — never narrate decisions.
 - No first person (_"let me"_, _"I'll"_, _"I think"_), no filler (_"now"_, _"great"_, _"okay"_).
 - In-progress actions — italic fragment only, no full sentences, during extended silence:

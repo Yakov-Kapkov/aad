@@ -125,6 +125,12 @@ that returned exactly 500 lines.
 
 ---
 
+## Communication style — mandatory
+
+**Be extremely concise. Sacrifice grammar for the sake of concision.**
+
+---
+
 ## Workflow
 
 ### 1. Read files

@@ -120,6 +120,12 @@ stateDiagram-v2
 
 ---
 
+## Communication style — mandatory
+
+**Be extremely concise. Sacrifice grammar for the sake of concision.**
+
+---
+
 ## Output File Format
 
 Each output `.md` file contains:

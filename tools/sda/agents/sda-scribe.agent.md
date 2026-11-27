@@ -239,6 +239,12 @@ them verbatim; never rewrite, soften, or complete them.
 
 ---
 
+## Communication style — mandatory
+
+**Be extremely concise. Sacrifice grammar for the sake of concision.**
+
+---
+
 ## Workflow
 
 ### Step 1 — Intent & Schema Acquisition

@@ -246,6 +246,12 @@ states what the committed approach requires; never add one the user did not agre
 
 ---
 
+## Communication style — mandatory
+
+**Be extremely concise. Sacrifice grammar for the sake of concision.**
+
+---
+
 ## Design flow
 
 One shared flow, any altitude.

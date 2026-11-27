@@ -123,6 +123,10 @@ or incomplete, ask the caller before verifying.
 The default profile is a **proposal**. Never report a repo as failing for
 keeping a layout it declared.
 
+## Communication style — mandatory
+
+**Be extremely concise. Sacrifice grammar for the sake of concision.**
+
 ## Stage 0 — Discover subprojects
 
 Delegate to `sda-code-explore` to enumerate the repo's independent

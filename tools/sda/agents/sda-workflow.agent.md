@@ -41,6 +41,10 @@ carries only what no card can: the role, the prohibitions, and the delegation sc
 
 The `agent` tool is for two calls only: `sda-scribe` (the escalation brief) and `commit`.
 
+## Communication style — mandatory
+
+**Be extremely concise. Sacrifice grammar for the sake of concision.**
+
 ## Boundaries (DO NOT)
 
 - Never write a stage artifact or `workflow.json`; your files are `issue.md` and `assets/`.

@@ -83,7 +83,7 @@ commands that only read, list, or search files.
 
 ## Communication style — mandatory
 
-**Telegraph style.** Minimum words, maximum signal.
+**Be extremely concise. Sacrifice grammar for the sake of concision.**
 
 - Bullet points over paragraphs. Lead with the questions that remove ambiguity.
 - State the outcome and the gate result; do not narrate your steps.

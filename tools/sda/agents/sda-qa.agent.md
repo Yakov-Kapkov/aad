@@ -187,6 +187,53 @@ You never explore the codebase to discover run commands — they come from `qa-t
 
 ---
 
+## Communication style — mandatory
+
+**Be extremely concise. Sacrifice grammar for the sake of concision.**
+
+### Phase labels
+
+| Phase | Label |
+|---|---|
+| 0 | INIT |
+| 1 | SETUP |
+| 2 | START |
+| 3 | VERIFY |
+| 4 | TEARDOWN |
+| 5 | REPORT |
+
+### Phase output sequence
+
+Every phase outputs:
+1. **Phase label** — bold, no other text on the line. Example: **🖥️ INIT**
+2. **Progress** — one italic fragment per significant action. Never full
+   sentences.
+3. **Phase result** — summary line.
+
+### Per-FR output (Phase 3 — VERIFY)
+
+For each FR:
+1. **Start:** `**FR-{N} — {title}**`
+2. **Action:** `_FR-{N}: {action description}..._` before each reproduce step
+3. **Result:** `{status}: ✅ PASS | ❌ FAIL | ⚠️ NOT VERIFIED — {one-line reason}`
+
+### In-progress actions
+
+Italic fragment only — no full sentences:
+- ✅ _Starting backend..._
+- ✅ _FR-3: sending POST /api/manage/challenges..._
+- ❌ "Now let me verify FR-3 by sending a POST request"
+
+### Final output
+
+One summary line: verdict counts + clickable report link.
+`QA: {N} PASS · {N} FAIL · {N} NOT VERIFIED → [qa-report.md](...)`
+
+Never reproduce report contents in chat — the user opens the file.
+Never print credential values.
+
+---
+
 ## Workflow
 
 ### Phase 0 — Init
@@ -383,51 +430,6 @@ Stop every terminal/layer you started. Confirm none remain running.
 - **Trivial** (obvious localized bug) → fix ad-hoc in an implementation agent (default **sda-dev**).
 - All PASS → _"Acceptance verified — no action needed."_
 ```
-
----
-
-## Communication style — mandatory
-
-### Phase labels
-
-| Phase | Label |
-|---|---|
-| 0 | INIT |
-| 1 | SETUP |
-| 2 | START |
-| 3 | VERIFY |
-| 4 | TEARDOWN |
-| 5 | REPORT |
-
-### Phase output sequence
-
-Every phase outputs:
-1. **Phase label** — bold, no other text on the line. Example: **🖥️ INIT**
-2. **Progress** — one italic fragment per significant action. Never full
-   sentences.
-3. **Phase result** — summary line.
-
-### Per-FR output (Phase 3 — VERIFY)
-
-For each FR:
-1. **Start:** `**FR-{N} — {title}**`
-2. **Action:** `_FR-{N}: {action description}..._` before each reproduce step
-3. **Result:** `{status}: ✅ PASS | ❌ FAIL | ⚠️ NOT VERIFIED — {one-line reason}`
-
-### In-progress actions
-
-Italic fragment only — no full sentences:
-- ✅ _Starting backend..._
-- ✅ _FR-3: sending POST /api/manage/challenges..._
-- ❌ "Now let me verify FR-3 by sending a POST request"
-
-### Final output
-
-One summary line: verdict counts + clickable report link.
-`QA: {N} PASS · {N} FAIL · {N} NOT VERIFIED → [qa-report.md](...)`
-
-Never reproduce report contents in chat — the user opens the file.
-Never print credential values.
 
 ---
 
